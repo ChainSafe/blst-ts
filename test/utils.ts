@@ -1,5 +1,8 @@
 import { expect } from "chai";
-import { BaseSerializable } from "../types/Base";
+
+interface BaseSerializable {
+  serialize(): Uint8Array;
+}
 
 type Bufferish = string | Uint8Array | Buffer | BaseSerializable;
 
@@ -27,7 +30,7 @@ export type InstanceTestCases<InstanceType extends { [key: string]: any }> = {
     id?: string;
     instance?: InstanceType;
     args: Parameters<InstanceType[P]>;
-    res: ReturnType<InstanceType[P]>;
+    res?: ReturnType<InstanceType[P]>;
   }[];
 };
 
@@ -42,21 +45,21 @@ export function runInstanceTestCases<
 ) {
   for (const [key, testCases] of Object.entries(instanceTestCases)) {
     const methodKey = key as keyof InstanceType;
-    describe(String(methodKey), () => {
-      for (const testCase of testCases) {
-        it(testCase.id || "test", () => {
-          // Get a new fresh instance for this test
-          const instance = testCase.instance || getInstance();
-          if (typeof instance[methodKey] !== "function")
-            throw Error(`Method ${methodKey} does not exist`);
-          const res = (instance[methodKey] as any)(...testCase.args);
-          if (res.serialize || res instanceof Uint8Array) {
-            expectHex(res, testCase.res);
-          } else {
-            expect(res).to.deep.equal(testCase.res);
-          }
-        });
-      }
-    });
+    for (const testCase of testCases) {
+      it(`${methodKey}: ${testCase.id || ""}`, () => {
+        // Get a new fresh instance for this test
+        const instance = testCase.instance || getInstance();
+        if (typeof instance[methodKey] !== "function")
+          throw Error(`Method ${methodKey} does not exist`);
+        const res = (instance[methodKey] as any)(...testCase.args);
+        if (!res) {
+          // OK
+        } else if (res.serialize || res instanceof Uint8Array) {
+          expectHex(res, testCase.res);
+        } else {
+          expect(res).to.deep.equal(testCase.res);
+        }
+      });
+    }
   }
 }

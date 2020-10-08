@@ -25,7 +25,9 @@ export interface PnConstructor<Pn, Pn_Affine> {
 
 export interface Pn<Pn_Affine> {
   /**
+   * ```c++
    * Pn_Affine to_affine() const
+   * ```
    */
   to_affine(): Pn_Affine;
   /**
@@ -53,19 +55,29 @@ export interface Pn<Pn_Affine> {
    */
   aggregate(pAffine: Pn_Affine): void;
   /**
+   * ```c++
    * Pn *sign_with(SecretKey &sk)
+   * ```
    */
   sign_with(sk: SecretKey): Pn<Pn_Affine>;
   /**
-   * Pn *hash_to(const byte *msg, size_t msg_len,
+   * ```c++
+   * Pn *hash_to(
+   *   const byte *msg, size_t msg_len,
    *   const std::string &DST = "",
-   *   const byte *aug = nullptr, size_t aug_len = 0)
+   *   const byte *aug = nullptr, size_t aug_len = 0
+   * )
+   * ```
    */
   hash_to(msg: Msg, DST: DST, noIdea: any): Pn<Pn_Affine>;
   /**
-   * Pn *encode_to(const byte *msg, size_t msg_len,
+   * ```c++
+   * Pn *encode_to(
+   *   const byte *msg, size_t msg_len,
    *   const std::string &DST = "",
-   *   const byte *aug = nullptr, size_t aug_len = 0)
+   *   const byte *aug = nullptr, size_t aug_len = 0
+   * )
+   * ```
    */
   encode_to(msg: Msg, DST: DST, noIdea: any): Pn<Pn_Affine>;
 }

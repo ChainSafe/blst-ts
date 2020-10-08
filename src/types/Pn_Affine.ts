@@ -16,7 +16,9 @@ export interface Pn_AffineConstructor<Pn, Pn_Affine> {
 
 export interface Pn_Affine<Pn> {
   /**
+   * ```c++
    * P1 to_jacobian() const;
+   * ```
    */
   to_jacobian(): Pn;
   /**
@@ -32,11 +34,15 @@ export interface Pn_Affine<Pn> {
    */
   compress(): Uint8Array;
   /**
+   * ```c++
    * bool on_curve() const
+   * ```
    */
   on_curve(): boolean;
   /**
+   * ```c++
    * bool in_group() const
+   * ```
    */
   in_group(): boolean;
   /**

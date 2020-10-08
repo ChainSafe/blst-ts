@@ -1,0 +1,21 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest disabled by now, unable to build
+        os: [macos-latest, ubuntu-latest]
+        node: [14.x, 12.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js ${{matrix.node}}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{matrix.node}}
+      - name: Install & Build
+        run: yarn install
+      - name: Test
+        run: yarn test

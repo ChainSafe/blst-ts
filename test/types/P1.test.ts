@@ -1,6 +1,5 @@
-import { blst } from "../bindings";
-import { P1, P1_Affine } from "../types/P1";
-import { fromHex, runInstanceTestCases } from "./utils";
+import { blst, P1, P1_Affine } from "../../src";
+import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("P1", () => {
   const sample = {
@@ -22,12 +21,14 @@ describe("P1", () => {
     const msg = "msg";
     const dst = "my-dst";
 
-    runInstanceTestCases<Omit<P1, "aggregate">>(
+    runInstanceTestCases<P1>(
       {
         to_affine: [{ args: [], res: p1Affine }],
         serialize: [{ args: [], res: sample.p1 }],
         compress: [{ args: [], res: sample.p1Comp }],
         is_inf: [{ args: [], res: false }],
+        // TODO: Skip tests for now
+        aggregate: [],
         sign_with: [
           {
             args: [sk],

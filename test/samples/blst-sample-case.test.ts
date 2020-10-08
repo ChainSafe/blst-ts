@@ -1,6 +1,6 @@
-import { blst } from "../bindings";
+import { blst } from "../../src";
 
-describe("sample case", () => {
+describe("blst sample case", () => {
   it("Should verify a signature", () => {
     const msg = "assertion"; // this what we're signing
     const DST = "MY-DST"; // domain separation tag
@@ -17,7 +17,7 @@ describe("sample case", () => {
 
       const sig = new blst.P2();
       const sig_for_wire = sig
-        .hash_to(Buffer.alloc(32, 1), DST, pk_for_wire)
+        .hash_to(msg, DST, pk_for_wire)
         .sign_with(SK)
         .serialize();
 

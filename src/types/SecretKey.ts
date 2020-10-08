@@ -3,21 +3,27 @@ export interface SecretKeyConstructor {
 }
 
 export interface SecretKey {
-  keygen(someString: string): void;
+  /**
+   * ```c++
+   * void keygen(
+   *   const byte *IKM, size_t IKM_len,
+   *   const std::string &info = ""
+   * )
+   * ```
+   */
+  keygen(bytes: string | Uint8Array): void;
   /**
    * ```c++
    * from_bendian(const byte in[32])
    * ```
-   * @param byte
    */
-  from_bendian(byte: Uint8Array): void;
+  from_bendian(bytes: Uint8Array): void;
   /**
    * ```c++
    * from_lendian(const byte in[32])
    * ```
-   * @param byte
    */
-  from_lendian(byte: Uint8Array): void;
+  from_lendian(bytes: Uint8Array): void;
   /**
    * ```c++
    * to_bendian(byte out[32]) const
