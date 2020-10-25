@@ -1,4 +1,4 @@
-import { blst, BLST_ERROR, P2, P2_Affine } from "../../src";
+import { blst, BLST_ERROR, P2, P2_Affine, P2Constructor } from "../../src";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("P2", () => {
@@ -86,6 +86,32 @@ describe("P2", () => {
       function getP2Affine() {
         return new blst.P2_Affine(p2);
       }
+    );
+  });
+
+  describe("static", () => {
+    runInstanceTestCases<P2Constructor>(
+      {
+        add: [
+          {
+            args: [p2, p2Affine],
+            res: "0bcc5b1ce23517101da650ee7e16ffade4f7db2fa62d426f2811312edac0ef4f8063915d1460cc8569e76d512a3d27270b50308570167b19d8649ec3883f9fb830497b26525bf69ac7a7703f827e0c5e6690a563474a3490f5b8f1d9546522a00d83d033e2d8cdab2467c253fb5ebede6793a825aec72018c52a78af18cf5ea04d6effa93e03bbdf248f2f3b88d866681543e9a8db5bc2b044c8dd9d5a5b85c432cd037e3dc137299a27cfa7cfbabbdbac074104d4ece21abc3a3432cd267bbc" as any,
+          },
+        ],
+        dbl: [
+          {
+            args: [p2],
+            res: "0bcc5b1ce23517101da650ee7e16ffade4f7db2fa62d426f2811312edac0ef4f8063915d1460cc8569e76d512a3d27270b50308570167b19d8649ec3883f9fb830497b26525bf69ac7a7703f827e0c5e6690a563474a3490f5b8f1d9546522a00d83d033e2d8cdab2467c253fb5ebede6793a825aec72018c52a78af18cf5ea04d6effa93e03bbdf248f2f3b88d866681543e9a8db5bc2b044c8dd9d5a5b85c432cd037e3dc137299a27cfa7cfbabbdbac074104d4ece21abc3a3432cd267bbc" as any,
+          },
+        ],
+        generator: [
+          {
+            args: [],
+            res: "13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e024aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb80606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be0ce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801" as any,
+          },
+        ],
+      },
+      () => blst.P2
     );
   });
 });

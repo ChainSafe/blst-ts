@@ -1,4 +1,4 @@
-import { blst, P1, P1_Affine, BLST_ERROR } from "../../src";
+import { blst, BLST_ERROR, P1, P1_Affine, P1Constructor } from "../../src";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("P1", () => {
@@ -86,6 +86,32 @@ describe("P1", () => {
       function getP1Affine() {
         return new blst.P1_Affine(p1);
       }
+    );
+  });
+
+  describe("static", () => {
+    runInstanceTestCases<P1Constructor>(
+      {
+        add: [
+          {
+            args: [p1, p1Affine],
+            res: "157d484df3b1e12b2c9128c446955d5c9f6c4e30362a8e33c51d7b67c9ac6e04b5213161822aec2a0c35eb0767887f9010b6a92c5278478c4b4e6ca827c1760bd1112f4bbaa0b4ad48b77caf6e5eaf4a77734a47c9c654ef5a3b0bc10c545bba" as any,
+          },
+        ],
+        dbl: [
+          {
+            args: [p1],
+            res: "157d484df3b1e12b2c9128c446955d5c9f6c4e30362a8e33c51d7b67c9ac6e04b5213161822aec2a0c35eb0767887f9010b6a92c5278478c4b4e6ca827c1760bd1112f4bbaa0b4ad48b77caf6e5eaf4a77734a47c9c654ef5a3b0bc10c545bba" as any,
+          },
+        ],
+        generator: [
+          {
+            args: [],
+            res: "17f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb08b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1" as any,
+          },
+        ],
+      },
+      () => blst.P1
     );
   });
 });
