@@ -39,9 +39,14 @@ export interface Pn_AffineConstructor<Pn, Pn_Affine> {
   new (p1: Pn): Pn_Affine;
 }
 
-export interface Pn_Affine<Pn> {
+const p1: P1_Affine = {};
+const p2: P2_Affine = {};
+
+p1.core_verify(p2, true, "", "");
+
+export interface Pn_Affine<This extends "1" | "2", Other extends "1" | "2"> {
   // P1 to_jacobian() const;
-  to_jacobian(): Pn;
+  to_jacobian(): Pn<This, Other>;
   // void serialize(byte out[96]) const
   serialize(): Uint8Array;
   // void compress(byte out[48]) const
@@ -57,7 +62,7 @@ export interface Pn_Affine<Pn> {
   //   const std::string& DST = "",
   //   const app__string_view aug = None) const;
   core_verify(
-    pk: P2_Affine,
+    pk: Pn_Affine<Other, This>,
     hash_or_encode: boolean,
     msg: Msg,
     DST: DST,
@@ -77,9 +82,10 @@ export interface PnConstructor<Pn, Pn_Affine> {
   new (pAffine: Pn_Affine): Pn;
 }
 
-export interface Pn<Pn_Affine> {
+export interface Pn<This extends "1" | "2", Other extends "1" | "2"> {
+  id: This;
   // P1_Affine to_affine() const
-  to_affine(): Pn_Affine;
+  to_affine(): Pn_Affine<This, Other>;
   // void serialize(byte out[96]) const
   serialize(): Uint8Array;
   // void compress(byte out[48]) const
@@ -87,23 +93,23 @@ export interface Pn<Pn_Affine> {
   // bool is_inf() const
   is_inf(): boolean;
   // void aggregate(const P1_Affine &in)
-  aggregate(pAffine: Pn_Affine): void;
+  aggregate(pAffine: Pn_Affine<This, Other>): void;
   // P1* sign_with(SecretKey& sk)
-  sign_with(sk: SecretKey): Pn<Pn_Affine>;
+  sign_with(sk: SecretKey): Pn<This, Other>;
   // P1* hash_to(const app__string_view msg, const std::string& DST = "",
   //   const app__string_view aug = None)
-  hash_to(msg: Msg, DST: DST, noIdea: any): Pn<Pn_Affine>;
+  hash_to(msg: Msg, DST: DST, noIdea: any): Pn<This, Other>;
   // P1* encode_to(const app__string_view msg, const std::string& DST = "",
   //   const app__string_view aug = None)
-  encode_to(msg: Msg, DST: DST, noIdea: any): Pn<Pn_Affine>;
+  encode_to(msg: Msg, DST: DST, noIdea: any): Pn<This, Other>;
   // P1* cneg(bool flag)
-  cneg(flag: boolean): Pn<Pn_Affine>;
+  cneg(flag: boolean): Pn<This, Other>;
   // P1* add(const P1& a)
-  add(Pn: Pn<Pn_Affine>): Pn<Pn_Affine>;
+  add(Pn: Pn<This, Other>): Pn<This, Other>;
   // P1* add(const P1_Affine &a)
-  add(Pn: Pn_Affine): Pn<Pn_Affine>;
+  add(Pn: Pn_Affine<This, Other>): Pn<This, Other>;
   // P1* dbl()
-  dbl(): Pn<Pn_Affine>;
+  dbl(): Pn<This, Other>;
 
   // Static?
 
@@ -117,15 +123,15 @@ export interface Pn<Pn_Affine> {
 
 export type P1Constructor = PnConstructor<P1, P1_Affine>;
 export type P1_AffineConstructor = Pn_AffineConstructor<P1, P1_Affine>;
-export type P1 = Pn<P1_Affine>;
-export type P1_Affine = Pn_Affine<P1>;
+export type P1 = Pn<"1", "2">;
+export type P1_Affine = Pn_Affine<"1", "2">;
 
 // P2
 
 export type P2Constructor = PnConstructor<P2, P2_Affine>;
 export type P2_AffineConstructor = Pn_AffineConstructor<P2, P2_Affine>;
-export type P2 = Pn<P2_Affine>;
-export type P2_Affine = Pn_Affine<P2>;
+export type P2 = Pn<"2", "1">;
+export type P2_Affine = Pn_Affine<"2", "1">;
 
 // PT
 
