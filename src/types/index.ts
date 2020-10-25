@@ -30,7 +30,11 @@ export interface SecretKey {
 
 // Pn_Affine
 
-type Type = "P1" | "P2";
+// Typescript will consider P1 = P2 if their interface contents are equal
+// The extra type property forces P1 and P2 interfaces to be different
+type P1Type = "p1Type";
+type P2Type = "p2Type";
+type PnType = P1Type | P2Type;
 
 export interface Pn_AffineConstructor<Pn, Pn_Affine> {
   // P1_Affine()
@@ -41,15 +45,13 @@ export interface Pn_AffineConstructor<Pn, Pn_Affine> {
   new (p1: Pn): Pn_Affine;
 }
 
-const p1: P1_Affine = {};
-const p2: P2_Affine = {};
-
-p1.core_verify(p2, true, "", "");
-
-export interface Pn_Affine<ThisType extends Type, OtherType extends Type> {
-  type: Type;
+export interface Pn_Affine<
+  ThisType extends PnType,
+  Other_Pn_Affine extends Pn_Affine<any, any>
+> {
+  type: ThisType;
   // P1 to_jacobian() const;
-  to_jacobian(): Pn<ThisType, OtherType>;
+  to_jacobian(): Pn<ThisType, this>;
   // void serialize(byte out[96]) const
   serialize(): Uint8Array;
   // void compress(byte out[48]) const
@@ -65,7 +67,7 @@ export interface Pn_Affine<ThisType extends Type, OtherType extends Type> {
   //   const std::string& DST = "",
   //   const app__string_view aug = None) const;
   core_verify(
-    pk: Pn_Affine<OtherType, ThisType>,
+    pk: Other_Pn_Affine,
     hash_or_encode: boolean,
     msg: Msg,
     DST: DST,
@@ -85,10 +87,13 @@ export interface PnConstructor<Pn, Pn_Affine> {
   new (pAffine: Pn_Affine): Pn;
 }
 
-export interface Pn<ThisType extends Type, OtherType extends Type> {
-  type: Type;
+export interface Pn<
+  ThisType extends PnType,
+  This_Pn_Affine extends Pn_Affine<ThisType, any>
+> {
+  type: ThisType;
   // P1_Affine to_affine() const
-  to_affine(): Pn_Affine<ThisType, OtherType>;
+  to_affine(): This_Pn_Affine;
   // void serialize(byte out[96]) const
   serialize(): Uint8Array;
   // void compress(byte out[48]) const
@@ -96,7 +101,7 @@ export interface Pn<ThisType extends Type, OtherType extends Type> {
   // bool is_inf() const
   is_inf(): boolean;
   // void aggregate(const P1_Affine &in)
-  aggregate(pAffine: Pn_Affine<ThisType, OtherType>): void;
+  aggregate(pAffine: This_Pn_Affine): void;
   // P1* sign_with(SecretKey& sk)
   sign_with(sk: SecretKey): this;
   // P1* hash_to(const app__string_view msg, const std::string& DST = "",
@@ -110,7 +115,7 @@ export interface Pn<ThisType extends Type, OtherType extends Type> {
   // P1* add(const P1& a)
   add(Pn: this): this;
   // P1* add(const P1_Affine &a)
-  add(Pn: Pn_Affine<ThisType, OtherType>): this;
+  add(Pn: This_Pn_Affine): this;
   // P1* dbl()
   dbl(): this;
 
@@ -126,15 +131,15 @@ export interface Pn<ThisType extends Type, OtherType extends Type> {
 
 export type P1Constructor = PnConstructor<P1, P1_Affine>;
 export type P1_AffineConstructor = Pn_AffineConstructor<P1, P1_Affine>;
-export type P1 = Pn<"P1", "P2">;
-export type P1_Affine = Pn_Affine<"P1", "P2">;
+export type P1 = Pn<P1Type, P1_Affine>;
+export type P1_Affine = Pn_Affine<P1Type, P2_Affine>;
 
 // P2
 
 export type P2Constructor = PnConstructor<P2, P2_Affine>;
 export type P2_AffineConstructor = Pn_AffineConstructor<P2, P2_Affine>;
-export type P2 = Pn<"P2", "P1">;
-export type P2_Affine = Pn_Affine<"P2", "P1">;
+export type P2 = Pn<P2Type, P2_Affine>;
+export type P2_Affine = Pn_Affine<P2Type, P1_Affine>;
 
 // PT
 
