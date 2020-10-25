@@ -39,11 +39,11 @@ describe("Pairing", () => {
       mul_n_aggregate: [
         {
           id: "pk on P1",
-
           args: [
             p1Affine,
             p2Affine,
-            new Uint8Array(),
+            Buffer.alloc(32, 0),
+            32,
             new Uint8Array(),
             p1.serialize(),
           ],
