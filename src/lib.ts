@@ -1,5 +1,6 @@
 type u8 = Uint8Array;
 type u8_32 = Uint8Array;
+type u64 = Uint8Array;
 
 // Unknown stuff
 type blst_scalar = any;
@@ -30,6 +31,90 @@ class ErrorBLST extends Error {
 }
 
 function concatU8(a: Uint8Array, b: Uint8Array): Uint8Array {}
+
+export class Pairing {
+  v: u64; // blst_pairing
+
+  constructor(hash_or_encode: boolean, dst: u8) {
+    this.v = Vec_u64();
+    blst_pairing_init(this.v, hash_or_encode, dst);
+  }
+
+  init(pairing: Pairing, hash_or_encode: boolean, dst: u8[]) {}
+
+  ctx(): blst_pairing {
+    return this.v;
+  }
+
+  const_ctx(): blst_pairing {
+    return this.v;
+  }
+
+  aggregate(pk: dynAny, sig: dynAny, msg: u8, aug: u8): BLST_ERROR {
+    if (pk.isP1) {
+      return blst_pairing_aggregate_pk_in_g1(this.ctx(), pk, sig, msg, aug);
+    } else if (pk.isP2) {
+      return blst_pairing_aggregate_pk_in_g2(this.ctx(), pk, sig, msg, aug);
+    } else {
+      throw Error("whaaaa?");
+    }
+  }
+
+  mul_n_aggregate(
+    pk: dynAny,
+    sig: dynAny,
+    scalar: u8,
+    nbits: usize,
+    msg: u8,
+    aug: u8
+  ): BLST_ERROR {
+    if (pk.isP1) {
+      return blst_pairing_mul_n_aggregate_pk_in_g1(
+        this.ctx(),
+        pk,
+        sig,
+        scalar,
+        nbits,
+        msg,
+        aug
+      );
+    } else if (pk.isP2) {
+      return blst_pairing_mul_n_aggregate_pk_in_g2(
+        this.ctx(),
+        pk,
+        sig,
+        scalar,
+        nbits,
+        msg,
+        aug
+      );
+    } else {
+      throw Error("whaaaa?");
+    }
+  }
+
+  aggregated(gtsig: blst_fp12, sig: dynAny) {
+    if (sig.isP1) {
+      blst_aggregated_in_g1(gtsig, sig);
+    } else if (sig.isP2) {
+      blst_aggregated_in_g2(gtsig, sig);
+    } else {
+      throw Error("whaaaa?");
+    }
+  }
+
+  commit() {
+    blst_pairing_commit(this.ctx());
+  }
+
+  merge(ctx1: Pairing) {
+    blst_pairing_merge(this.ctx(), ctx1.const_ctx());
+  }
+
+  finalverify(gtsig: blst_fp12): boolean {
+    return blst_pairing_finalverify(this.const_ctx(), gtsig);
+  }
+}
 
 export class SecretKey {
   value: blst_scalar;
@@ -199,12 +284,23 @@ export class Signature {
   }
 
   aggregate_verify(msgs: u8[], dst: u8, pks: PublicKey[]): BLST_ERROR {
-    if (msgs.length !== pks.length) {
+    const n_elems = pks.length;
+    if (msgs.length !== n_elems) {
       throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
     }
 
-    const pairing = new pairing(MACRO.hash_or_encode, dst);
-    pairing.aggregate(pks, msgs);
+    const pairing = new Pairing(MACRO.hash_or_encode, dst);
+    for (let i = 0; i < n_elems; i++) {
+      const result = pairing.aggregate(
+        pks[i].point,
+        new MACRO.sig_aff(),
+        msgs[i],
+        []
+      );
+      if (result !== BLST_ERROR.BLST_SUCCESS) {
+        throw new ErrorBLST(result);
+      }
+    }
     pairing.commit();
 
     const gtsig = blst_fp12.default();
