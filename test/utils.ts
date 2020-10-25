@@ -26,7 +26,7 @@ export function fromHex(hexString: string): Uint8Array {
  * Enforce tests for all instance methods
  */
 export type InstanceTestCases<InstanceType extends { [key: string]: any }> = {
-  [P in keyof InstanceType]: {
+  [P in keyof Omit<InstanceType, "type">]: {
     id?: string;
     instance?: InstanceType;
     args: Parameters<InstanceType[P]>;

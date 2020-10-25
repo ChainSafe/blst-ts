@@ -1,4 +1,4 @@
-import { blst, P2, P2_Affine } from "../../src";
+import { blst, BLST_ERROR, P2, P2_Affine } from "../../src";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("P2", () => {
@@ -17,10 +17,10 @@ describe("P2", () => {
   const p2 = new blst.P2(sk);
   const p2Affine = new blst.P2_Affine(p2);
 
-  describe("P2", () => {
-    const msg = "msg";
-    const dst = "my-dst";
+  const msg = "assertion"; // this what we're signing
+  const DST = "MY-DST"; // domain separation tag
 
+  describe("P2", () => {
     runInstanceTestCases<P2>(
       {
         to_affine: [{ args: [], res: p2Affine }],
@@ -37,16 +37,26 @@ describe("P2", () => {
         ],
         hash_to: [
           {
-            args: [msg, dst, p2.serialize()],
-            res: "0bcb68d75f0b7494fa198f59d417b440ad8d9bcd5b3c514f8427e64905e1189f6712aaf663f2aa455c55527e1a18c24a0e03f292993ac9aac5817b2ed518aa916f017f029b3db9730f4f431e4f6a77d8ade10ea3a291cdaf2986558223b66ed9146d45fce628e83f9469d565f205bc56d878ab8fcdd20d52c6413ef1c563bc308bdb26cad6234e6f96a43958d2e829410508042c19bcd63bd45fe4cb96021be6a2f7a16100ba032343af311f745e01ebc8a055bf3df5f7329172e02dc7d7e86d" as any,
+            args: [msg, DST, p2.serialize()],
+            res: "18a8e36a5750e483b567214d1f1e008ce5565b954ee5aac3453d682fb857a37e561fc207dce71cef2bbd969446fb2d0602e30269a02e71aa1dbe0f68169990af3c1dbc79d6ad2ac7eaee6e1cb1f1fed225ce95027982be4d5d87f48a81cadb2e166dac2f4c93872f0bfdfe09c03e151e6c48f9cd7fdc32a36ce8cd8e1a8327c5dbd48cae96207238b78c364c9361f60d05cd1b702a5b830fe21db7ca0ce3e321a469aee68ebeabc03f9356cf7443e9bde06ce0215da35b6f7f764adc34735aa2" as any,
           },
         ],
         encode_to: [
           {
-            args: [msg, dst, p2.serialize()],
-            res: "073e3652441ff650582508193a7667718549180cc87212b9f8eb8d349778cf9d0851ad28fddc652effe3467880ef85500ebeec0dc4c754184b403c12aa0fb2fad29995f9be139812789ea4a30c09bc1a1550074d2078792b678b58f6de0e30d70e02e8dbfe77591ee989bd198e7282971bf453d06a4813490c7f6766702680d01883753a964e26c8e4219c3073e762500d2063c33b2d7a6e3a2d296ea309cff55b013b12677e327f734e6e178849de9f8212f43d163c8997d645b4500948689d" as any,
+            args: [msg, DST, p2.serialize()],
+            res: "042b40191f8d16d0d264a1ef16ba3901a521d8ab4904f6ce98d6fb2afb3873260c48251667cfdb040f8d588ab88a68a20e81e197131b97547c8db6d59096ab9b76ebfff12c370752d546c2827d11024f919381f2ad4de702b2ae57c5437c2db113ec66cbdcf8e90c5cde93b23fad8355bb488d4ba3593f5fbd7a2d5df0e6748547d0dfc047927b6cebf6687b1e206aa80d10f4c398b9c29e47b8e08c37cc635baa0e7512d734ab282974ce835197297f1c699aee73c7ee1700eabd0bf42274e8" as any,
           },
         ],
+        cneg: [
+          {
+            args: [true],
+            res: "0b02218c125b91b779e82ade498d34385a1a91b29ca1a8918e280af87f8587c3ee555cbdf666c788e71bba7c1567057f100af1be00e1752af14223de1714ff8d89ec2732f43c59db68ed46f9fc13a9c75cee9dc3db9eefd1af473aa031f26ae61655dbfb585444595809d564efe3e48ac7a45ae642587b5cbb444e68052a85b5a90ff50fa284d4d2c6e92b86862daf5a09afca65fc374a50928af6ee5fa76de00d33f4f59670563446c43b6da08e8c14e308928b069e309d731a1a10d141dc91" as any,
+          },
+        ],
+        // Error: Method add does not exist
+        add: [],
+        // Error: Method add does not exist
+        dbl: [],
       },
       function getP2() {
         return new blst.P2(sk);
@@ -55,6 +65,9 @@ describe("P2", () => {
   });
 
   describe("P2_Affine", () => {
+    const p1 = new blst.P1(sk);
+    const p1Affine = new blst.P1_Affine(p1);
+
     runInstanceTestCases<P2_Affine>(
       {
         to_jacobian: [{ args: [], res: p2 }],
@@ -63,6 +76,12 @@ describe("P2", () => {
         on_curve: [{ args: [], res: true }],
         in_group: [{ args: [], res: true }],
         is_inf: [{ args: [], res: false }],
+        core_verify: [
+          {
+            args: [p1Affine, true, msg, DST],
+            res: BLST_ERROR.BLST_VERIFY_FAIL,
+          },
+        ],
       },
       function getP2Affine() {
         return new blst.P2_Affine(p2);
