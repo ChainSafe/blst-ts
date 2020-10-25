@@ -17,15 +17,15 @@ export interface SecretKeyConstructor {
 export interface SecretKey {
   // void keygen(const app__string_view IKM, // string_view by value, cool!
   //   const std::string& info = "")
-  keygen(bytes: string | Uint8Array): void;
+  keygen(IKM: app__string_view, info?: std__string): void;
   // from_bendian(const byte in[32])
-  from_bendian(bytes: Uint8Array): void;
+  from_bendian(bytes: byte): void;
   // from_lendian(const byte in[32])
-  from_lendian(bytes: Uint8Array): void;
+  from_lendian(bytes: byte): void;
   // to_bendian(byte out[32]) const
-  to_bendian(): Uint8Array;
+  to_bendian(): byte;
   // to_lendian(byte out[32]) const
-  to_lendian(): Uint8Array;
+  to_lendian(): byte;
 }
 
 // Pn_Affine
@@ -40,9 +40,9 @@ export interface Pn_AffineConstructor<Pn, Pn_Affine> {
   // P1_Affine()
   new (): Pn_Affine;
   // Pn_Affine(const byte *in)
-  new (bytes: Uint8Array): Pn_Affine;
+  new (bytes: byte): Pn_Affine;
   // Pn_Affine(const P1 &jacobian);
-  new (p1: Pn): Pn_Affine;
+  new (jacobian: Pn): Pn_Affine;
 }
 
 export interface Pn_Affine<
@@ -53,38 +53,39 @@ export interface Pn_Affine<
   // P1 to_jacobian() const;
   to_jacobian(): Pn<ThisType, this>;
   // void serialize(byte out[96]) const
-  serialize(): Uint8Array;
+  serialize(): byte;
   // void compress(byte out[48]) const
-  compress(): Uint8Array;
+  compress(): byte;
   // bool on_curve() const
-  on_curve(): boolean;
+  on_curve(): bool;
   // bool in_group() const
-  in_group(): boolean;
+  in_group(): bool;
   // bool is_inf() const
-  is_inf(): boolean;
+  is_inf(): bool;
   // BLST_ERROR core_verify(const P2_Affine& pk, bool hash_or_encode,
   //   const app__string_view msg,
   //   const std::string& DST = "",
   //   const app__string_view aug = None) const;
   core_verify(
     pk: Other_Pn_Affine,
-    hash_or_encode: boolean,
-    msg: Msg,
-    DST: DST,
-    pk_for_wire?: Uint8Array
+    hash_or_encode: bool,
+    msg: app__string_view,
+    DST?: std__string,
+    aug?: app__string_view
   ): BLST_ERROR;
 }
 
 // Pn
 
 export interface PnConstructor<Pn, Pn_Affine> {
+  // P1()
   new (): Pn;
-  // P1(SecretKey &sk)
-  new (secretKey: SecretKey): Pn;
+  // P1(SecretKey& sk)
+  new (sk: SecretKey): Pn;
   // P1(const byte *in)
-  new (bytes: Uint8Array): Pn;
-  // P1(const P1_Affine &affine)
-  new (pAffine: Pn_Affine): Pn;
+  new (bytes: byte): Pn;
+  // P1(const P1_Affine& affine)
+  new (affine: Pn_Affine): Pn;
 }
 
 export interface Pn<
@@ -95,27 +96,35 @@ export interface Pn<
   // P1_Affine to_affine() const
   to_affine(): This_Pn_Affine;
   // void serialize(byte out[96]) const
-  serialize(): Uint8Array;
+  serialize(): byte;
   // void compress(byte out[48]) const
-  compress(): Uint8Array;
+  compress(): byte;
   // bool is_inf() const
-  is_inf(): boolean;
+  is_inf(): bool;
   // void aggregate(const P1_Affine &in)
-  aggregate(pAffine: This_Pn_Affine): void;
+  aggregate(affine: This_Pn_Affine): void;
   // P1* sign_with(SecretKey& sk)
   sign_with(sk: SecretKey): this;
   // P1* hash_to(const app__string_view msg, const std::string& DST = "",
   //   const app__string_view aug = None)
-  hash_to(msg: Msg, DST: DST, noIdea: any): this;
+  hash_to(
+    msg: app__string_view,
+    DST?: std__string,
+    aug?: app__string_view
+  ): this;
   // P1* encode_to(const app__string_view msg, const std::string& DST = "",
   //   const app__string_view aug = None)
-  encode_to(msg: Msg, DST: DST, noIdea: any): this;
+  encode_to(
+    msg: app__string_view,
+    DST?: std__string,
+    aug?: app__string_view
+  ): this;
   // P1* cneg(bool flag)
-  cneg(flag: boolean): this;
+  cneg(flag: bool): this;
   // P1* add(const P1& a)
-  add(Pn: this): this;
+  add(a: this): this;
   // P1* add(const P1_Affine &a)
-  add(Pn: This_Pn_Affine): this;
+  add(a: This_Pn_Affine): this;
   // P1* dbl()
   dbl(): this;
 
@@ -144,10 +153,10 @@ export type P2_Affine = Pn_Affine<P2Type, P1_Affine>;
 // PT
 
 export interface PTConstructor {
-  // PT(const P1_Affine &p)
-  new (p1Affine: P1_Affine): PT;
-  // PT(const P2_Affine &p)
-  new (p2Affine: P2_Affine): PT;
+  // PT(const P1_Affine& p)
+  new (p: P1_Affine): PT;
+  // PT(const P2_Affine& p)
+  new (p: P2_Affine): PT;
 }
 
 export interface PT {}
@@ -156,7 +165,7 @@ export interface PT {}
 
 export interface PairingConstructor {
   // Pairing(bool hash_or_encode, const app__string_view DST)
-  new (hash_or_encode: boolean, DST: DST): Pairing;
+  new (hash_or_encode: bool, DST: std__string): Pairing;
 }
 
 export interface Pairing {
@@ -166,8 +175,8 @@ export interface Pairing {
   aggregate(
     pk: P1_Affine,
     sig: P2_Affine,
-    msg: Msg,
-    pk_for_wire?: Uint8Array
+    msg: app__string_view,
+    aug?: app__string_view
   ): BLST_ERROR;
   // BLST_ERROR aggregate(const P2_Affine* pk, const P1_Affine* sig,
   //   const app__string_view msg,
@@ -175,8 +184,8 @@ export interface Pairing {
   aggregate(
     pk: P2_Affine,
     sig: P1_Affine,
-    msg: Msg,
-    pk_for_wire?: Uint8Array
+    msg: app__string_view,
+    aug?: app__string_view
   ): BLST_ERROR;
   // BLST_ERROR mul_n_aggregate(const P1_Affine* pk, const P2_Affine* sig,
   //   const byte* scalar, size_t nbits,
@@ -185,10 +194,10 @@ export interface Pairing {
   mul_n_aggregate(
     pk: P1_Affine,
     sig: P2_Affine,
-    scalar: Uint8Array,
-    nbits: number,
-    msg: Msg,
-    pk_for_wire?: Uint8Array
+    scalar: byte,
+    nbits: size_t,
+    msg: app__string_view,
+    aug?: app__string_view
   ): BLST_ERROR;
   // BLST_ERROR mul_n_aggregate(const P2_Affine* pk, const P1_Affine* sig,
   //   const byte* scalar, size_t nbits,
@@ -197,18 +206,26 @@ export interface Pairing {
   mul_n_aggregate(
     pk: P2_Affine,
     sig: P1_Affine,
-    scalar: Uint8Array,
-    nbits: number,
-    msg: Msg,
-    pk_for_wire?: Uint8Array
+    scalar: byte,
+    nbits: size_t,
+    msg: app__string_view,
+    aug?: app__string_view
   ): BLST_ERROR;
   // void commit()
   commit(): void;
   // BLST_ERROR merge(const Pairing* ctx)
   merge(ctx: Pairing): BLST_ERROR;
   // bool finalverify(const PT* sig = nullptr) const
-  finalverify(sig?: PT): boolean;
+  finalverify(sig?: PT): bool;
 }
+
+// blst.hpp types
+
+export type bool = boolean;
+export type size_t = number;
+export type app__string_view = string | Uint8Array;
+export type std__string = string;
+export type byte = Uint8Array;
 
 // Misc
 
@@ -221,7 +238,3 @@ export enum BLST_ERROR {
   BLST_VERIFY_FAIL = 5,
   BLST_PK_IS_INFINITY = 6,
 }
-
-export type Msg = string | Uint8Array;
-
-export type DST = string;

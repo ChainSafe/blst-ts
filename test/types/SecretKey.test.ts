@@ -8,12 +8,14 @@ describe("SecretKey", () => {
   const zeroHex = fromHex(
     "0000000000000000000000000000000000000000000000000000000000000000"
   );
+  const info = "info";
 
   runInstanceTestCases<SecretKey>(
     {
       keygen: [
         { id: "from string", args: ["randomString"] },
         { id: "from Buffer", args: [sampleHex] },
+        { id: "With two args", args: [sampleHex, info] },
       ],
       from_bendian: [{ args: [sampleHex] }],
       from_lendian: [{ args: [sampleHex] }],
