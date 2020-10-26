@@ -1,18 +1,23 @@
+import { blst } from "./index";
+import * as Blst from "./index";
+
 type u8 = Uint8Array;
 type u8_32 = Uint8Array;
-type u64 = Uint8Array;
 
 // Unknown stuff
-type blst_scalar = any;
-type pk_aff = any;
-type pk = any;
-type sig_aff = any;
-type usize = any;
-const BLST: any = {};
-const MACRO: any = {};
+type usize = number;
 
-const pk_comp_size = 0;
-const pk_ser_size = 0;
+// MACRO            min_pk   min_sig
+// $pk_comp_size	  48	     96
+// $pk_ser_size	    96	     192
+// $sig_comp_size	  96	     48
+// $sig_ser_size	  192	     96
+
+const pk_comp_size = 48;
+const pk_ser_size = 96;
+const sig_comp_size = 96;
+const sig_ser_size = 192;
+const hash_or_encode = true;
 
 enum BLST_ERROR {
   BLST_SUCCESS = 0,
@@ -32,126 +37,42 @@ class ErrorBLST extends Error {
 
 function concatU8(a: Uint8Array, b: Uint8Array): Uint8Array {}
 
-export class Pairing {
-  v: u64; // blst_pairing
-
-  constructor(hash_or_encode: boolean, dst: u8) {
-    this.v = Vec_u64();
-    blst_pairing_init(this.v, hash_or_encode, dst);
-  }
-
-  init(pairing: Pairing, hash_or_encode: boolean, dst: u8[]) {}
-
-  ctx(): blst_pairing {
-    return this.v;
-  }
-
-  const_ctx(): blst_pairing {
-    return this.v;
-  }
-
-  aggregate(pk: dynAny, sig: dynAny, msg: u8, aug: u8): BLST_ERROR {
-    if (pk.isP1) {
-      return blst_pairing_aggregate_pk_in_g1(this.ctx(), pk, sig, msg, aug);
-    } else if (pk.isP2) {
-      return blst_pairing_aggregate_pk_in_g2(this.ctx(), pk, sig, msg, aug);
-    } else {
-      throw Error("whaaaa?");
-    }
-  }
-
-  mul_n_aggregate(
-    pk: dynAny,
-    sig: dynAny,
-    scalar: u8,
-    nbits: usize,
-    msg: u8,
-    aug: u8
-  ): BLST_ERROR {
-    if (pk.isP1) {
-      return blst_pairing_mul_n_aggregate_pk_in_g1(
-        this.ctx(),
-        pk,
-        sig,
-        scalar,
-        nbits,
-        msg,
-        aug
-      );
-    } else if (pk.isP2) {
-      return blst_pairing_mul_n_aggregate_pk_in_g2(
-        this.ctx(),
-        pk,
-        sig,
-        scalar,
-        nbits,
-        msg,
-        aug
-      );
-    } else {
-      throw Error("whaaaa?");
-    }
-  }
-
-  aggregated(gtsig: blst_fp12, sig: dynAny) {
-    if (sig.isP1) {
-      blst_aggregated_in_g1(gtsig, sig);
-    } else if (sig.isP2) {
-      blst_aggregated_in_g2(gtsig, sig);
-    } else {
-      throw Error("whaaaa?");
-    }
-  }
-
-  commit() {
-    blst_pairing_commit(this.ctx());
-  }
-
-  merge(ctx1: Pairing) {
-    blst_pairing_merge(this.ctx(), ctx1.const_ctx());
-  }
-
-  finalverify(gtsig: blst_fp12): boolean {
-    return blst_pairing_finalverify(this.const_ctx(), gtsig);
-  }
-}
-
 export class SecretKey {
-  value: blst_scalar;
+  value: Blst.SecretKey;
 
-  constructor(value: blst_scalar) {
+  constructor(value: Blst.SecretKey) {
     this.value = value;
   }
 
   /// Deterministically generate a secret key from key material
   static key_gen(ikm: u8, key_info: u8): SecretKey {
-    if (ikm.length < 32) throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
-    const sk = BLST.SecretKey.default();
-    MACRO.blst_keygen(sk.value, ikm, key_info);
-    return new SecretKey(sk.value);
+    if (ikm.length < 32) {
+      throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
+    }
+    const sk = new blst.SecretKey();
+    sk.keygen(ikm, key_info);
+    return new SecretKey(sk);
   }
 
   sk_to_pk(): PublicKey {
-    const pk_aff = BLST.PublicKey.default();
-    MACRO.sk_to_pk(pk_aff.point, this.value);
-    return pk_aff;
+    const p1 = new blst.P1(this.value);
+    return new PublicKey(p1);
   }
 
   sign(msg: u8, dst: u8, aug: u8): Signature {
-    const q = new MACRO.Sig.default();
-    const sig_aff = new MACRO.Sig_Aff.default();
-    MACRO.hash_or_encode_to(q, msg, dst, aug);
-    MACRO.sign(sig_aff, this.value);
-    return new Signature(sig_aff);
+    const sig = new blst.P2();
+    sig.hash_to(msg, dst, aug).sign_with(this.value);
+    return new Signature(sig.to_affine());
   }
 
   static serialize(sk: SecretKey): u8_32 {
-    return BLST.blst_bendian_from_scalar(sk.value);
+    return sk.value.to_bendian();
   }
 
   static deserialize(sk_in: u8): SecretKey {
-    const sk = BLST.blst_scalar_from_bendian(sk_in);
-    return new SecretKey({ value: sk });
+    const sk = new blst.SecretKey();
+    sk.from_bendian(sk_in);
+    return new SecretKey(sk);
   }
 
   to_bytes(): u8_32 {
@@ -164,41 +85,39 @@ export class SecretKey {
 }
 
 export class PublicKey {
-  point: pk_aff;
+  value: Blst.P1_Affine;
 
-  constructor(point: pk_aff) {
-    this.point = point;
+  constructor(value: Blst.P1_Affine) {
+    this.value = value;
   }
 
-  key_validate(key: u8): PublicKey {
-    const pk = BLST.PublicKey.from_bytes(key);
-    if (!MACRO.pk_in_group(key)) {
+  static key_validate(key: u8): PublicKey {
+    const pk_aff = new blst.P1_Affine(key);
+    if (!pk_aff.in_group()) {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }
-    return pk;
+    return new PublicKey(pk_aff);
   }
 
   from_aggregate(agg_pk: AggregatePublicKey): PublicKey {
-    const pk_aff = MACRO.pk_to_aff(agg_pk);
+    const pk_aff = agg_pk.value.to_affine();
     return new PublicKey(pk_aff);
   }
 
   // Serdes
 
   compress(): u8 {
-    const pk = MACRO.pk_from_aff(this.point);
-    return MACRO.pk_comp(pk);
+    return this.value.compress();
   }
 
   serialize(): u8 {
-    const pk = MACRO.pk_from_aff(this.point);
-    return MACRO.pk_ser(pk);
+    return this.value.serialize();
   }
 
   static uncompress(pk_comp: u8): PublicKey {
     if (pk_comp.length == pk_comp_size) {
-      const pk = MACRO.pk_uncomp(pk_comp);
-      return new PublicKey({ point: pk });
+      const pk_aff = new blst.P1_Affine(pk_comp);
+      return new PublicKey(pk_aff);
     } else {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
@@ -209,8 +128,8 @@ export class PublicKey {
       (pk_in.length == pk_ser_size && (pk_in[0] & 0x80) == 0) ||
       (pk_in.length == pk_comp_size && (pk_in[0] & 0x80) != 0)
     ) {
-      const pk = MACRO.pk_deser(pk_in);
-      return new PublicKey({ point: pk });
+      const pk_aff = new blst.P1_Affine(pk_in);
+      return new PublicKey(pk_aff);
     } else {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
@@ -232,26 +151,26 @@ export class PublicKey {
 }
 
 export class AggregatePublicKey {
-  point: pk;
+  value: Blst.P1;
 
-  constructor(point: pk) {
-    this.point = point;
+  constructor(value: Blst.P1) {
+    this.value = value;
   }
 
   static from_public_key(pk: PublicKey): AggregatePublicKey {
-    const agg_pk = MACRO.pk_from_aff(pk.point);
+    const agg_pk = pk.value.to_jacobian();
     return new AggregatePublicKey(agg_pk);
   }
 
   to_public_key(): PublicKey {
-    const pk = MACRO.pk_to_aff(this.point);
+    const pk = this.value.to_affine();
     return new PublicKey(pk);
   }
 
   static aggregate(pks: PublicKey[]): AggregatePublicKey {
     const agg_pk = AggregatePublicKey.from_public_key(pks[0]);
     for (const s of pks.slice(1)) {
-      MACRO.pk_add_or_dbl_aff(agg_pk.point, s.point);
+      agg_pk.value.aggregate(s.value);
     }
     return agg_pk;
   }
@@ -263,19 +182,19 @@ export class AggregatePublicKey {
   }
 
   add_aggregate(agg_pk: AggregatePublicKey) {
-    MACRO.pk_add_or_dbl(this.point, agg_pk.point);
+    this.value.add(agg_pk.value);
   }
 
   add_public_key(pk: PublicKey) {
-    MACRO.pk_add_or_dbl_aff(this.point, pk.point);
+    this.value.aggregate(pk.value);
   }
 }
 
 export class Signature {
-  point: sig_aff;
+  value: Blst.P2_Affine;
 
-  constructor(point: sig_aff) {
-    this.point = point;
+  constructor(value: Blst.P2_Affine) {
+    this.value = value;
   }
 
   verify(msg: u8, dst: u8, aug: u8, pk: PublicKey): BLST_ERROR {
@@ -289,23 +208,18 @@ export class Signature {
       throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
     }
 
-    const pairing = new Pairing(MACRO.hash_or_encode, dst);
+    const ctx = new blst.Pairing(hash_or_encode, dst);
     for (let i = 0; i < n_elems; i++) {
-      const result = pairing.aggregate(
-        pks[i].point,
-        new MACRO.sig_aff(),
-        msgs[i],
-        []
-      );
+      const result = ctx.aggregate(pks[i].value, this.value, msgs[i]);
       if (result !== BLST_ERROR.BLST_SUCCESS) {
         throw new ErrorBLST(result);
       }
     }
-    pairing.commit();
+    ctx.commit();
 
-    const gtsig = blst_fp12.default();
-    Pairing.aggregated(gtsig, this.point);
-    if (acc.finalverify(gtsig)) {
+    // PT constructor calls `blst_aggregated`
+    const gtsig = new blst.PT(this.value);
+    if (ctx.finalverify(gtsig)) {
       return BLST_ERROR.BLST_SUCCESS;
     } else {
       return BLST_ERROR.BLST_VERIFY_FAIL;
@@ -332,7 +246,7 @@ export class Signature {
     dst: u8,
     pks: PublicKey[],
     sigs: Signature[],
-    rands: blst_scalar[],
+    rands: u8[],
     rand_bits: usize
   ): BLST_ERROR {
     const n_elems = pks.length;
@@ -341,27 +255,26 @@ export class Signature {
       sigs.length !== n_elems ||
       rands.length !== n_elems
     ) {
-      throw new ErrorBLST("BLST_ERROR_BLST_VERIFY_FAIL");
+      throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
     }
 
-    const pairing = new Pairing(MACRO.hash_or_encode, dst);
+    const ctx = new blst.Pairing(hash_or_encode, dst);
     for (let i = 0; i < n_elems; i++) {
-      const result = pairing.mul_n_aggregate(
-        pks[i].point,
-        sigs[i].point,
-        rands[i].b,
+      const result = ctx.mul_n_aggregate(
+        pks[i].value,
+        sigs[i].value,
+        rands[i],
         rand_bits,
-        msgs[i],
-        []
+        msgs[i]
       );
       if (result !== BLST_ERROR.BLST_SUCCESS) {
         throw new ErrorBLST(result);
       }
     }
 
-    pairing.commit();
+    ctx.commit();
 
-    if (acc.finalverify(None)) {
+    if (ctx.finalverify()) {
       return BLST_ERROR.BLST_SUCCESS;
     } else {
       return BLST_ERROR.BLST_VERIFY_FAIL;
@@ -369,26 +282,24 @@ export class Signature {
   }
 
   static from_aggregate(agg_sig: AggregateSignature): Signature {
-    const sig_aff = MACRO.sig_to_aff(agg_sig.point);
+    const sig_aff = agg_sig.value.to_affine();
     return new Signature(sig_aff);
   }
 
   compress(): u8 {
-    const sig = MACRO.sig_from_aff(this.point);
-    const sig_comp = MACRO.sig_comp(sig);
-    return sig_comp;
+    const sig = this.value.to_jacobian();
+    return sig.compress();
   }
 
   serialize(): u8 {
-    const sig = MACRO.sig_from_aff(this.point);
-    const sig_out = MACRO.sig_ser(sig);
-    return sig_out;
+    const sig = this.value.to_jacobian();
+    return sig.serialize();
   }
 
-  static uncompress(sig_comp): Signature {
-    if (sig_comp.length == MACRO.sig_comp_size) {
-      const sig = MACRO.sig_uncomp(sig_comp);
-      return new Signature(sig);
+  static uncompress(sig_comp: u8): Signature {
+    if (sig_comp.length == sig_comp_size) {
+      const sig_aff = new blst.P2_Affine(sig_comp);
+      return new Signature(sig_aff);
     } else {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
@@ -396,10 +307,10 @@ export class Signature {
 
   static deserialize(sig_in: u8): Signature {
     if (
-      (sig_in.length == MACRO.sig_ser_size && (sig_in[0] & 0x80) == 0) ||
-      (sig_in.length == MACRO.sig_comp_size && (sig_in[0] & 0x80) != 0)
+      (sig_in.length == sig_ser_size && (sig_in[0] & 0x80) == 0) ||
+      (sig_in.length == sig_comp_size && (sig_in[0] & 0x80) != 0)
     ) {
-      const sig = MACRO.sig_deser(sig_in);
+      const sig = new blst.P2_Affine(sig_in);
       return new Signature(sig);
     } else {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
@@ -422,21 +333,21 @@ export class Signature {
 }
 
 export class AggregateSignature {
-  point: sig_aff;
+  value: Blst.P2;
 
-  constructor(point: sig_aff) {
-    this.point = point;
+  constructor(value: Blst.P2) {
+    this.value = value;
   }
 
   static from_signature(sig: Signature): AggregateSignature {
-    const agg_sig = MACRO.sig_from_aff(sig.point);
-    return new AggregateSignature(agg_sig);
+    const p2 = new blst.P2(sig.value);
+    return new AggregateSignature(p2);
   }
 
   static aggregate(sigs: Signature[]): AggregateSignature {
     const agg_sig = AggregateSignature.from_signature(sigs[0]);
     for (const s of sigs.slice(1)) {
-      MACRO.sig_add_or_dbl_aff(agg_sig.point, s.point);
+      agg_sig.value.aggregate(s.value);
     }
     return agg_sig;
   }
@@ -448,10 +359,11 @@ export class AggregateSignature {
   }
 
   add_aggregate(agg_sig: AggregateSignature): void {
-    MACRO.sig_add_or_dbl(this.point, agg_sig.point);
+    // blst_p2_add_or_double(P2)
+    this.value.add(agg_sig.value);
   }
 
   add_signature(sig: Signature): void {
-    MACRO.sig_add_or_dbl_aff(this.point, sig.point);
+    this.value.aggregate(sig.value);
   }
 }
