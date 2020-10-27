@@ -1,5 +1,5 @@
 import { blst, BLST_ERROR, P1, P1_Affine, P1Constructor } from "../../src";
-import { fromHex, runInstanceTestCases } from "../utils";
+import { expectHex, fromHex, runInstanceTestCases } from "../utils";
 
 describe("P1", () => {
   const sample = {
@@ -21,6 +21,13 @@ describe("P1", () => {
   const DST = "MY-DST"; // domain separation tag
 
   describe("P1", () => {
+    it("From serialized", () => {
+      expectHex(new blst.P1(sample.p1).serialize(), sample.p1);
+    });
+    it("From compressed", () => {
+      expectHex(new blst.P1(sample.p1Comp).serialize(), sample.p1);
+    });
+
     runInstanceTestCases<P1>(
       {
         to_affine: [{ args: [], res: p1Affine }],
@@ -67,6 +74,13 @@ describe("P1", () => {
   describe("P1_Affine", () => {
     const p2 = new blst.P2(sk);
     const p2Affine = new blst.P2_Affine(p2);
+
+    it("From serialized", () => {
+      expectHex(new blst.P1_Affine(sample.p1).serialize(), sample.p1);
+    });
+    it("From compressed", () => {
+      expectHex(new blst.P1_Affine(sample.p1Comp).serialize(), sample.p1);
+    });
 
     runInstanceTestCases<P1_Affine>(
       {

@@ -8,6 +8,14 @@ export interface Blst {
   Pairing: PairingConstructor;
 }
 
+// blst.hpp types
+
+export type bool = boolean;
+export type size_t = number;
+export type app__string_view = string | Uint8Array;
+export type std__string = string;
+export type byte = Uint8Array;
+
 // SecretKey
 
 export interface SecretKeyConstructor {
@@ -220,14 +228,6 @@ export interface Pairing {
   // bool finalverify(const PT* sig = nullptr) const
   finalverify(sig?: PT): bool;
 }
-
-// blst.hpp types
-
-export type bool = boolean;
-export type size_t = number;
-export type app__string_view = string | Uint8Array;
-export type std__string = string;
-export type byte = Uint8Array;
 
 // Misc
 

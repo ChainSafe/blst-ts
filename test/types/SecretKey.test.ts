@@ -16,6 +16,8 @@ describe("SecretKey", () => {
         { id: "from string", args: ["randomString"] },
         { id: "from Buffer", args: [sampleHex] },
         { id: "With two args", args: [sampleHex, info] },
+        // info param can't be a Uint8Array
+        // { id: "With two args", args: [sampleHex, zeroHex] },
       ],
       from_bendian: [{ args: [sampleHex] }],
       from_lendian: [{ args: [sampleHex] }],

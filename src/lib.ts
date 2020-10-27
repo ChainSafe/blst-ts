@@ -1,4 +1,4 @@
-import { blst } from "./index";
+import { blst, std__string } from "./index";
 import * as Blst from "./index";
 
 type u8 = Uint8Array;
@@ -45,7 +45,7 @@ export class SecretKey {
   }
 
   /// Deterministically generate a secret key from key material
-  static key_gen(ikm: u8, key_info: u8): SecretKey {
+  static key_gen(ikm: u8, key_info: string): SecretKey {
     if (ikm.length < 32) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
@@ -56,10 +56,10 @@ export class SecretKey {
 
   sk_to_pk(): PublicKey {
     const p1 = new blst.P1(this.value);
-    return new PublicKey(p1);
+    return new PublicKey(p1.to_affine());
   }
 
-  sign(msg: u8, dst: u8, aug: u8): Signature {
+  sign(msg: u8, dst: std__string, aug: u8): Signature {
     const sig = new blst.P2();
     sig.hash_to(msg, dst, aug).sign_with(this.value);
     return new Signature(sig.to_affine());
@@ -197,12 +197,12 @@ export class Signature {
     this.value = value;
   }
 
-  verify(msg: u8, dst: u8, aug: u8, pk: PublicKey): BLST_ERROR {
+  verify(msg: u8, dst: std__string, aug: u8, pk: PublicKey): BLST_ERROR {
     const aug_msg = concatU8(aug, msg);
     return this.aggregate_verify([aug_msg], dst, [pk]);
   }
 
-  aggregate_verify(msgs: u8[], dst: u8, pks: PublicKey[]): BLST_ERROR {
+  aggregate_verify(msgs: u8[], dst: std__string, pks: PublicKey[]): BLST_ERROR {
     const n_elems = pks.length;
     if (msgs.length !== n_elems) {
       throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -226,7 +226,11 @@ export class Signature {
     }
   }
 
-  fast_aggregate_verify(msg: u8, dst: u8, pks: PublicKey[]): BLST_ERROR {
+  fast_aggregate_verify(
+    msg: u8,
+    dst: std__string,
+    pks: PublicKey[]
+  ): BLST_ERROR {
     const agg_pk = AggregatePublicKey.aggregate(pks);
     const pk = agg_pk.to_public_key();
     return this.aggregate_verify([msg], dst, [pk]);
@@ -234,7 +238,7 @@ export class Signature {
 
   fast_aggregate_verify_pre_aggregated(
     msg: u8,
-    dst: u8,
+    dst: std__string,
     pk: PublicKey
   ): BLST_ERROR {
     return this.aggregate_verify([msg], dst, [pk]);
@@ -243,7 +247,7 @@ export class Signature {
   // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
   verify_multiple_aggregate_signatures(
     msgs: u8[],
-    dst: u8,
+    dst: std__string,
     pks: PublicKey[],
     sigs: Signature[],
     rands: u8[],
