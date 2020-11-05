@@ -1,4 +1,4 @@
-import { blst, Pairing } from "../../src";
+import { blst, Pairing } from "../../src/bindings";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("Pairing", () => {

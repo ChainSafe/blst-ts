@@ -1,3 +1,5 @@
+export const blst: Blst = require("../../build/blst");
+
 export interface Blst {
   SecretKey: SecretKeyConstructor;
   P1_Affine: P1_AffineConstructor;
@@ -10,11 +12,11 @@ export interface Blst {
 
 // blst.hpp types
 
-export type bool = boolean;
-export type size_t = number;
-export type app__string_view = string | Uint8Array;
-export type std__string = string;
-export type byte = Uint8Array;
+type bool = boolean;
+type size_t = number;
+type app__string_view = string | Uint8Array;
+type std__string = string;
+type byte = Uint8Array;
 
 // SecretKey
 

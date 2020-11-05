@@ -1,6 +1,5 @@
 import crypto from "crypto";
-import { blst, BLST_ERROR } from "./index";
-import { Pn_Affine } from "./types";
+import { blst, BLST_ERROR, Pn_Affine } from "./bindings";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
@@ -8,7 +7,7 @@ const RAND_BITS = 64;
 
 class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
-    super(String(blstError));
+    super(BLST_ERROR[blstError]);
   }
 }
 
@@ -30,13 +29,13 @@ export class SecretKey {
     this.value = value;
   }
 
-  /// Deterministically generate a secret key from key material
-  static fromKeygen(ikm: Uint8Array, keyInfo?: string): SecretKey {
+  /// Deterministically generate a secret key from input key material
+  static fromKeygen(ikm: Uint8Array): SecretKey {
     if (ikm.length < 32) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
     const sk = new SkConstructor();
-    sk.keygen(ikm, keyInfo);
+    sk.keygen(ikm);
     return new SecretKey(sk);
   }
 
@@ -51,9 +50,9 @@ export class SecretKey {
     return new PublicKey(pk.to_affine());
   }
 
-  sign(msg: Uint8Array, dst: string, aug?: Uint8Array): Signature {
+  sign(msg: Uint8Array): Signature {
     const sig = new SigConstructor();
-    sig.hash_to(msg, dst, aug).sign_with(this.value);
+    sig.hash_to(msg, DST).sign_with(this.value);
     return new Signature(sig.to_affine());
   }
 
@@ -167,37 +166,33 @@ export class AggregateSignature {
   }
 }
 
-export function verify(
-  msg: Uint8Array,
-  pk: PublicKey,
-  sig: Signature
-): BLST_ERROR {
-  return aggregateVerify([msg], [pk], sig);
+export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature): void {
+  aggregateVerify([msg], [pk], sig);
 }
 
 export function fastAggregateVerify(
   msg: Uint8Array,
   pks: PublicKey[],
   sig: Signature
-): BLST_ERROR {
+): void {
   const aggPk = AggregatePublicKey.fromPublicKeys(pks);
   const pk = aggPk.toPublicKey();
-  return aggregateVerify([msg], [pk], sig);
+  aggregateVerify([msg], [pk], sig);
 }
 
 export function fastAggregateVerifyPreAggregated(
   msg: Uint8Array,
   pk: PublicKey,
   sig: Signature
-): BLST_ERROR {
-  return aggregateVerify([msg], [pk], sig);
+): void {
+  aggregateVerify([msg], [pk], sig);
 }
 
 export function aggregateVerify(
   msgs: Uint8Array[],
   pks: PublicKey[],
   sig: Signature
-): BLST_ERROR {
+): void {
   const n_elems = pks.length;
   if (msgs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -215,10 +210,8 @@ export function aggregateVerify(
 
   // PT constructor calls `blst_aggregated`
   const gtsig = new blst.PT(sig.value);
-  if (ctx.finalverify(gtsig)) {
-    return BLST_ERROR.BLST_SUCCESS;
-  } else {
-    return BLST_ERROR.BLST_VERIFY_FAIL;
+  if (!ctx.finalverify(gtsig)) {
+    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
   }
 }
 
@@ -227,7 +220,7 @@ export function verifyMultipleAggregateSignatures(
   msgs: Uint8Array[],
   pks: PublicKey[],
   sigs: Signature[]
-): BLST_ERROR {
+): void {
   const n_elems = pks.length;
   if (msgs.length !== n_elems || sigs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -250,9 +243,7 @@ export function verifyMultipleAggregateSignatures(
 
   ctx.commit();
 
-  if (ctx.finalverify()) {
-    return BLST_ERROR.BLST_SUCCESS;
-  } else {
-    return BLST_ERROR.BLST_VERIFY_FAIL;
+  if (!ctx.finalverify()) {
+    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
   }
 }

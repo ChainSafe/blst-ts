@@ -1,4 +1,10 @@
-import { blst, BLST_ERROR, P2, P2_Affine, P2Constructor } from "../../src";
+import {
+  blst,
+  BLST_ERROR,
+  P2,
+  P2_Affine,
+  P2Constructor,
+} from "../../src/bindings";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("P2", () => {
