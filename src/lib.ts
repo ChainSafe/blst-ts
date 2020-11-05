@@ -121,7 +121,7 @@ export class AggregatePublicKey {
     return aggPk;
   }
 
-  static fromPublicKeysSerialized(pks: Uint8Array[]): AggregatePublicKey {
+  static fromPublicKeysBytes(pks: Uint8Array[]): AggregatePublicKey {
     return AggregatePublicKey.fromPublicKeys(
       pks.map((pk) => PublicKey.fromBytes(pk))
     );
@@ -281,7 +281,7 @@ export class AggregateSignature {
     return aggSig;
   }
 
-  static fromSignaturesSerialized(sigs: Uint8Array[]): AggregateSignature {
+  static fromSignaturesBytes(sigs: Uint8Array[]): AggregateSignature {
     return AggregateSignature.fromSignatures(
       sigs.map((pk) => Signature.fromBytes(pk))
     );
