@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { blst, BLST_ERROR } from "./index";
 import { Pn_Affine } from "./types";
 
@@ -174,6 +175,24 @@ export function verify(
   return aggregateVerify([msg], [pk], sig);
 }
 
+export function fastAggregateVerify(
+  msg: Uint8Array,
+  pks: PublicKey[],
+  sig: Signature
+): BLST_ERROR {
+  const aggPk = AggregatePublicKey.fromPublicKeys(pks);
+  const pk = aggPk.toPublicKey();
+  return aggregateVerify([msg], [pk], sig);
+}
+
+export function fastAggregateVerifyPreAggregated(
+  msg: Uint8Array,
+  pk: PublicKey,
+  sig: Signature
+): BLST_ERROR {
+  return aggregateVerify([msg], [pk], sig);
+}
+
 export function aggregateVerify(
   msgs: Uint8Array[],
   pks: PublicKey[],
@@ -203,46 +222,24 @@ export function aggregateVerify(
   }
 }
 
-export function fastAggregateVerify(
-  msg: Uint8Array,
-  pks: PublicKey[],
-  sig: Signature
-): BLST_ERROR {
-  const aggPk = AggregatePublicKey.fromPublicKeys(pks);
-  const pk = aggPk.toPublicKey();
-  return aggregateVerify([msg], [pk], sig);
-}
-
-export function fastAggregateVerifyPreAggregated(
-  msg: Uint8Array,
-  pk: PublicKey,
-  sig: Signature
-): BLST_ERROR {
-  return aggregateVerify([msg], [pk], sig);
-}
-
 // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
 export function verifyMultipleAggregateSignatures(
   msgs: Uint8Array[],
   pks: PublicKey[],
-  sigs: Signature[],
-  rands: Uint8Array[]
+  sigs: Signature[]
 ): BLST_ERROR {
   const n_elems = pks.length;
-  if (
-    msgs.length !== n_elems ||
-    sigs.length !== n_elems ||
-    rands.length !== n_elems
-  ) {
+  if (msgs.length !== n_elems || sigs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
   }
 
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
   for (let i = 0; i < n_elems; i++) {
+    const rand = crypto.randomBytes(RAND_BITS);
     const result = ctx.mul_n_aggregate(
       pks[i].value,
       sigs[i].value,
-      rands[i],
+      rand,
       RAND_BITS,
       msgs[i]
     );
