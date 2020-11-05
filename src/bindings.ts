@@ -1,4 +1,4 @@
-export const blst: Blst = require("../../build/blst");
+export const blst: Blst = require("../build/blst");
 
 export interface Blst {
   SecretKey: SecretKeyConstructor;
