@@ -1,6 +1,8 @@
 import { blst, BLST_ERROR } from "./index";
 
-const hash_or_encode = true;
+const HASH_OR_ENCODE = true;
+const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+const RAND_BITS = 64;
 
 class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
@@ -157,98 +159,6 @@ export class Signature {
     return new Signature(aggSig.value.to_affine());
   }
 
-  verify(msg: Uint8Array, dst: string, pk: PublicKey): BLST_ERROR {
-    return this.aggregateVerify([msg], dst, [pk]);
-  }
-
-  aggregateVerify(
-    msgs: Uint8Array[],
-    dst: string,
-    pks: PublicKey[]
-  ): BLST_ERROR {
-    const n_elems = pks.length;
-    if (msgs.length !== n_elems) {
-      throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
-    }
-
-    const ctx = new blst.Pairing(hash_or_encode, dst);
-    for (let i = 0; i < n_elems; i++) {
-      const result = ctx.aggregate(pks[i].value, this.value, msgs[i]);
-      if (result !== BLST_ERROR.BLST_SUCCESS) {
-        throw new ErrorBLST(result);
-      }
-    }
-
-    ctx.commit();
-
-    // PT constructor calls `blst_aggregated`
-    const gtsig = new blst.PT(this.value);
-    if (ctx.finalverify(gtsig)) {
-      return BLST_ERROR.BLST_SUCCESS;
-    } else {
-      return BLST_ERROR.BLST_VERIFY_FAIL;
-    }
-  }
-
-  fastAggregateVerify(
-    msg: Uint8Array,
-    dst: string,
-    pks: PublicKey[]
-  ): BLST_ERROR {
-    const aggPk = AggregatePublicKey.fromPublicKeys(pks);
-    const pk = aggPk.toPublicKey();
-    return this.aggregateVerify([msg], dst, [pk]);
-  }
-
-  fastAggregateVerifyPreAggregated(
-    msg: Uint8Array,
-    dst: string,
-    pk: PublicKey
-  ): BLST_ERROR {
-    return this.aggregateVerify([msg], dst, [pk]);
-  }
-
-  // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
-  verifyMultipleAggregateSignatures(
-    msgs: Uint8Array[],
-    dst: string,
-    pks: PublicKey[],
-    sigs: Signature[],
-    rands: Uint8Array[],
-    randBits: number
-  ): BLST_ERROR {
-    const n_elems = pks.length;
-    if (
-      msgs.length !== n_elems ||
-      sigs.length !== n_elems ||
-      rands.length !== n_elems
-    ) {
-      throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
-    }
-
-    const ctx = new blst.Pairing(hash_or_encode, dst);
-    for (let i = 0; i < n_elems; i++) {
-      const result = ctx.mul_n_aggregate(
-        pks[i].value,
-        sigs[i].value,
-        rands[i],
-        randBits,
-        msgs[i]
-      );
-      if (result !== BLST_ERROR.BLST_SUCCESS) {
-        throw new ErrorBLST(result);
-      }
-    }
-
-    ctx.commit();
-
-    if (ctx.finalverify()) {
-      return BLST_ERROR.BLST_SUCCESS;
-    } else {
-      return BLST_ERROR.BLST_VERIFY_FAIL;
-    }
-  }
-
   compress(): Uint8Array {
     return this.value.compress();
   }
@@ -293,5 +203,99 @@ export class AggregateSignature {
 
   addSignature(sig: Signature): void {
     this.value.aggregate(sig.value);
+  }
+}
+
+export function verify(
+  msg: Uint8Array,
+  pk: PublicKey,
+  sig: Signature
+): BLST_ERROR {
+  return aggregateVerify([msg], [pk], sig);
+}
+
+export function aggregateVerify(
+  msgs: Uint8Array[],
+  pks: PublicKey[],
+  sig: Signature
+): BLST_ERROR {
+  const n_elems = pks.length;
+  if (msgs.length !== n_elems) {
+    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
+  }
+
+  const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
+  for (let i = 0; i < n_elems; i++) {
+    const result = ctx.aggregate(pks[i].value, sig.value, msgs[i]);
+    if (result !== BLST_ERROR.BLST_SUCCESS) {
+      throw new ErrorBLST(result);
+    }
+  }
+
+  ctx.commit();
+
+  // PT constructor calls `blst_aggregated`
+  const gtsig = new blst.PT(sig.value);
+  if (ctx.finalverify(gtsig)) {
+    return BLST_ERROR.BLST_SUCCESS;
+  } else {
+    return BLST_ERROR.BLST_VERIFY_FAIL;
+  }
+}
+
+export function fastAggregateVerify(
+  msg: Uint8Array,
+  pks: PublicKey[],
+  sig: Signature
+): BLST_ERROR {
+  const aggPk = AggregatePublicKey.fromPublicKeys(pks);
+  const pk = aggPk.toPublicKey();
+  return aggregateVerify([msg], [pk], sig);
+}
+
+export function fastAggregateVerifyPreAggregated(
+  msg: Uint8Array,
+  pk: PublicKey,
+  sig: Signature
+): BLST_ERROR {
+  return aggregateVerify([msg], [pk], sig);
+}
+
+// https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
+export function verifyMultipleAggregateSignatures(
+  msgs: Uint8Array[],
+  pks: PublicKey[],
+  sigs: Signature[],
+  rands: Uint8Array[]
+): BLST_ERROR {
+  const n_elems = pks.length;
+  if (
+    msgs.length !== n_elems ||
+    sigs.length !== n_elems ||
+    rands.length !== n_elems
+  ) {
+    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
+  }
+
+  const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
+  for (let i = 0; i < n_elems; i++) {
+    const result = ctx.mul_n_aggregate(
+      pks[i].value,
+      sigs[i].value,
+      rands[i],
+      RAND_BITS,
+      msgs[i]
+    );
+    if (result !== BLST_ERROR.BLST_SUCCESS) {
+      throw new ErrorBLST(result);
+    }
+  }
+
+  ctx.commit();
+
+  if (ctx.finalverify()) {
+    return BLST_ERROR.BLST_SUCCESS;
+  } else {
+    return BLST_ERROR.BLST_VERIFY_FAIL;
   }
 }
