@@ -1,33 +1,6 @@
-import { blst, std__string } from "./index";
-import * as Blst from "./index";
+import { blst, BLST_ERROR } from "./index";
 
-type u8 = Uint8Array;
-type u8_32 = Uint8Array;
-
-// Unknown stuff
-type usize = number;
-
-// MACRO            min_pk   min_sig
-// $pk_comp_size	  48	     96
-// $pk_ser_size	    96	     192
-// $sig_comp_size	  96	     48
-// $sig_ser_size	  192	     96
-
-const pk_comp_size = 48;
-const pk_ser_size = 96;
-const sig_comp_size = 96;
-const sig_ser_size = 192;
 const hash_or_encode = true;
-
-enum BLST_ERROR {
-  BLST_SUCCESS = 0,
-  BLST_BAD_ENCODING,
-  BLST_POINT_NOT_ON_CURVE,
-  BLST_POINT_NOT_IN_GROUP,
-  BLST_AGGR_TYPE_MISMATCH,
-  BLST_VERIFY_FAIL,
-  BLST_PK_IS_INFINITY,
-}
 
 class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
@@ -35,40 +8,42 @@ class ErrorBLST extends Error {
   }
 }
 
+const SkConstructor = blst.SecretKey;
 const PkConstructor = blst.P1;
 const SigConstructor = blst.P2;
 const PkAffineConstructor = blst.P1_Affine;
 const SigAffineConstructor = blst.P2_Affine;
+type Sk = InstanceType<typeof SkConstructor>;
 type Pk = InstanceType<typeof PkConstructor>;
 type Sig = InstanceType<typeof SigConstructor>;
 type PkAffine = InstanceType<typeof PkAffineConstructor>;
 type SigAffine = InstanceType<typeof SigAffineConstructor>;
 
 export class SecretKey {
-  value: Blst.SecretKey;
+  value: Sk;
 
-  constructor(value: Blst.SecretKey) {
+  constructor(value: Sk) {
     this.value = value;
   }
 
   /// Deterministically generate a secret key from key material
-  static fromKeygen(ikm: u8, key_info: string): SecretKey {
+  static fromKeygen(ikm: Uint8Array, keyInfo?: string): SecretKey {
     if (ikm.length < 32) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
-    const sk = new blst.SecretKey();
-    sk.keygen(ikm, key_info);
+    const sk = new SkConstructor();
+    sk.keygen(ikm, keyInfo);
     return new SecretKey(sk);
   }
 
-  static fromSerialized(sk_in: u8): SecretKey {
-    const sk = new blst.SecretKey();
-    sk.from_bendian(sk_in);
+  static fromSerialized(skBytes: Uint8Array): SecretKey {
+    const sk = new SkConstructor();
+    sk.from_bendian(skBytes);
     return new SecretKey(sk);
   }
 
-  static fromBytes(sk_in: u8): SecretKey {
-    return SecretKey.fromSerialized(sk_in);
+  static fromBytes(skBytes: Uint8Array): SecretKey {
+    return SecretKey.fromSerialized(skBytes);
   }
 
   toPublicKey(): PublicKey {
@@ -76,17 +51,17 @@ export class SecretKey {
     return new PublicKey(pk.to_affine());
   }
 
-  sign(msg: u8, dst: std__string, aug?: u8): Signature {
+  sign(msg: Uint8Array, dst: string, aug?: Uint8Array): Signature {
     const sig = new SigConstructor();
     sig.hash_to(msg, dst, aug).sign_with(this.value);
     return new Signature(sig.to_affine());
   }
 
-  serialize(): u8_32 {
+  serialize(): Uint8Array {
     return this.value.to_bendian();
   }
 
-  toBytes(): u8_32 {
+  toBytes(): Uint8Array {
     return this.serialize();
   }
 }
@@ -99,8 +74,8 @@ export class PublicKey {
   }
 
   // Accepts both compressed and serialized
-  static fromBytes(pk_in: u8): PublicKey {
-    return new PublicKey(new PkAffineConstructor(pk_in));
+  static fromBytes(pkBytes: Uint8Array): PublicKey {
+    return new PublicKey(new PkAffineConstructor(pkBytes));
   }
 
   static fromAggregate(aggPk: AggregatePublicKey): PublicKey {
@@ -113,15 +88,15 @@ export class PublicKey {
     }
   }
 
-  compress(): u8 {
+  compress(): Uint8Array {
     return this.value.compress();
   }
 
-  serialize(): u8 {
+  serialize(): Uint8Array {
     return this.value.serialize();
   }
 
-  toBytes(): u8 {
+  toBytes(): Uint8Array {
     return this.compress();
   }
 }
@@ -146,7 +121,7 @@ export class AggregatePublicKey {
     return aggPk;
   }
 
-  static fromPublicKeysSerialized(pks: u8[]): AggregatePublicKey {
+  static fromPublicKeysSerialized(pks: Uint8Array[]): AggregatePublicKey {
     return AggregatePublicKey.fromPublicKeys(
       pks.map((pk) => PublicKey.fromBytes(pk))
     );
@@ -174,19 +149,23 @@ export class Signature {
   }
 
   // Accepts both compressed and serialized
-  static fromBytes(sig_in: u8): Signature {
-    return new Signature(new SigAffineConstructor(sig_in));
+  static fromBytes(sigBytes: Uint8Array): Signature {
+    return new Signature(new SigAffineConstructor(sigBytes));
   }
 
   static fromAggregate(aggSig: AggregateSignature): Signature {
     return new Signature(aggSig.value.to_affine());
   }
 
-  verify(msg: u8, dst: std__string, pk: PublicKey): BLST_ERROR {
+  verify(msg: Uint8Array, dst: string, pk: PublicKey): BLST_ERROR {
     return this.aggregateVerify([msg], dst, [pk]);
   }
 
-  aggregateVerify(msgs: u8[], dst: std__string, pks: PublicKey[]): BLST_ERROR {
+  aggregateVerify(
+    msgs: Uint8Array[],
+    dst: string,
+    pks: PublicKey[]
+  ): BLST_ERROR {
     const n_elems = pks.length;
     if (msgs.length !== n_elems) {
       throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -199,6 +178,7 @@ export class Signature {
         throw new ErrorBLST(result);
       }
     }
+
     ctx.commit();
 
     // PT constructor calls `blst_aggregated`
@@ -210,15 +190,19 @@ export class Signature {
     }
   }
 
-  fastAggregateVerify(msg: u8, dst: std__string, pks: PublicKey[]): BLST_ERROR {
+  fastAggregateVerify(
+    msg: Uint8Array,
+    dst: string,
+    pks: PublicKey[]
+  ): BLST_ERROR {
     const aggPk = AggregatePublicKey.fromPublicKeys(pks);
     const pk = aggPk.toPublicKey();
     return this.aggregateVerify([msg], dst, [pk]);
   }
 
   fastAggregateVerifyPreAggregated(
-    msg: u8,
-    dst: std__string,
+    msg: Uint8Array,
+    dst: string,
     pk: PublicKey
   ): BLST_ERROR {
     return this.aggregateVerify([msg], dst, [pk]);
@@ -226,12 +210,12 @@ export class Signature {
 
   // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
   verifyMultipleAggregateSignatures(
-    msgs: u8[],
-    dst: std__string,
+    msgs: Uint8Array[],
+    dst: string,
     pks: PublicKey[],
     sigs: Signature[],
-    rands: u8[],
-    rand_bits: usize
+    rands: Uint8Array[],
+    randBits: number
   ): BLST_ERROR {
     const n_elems = pks.length;
     if (
@@ -248,7 +232,7 @@ export class Signature {
         pks[i].value,
         sigs[i].value,
         rands[i],
-        rand_bits,
+        randBits,
         msgs[i]
       );
       if (result !== BLST_ERROR.BLST_SUCCESS) {
@@ -265,15 +249,15 @@ export class Signature {
     }
   }
 
-  compress(): u8 {
+  compress(): Uint8Array {
     return this.value.compress();
   }
 
-  serialize(): u8 {
+  serialize(): Uint8Array {
     return this.value.serialize();
   }
 
-  toBytes(): u8 {
+  toBytes(): Uint8Array {
     return this.compress();
   }
 }
@@ -297,7 +281,7 @@ export class AggregateSignature {
     return aggSig;
   }
 
-  static fromSignaturesSerialized(sigs: u8[]): AggregateSignature {
+  static fromSignaturesSerialized(sigs: Uint8Array[]): AggregateSignature {
     return AggregateSignature.fromSignatures(
       sigs.map((pk) => Signature.fromBytes(pk))
     );
