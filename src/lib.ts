@@ -45,7 +45,7 @@ export class SecretKey {
   }
 
   /// Deterministically generate a secret key from key material
-  static key_gen(ikm: u8, key_info: string): SecretKey {
+  static fromKeygen(ikm: u8, key_info: string): SecretKey {
     if (ikm.length < 32) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
@@ -54,33 +54,33 @@ export class SecretKey {
     return new SecretKey(sk);
   }
 
-  sk_to_pk(): PublicKey {
-    const p1 = new blst.P1(this.value);
-    return new PublicKey(p1.to_affine());
-  }
-
-  sign(msg: u8, dst: std__string, aug: u8): Signature {
-    const sig = new blst.P2();
-    sig.hash_to(msg, dst, aug).sign_with(this.value);
-    return new Signature(sig.to_affine());
-  }
-
-  static serialize(sk: SecretKey): u8_32 {
-    return sk.value.to_bendian();
-  }
-
-  static deserialize(sk_in: u8): SecretKey {
+  static fromSerialized(sk_in: u8): SecretKey {
     const sk = new blst.SecretKey();
     sk.from_bendian(sk_in);
     return new SecretKey(sk);
   }
 
-  to_bytes(): u8_32 {
-    return SecretKey.serialize(this);
+  static fromBytes(sk_in: u8): SecretKey {
+    return SecretKey.fromSerialized(sk_in);
   }
 
-  from_bytes(sk_in: u8): SecretKey {
-    return SecretKey.deserialize(sk_in);
+  toPublicKey(): PublicKey {
+    const p1 = new blst.P1(this.value);
+    return new PublicKey(p1.to_affine());
+  }
+
+  sign(msg: u8, dst: std__string, aug?: u8): Signature {
+    const sig = new blst.P2();
+    sig.hash_to(msg, dst, aug).sign_with(this.value);
+    return new Signature(sig.to_affine());
+  }
+
+  serialize(): u8_32 {
+    return this.value.to_bendian();
+  }
+
+  toBytes(): u8_32 {
+    return this.serialize();
   }
 }
 
@@ -91,20 +91,20 @@ export class PublicKey {
     this.value = value;
   }
 
-  static key_validate(key: u8): PublicKey {
-    const pk_aff = new blst.P1_Affine(key);
-    if (!pk_aff.in_group()) {
+  // Accepts both compressed and serialized
+  static fromBytes(pk_in: u8): PublicKey {
+    return new PublicKey(new blst.P1_Affine(pk_in));
+  }
+
+  static fromAggregate(agg_pk: AggregatePublicKey): PublicKey {
+    return new PublicKey(agg_pk.value.to_affine());
+  }
+
+  keyValidate(): void {
+    if (!this.value.in_group()) {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }
-    return new PublicKey(pk_aff);
   }
-
-  from_aggregate(agg_pk: AggregatePublicKey): PublicKey {
-    const pk_aff = agg_pk.value.to_affine();
-    return new PublicKey(pk_aff);
-  }
-
-  // Serdes
 
   compress(): u8 {
     return this.value.compress();
@@ -114,38 +114,7 @@ export class PublicKey {
     return this.value.serialize();
   }
 
-  static uncompress(pk_comp: u8): PublicKey {
-    if (pk_comp.length == pk_comp_size) {
-      const pk_aff = new blst.P1_Affine(pk_comp);
-      return new PublicKey(pk_aff);
-    } else {
-      throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
-    }
-  }
-
-  static deserialize(pk_in: u8): PublicKey {
-    if (
-      (pk_in.length == pk_ser_size && (pk_in[0] & 0x80) == 0) ||
-      (pk_in.length == pk_comp_size && (pk_in[0] & 0x80) != 0)
-    ) {
-      const pk_aff = new blst.P1_Affine(pk_in);
-      return new PublicKey(pk_aff);
-    } else {
-      throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
-    }
-  }
-
-  static from_bytes(pk_in: u8): PublicKey {
-    if ((pk_in[0] & 0x80) == 0) {
-      // Not compressed
-      return PublicKey.deserialize(pk_in);
-    } else {
-      // compressed
-      return PublicKey.uncompress(pk_in);
-    }
-  }
-
-  to_bytes(): u8 {
+  toBytes(): u8 {
     return this.compress();
   }
 }
@@ -157,35 +126,35 @@ export class AggregatePublicKey {
     this.value = value;
   }
 
-  static from_public_key(pk: PublicKey): AggregatePublicKey {
+  static fromPublicKey(pk: PublicKey): AggregatePublicKey {
     const agg_pk = pk.value.to_jacobian();
     return new AggregatePublicKey(agg_pk);
   }
 
-  to_public_key(): PublicKey {
-    const pk = this.value.to_affine();
-    return new PublicKey(pk);
-  }
-
-  static aggregate(pks: PublicKey[]): AggregatePublicKey {
-    const agg_pk = AggregatePublicKey.from_public_key(pks[0]);
+  static fromPublicKeys(pks: PublicKey[]): AggregatePublicKey {
+    const agg_pk = AggregatePublicKey.fromPublicKey(pks[0]);
     for (const s of pks.slice(1)) {
       agg_pk.value.aggregate(s.value);
     }
     return agg_pk;
   }
 
-  static aggregate_serialized(pks: u8[]): AggregatePublicKey {
-    return AggregatePublicKey.aggregate(
-      pks.map((pk) => PublicKey.from_bytes(pk))
+  static fromPublicKeysSerialized(pks: u8[]): AggregatePublicKey {
+    return AggregatePublicKey.fromPublicKeys(
+      pks.map((pk) => PublicKey.fromBytes(pk))
     );
   }
 
-  add_aggregate(agg_pk: AggregatePublicKey) {
+  toPublicKey(): PublicKey {
+    const pk = this.value.to_affine();
+    return new PublicKey(pk);
+  }
+
+  addAggregate(agg_pk: AggregatePublicKey) {
     this.value.add(agg_pk.value);
   }
 
-  add_public_key(pk: PublicKey) {
+  addPublicKey(pk: PublicKey) {
     this.value.aggregate(pk.value);
   }
 }
@@ -197,12 +166,21 @@ export class Signature {
     this.value = value;
   }
 
-  verify(msg: u8, dst: std__string, aug: u8, pk: PublicKey): BLST_ERROR {
-    const aug_msg = concatU8(aug, msg);
-    return this.aggregate_verify([aug_msg], dst, [pk]);
+  // Accepts both compressed and serialized
+  static fromBytes(sig_in: u8): Signature {
+    return new Signature(new blst.P2_Affine(sig_in));
   }
 
-  aggregate_verify(msgs: u8[], dst: std__string, pks: PublicKey[]): BLST_ERROR {
+  static fromAggregate(agg_sig: AggregateSignature): Signature {
+    return new Signature(agg_sig.value.to_affine());
+  }
+
+  verify(msg: u8, dst: std__string, aug: u8, pk: PublicKey): BLST_ERROR {
+    const aug_msg = concatU8(aug, msg);
+    return this.aggregateVerify([aug_msg], dst, [pk]);
+  }
+
+  aggregateVerify(msgs: u8[], dst: std__string, pks: PublicKey[]): BLST_ERROR {
     const n_elems = pks.length;
     if (msgs.length !== n_elems) {
       throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -226,26 +204,22 @@ export class Signature {
     }
   }
 
-  fast_aggregate_verify(
-    msg: u8,
-    dst: std__string,
-    pks: PublicKey[]
-  ): BLST_ERROR {
-    const agg_pk = AggregatePublicKey.aggregate(pks);
-    const pk = agg_pk.to_public_key();
-    return this.aggregate_verify([msg], dst, [pk]);
+  fastAggregateVerify(msg: u8, dst: std__string, pks: PublicKey[]): BLST_ERROR {
+    const agg_pk = AggregatePublicKey.fromPublicKeys(pks);
+    const pk = agg_pk.toPublicKey();
+    return this.aggregateVerify([msg], dst, [pk]);
   }
 
-  fast_aggregate_verify_pre_aggregated(
+  fastAggregateVerifyPreAggregated(
     msg: u8,
     dst: std__string,
     pk: PublicKey
   ): BLST_ERROR {
-    return this.aggregate_verify([msg], dst, [pk]);
+    return this.aggregateVerify([msg], dst, [pk]);
   }
 
   // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
-  verify_multiple_aggregate_signatures(
+  verifyMultipleAggregateSignatures(
     msgs: u8[],
     dst: std__string,
     pks: PublicKey[],
@@ -285,53 +259,15 @@ export class Signature {
     }
   }
 
-  static from_aggregate(agg_sig: AggregateSignature): Signature {
-    const sig_aff = agg_sig.value.to_affine();
-    return new Signature(sig_aff);
-  }
-
   compress(): u8 {
-    const sig = this.value.to_jacobian();
-    return sig.compress();
+    return this.value.compress();
   }
 
   serialize(): u8 {
-    const sig = this.value.to_jacobian();
-    return sig.serialize();
+    return this.value.serialize();
   }
 
-  static uncompress(sig_comp: u8): Signature {
-    if (sig_comp.length == sig_comp_size) {
-      const sig_aff = new blst.P2_Affine(sig_comp);
-      return new Signature(sig_aff);
-    } else {
-      throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
-    }
-  }
-
-  static deserialize(sig_in: u8): Signature {
-    if (
-      (sig_in.length == sig_ser_size && (sig_in[0] & 0x80) == 0) ||
-      (sig_in.length == sig_comp_size && (sig_in[0] & 0x80) != 0)
-    ) {
-      const sig = new blst.P2_Affine(sig_in);
-      return new Signature(sig);
-    } else {
-      throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
-    }
-  }
-
-  static from_bytes(sig_in: u8): Signature {
-    if ((sig_in[0] & 0x80) == 0) {
-      // Not compressed
-      return Signature.deserialize(sig_in);
-    } else {
-      // compressed
-      return Signature.uncompress(sig_in);
-    }
-  }
-
-  to_bytes(): u8 {
+  toBytes(): u8 {
     return this.compress();
   }
 }
@@ -343,31 +279,29 @@ export class AggregateSignature {
     this.value = value;
   }
 
-  static from_signature(sig: Signature): AggregateSignature {
-    const p2 = new blst.P2(sig.value);
-    return new AggregateSignature(p2);
+  static fromSignature(sig: Signature): AggregateSignature {
+    return new AggregateSignature(new blst.P2(sig.value));
   }
 
-  static aggregate(sigs: Signature[]): AggregateSignature {
-    const agg_sig = AggregateSignature.from_signature(sigs[0]);
+  static fromSignatures(sigs: Signature[]): AggregateSignature {
+    const agg_sig = AggregateSignature.fromSignature(sigs[0]);
     for (const s of sigs.slice(1)) {
       agg_sig.value.aggregate(s.value);
     }
     return agg_sig;
   }
 
-  static aggregate_serialized(sigs: u8[]): AggregateSignature {
-    return AggregateSignature.aggregate(
-      sigs.map((pk) => Signature.from_bytes(pk))
+  static fromSignaturesSerialized(sigs: u8[]): AggregateSignature {
+    return AggregateSignature.fromSignatures(
+      sigs.map((pk) => Signature.fromBytes(pk))
     );
   }
 
-  add_aggregate(agg_sig: AggregateSignature): void {
-    // blst_p2_add_or_double(P2)
+  addAggregate(agg_sig: AggregateSignature): void {
     this.value.add(agg_sig.value);
   }
 
-  add_signature(sig: Signature): void {
+  addSignature(sig: Signature): void {
     this.value.aggregate(sig.value);
   }
 }
