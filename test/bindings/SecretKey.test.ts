@@ -15,7 +15,8 @@ describe("SecretKey", () => {
       keygen: [
         { id: "from string", args: ["randomString"] },
         { id: "from Buffer", args: [sampleHex] },
-        { id: "With two args", args: [sampleHex, info] },
+        { id: "with two args", args: [sampleHex, info] },
+        { id: "from short ikm", args: [new Uint8Array([0])] },
         // info param can't be a Uint8Array
         // { id: "With two args", args: [sampleHex, zeroHex] },
       ],
