@@ -1,4 +1,4 @@
-import { blst, SecretKey } from "../../src";
+import { blst, SecretKey } from "../../src/bindings";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("SecretKey", () => {
@@ -8,12 +8,17 @@ describe("SecretKey", () => {
   const zeroHex = fromHex(
     "0000000000000000000000000000000000000000000000000000000000000000"
   );
+  const info = "info";
 
   runInstanceTestCases<SecretKey>(
     {
       keygen: [
         { id: "from string", args: ["randomString"] },
         { id: "from Buffer", args: [sampleHex] },
+        { id: "with two args", args: [sampleHex, info] },
+        { id: "from short ikm", args: [new Uint8Array([0])] },
+        // info param can't be a Uint8Array
+        // { id: "With two args", args: [sampleHex, zeroHex] },
       ],
       from_bendian: [{ args: [sampleHex] }],
       from_lendian: [{ args: [sampleHex] }],

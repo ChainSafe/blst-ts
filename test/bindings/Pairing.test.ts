@@ -1,4 +1,4 @@
-import { blst, Pairing } from "../../src";
+import { blst, Pairing } from "../../src/bindings";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("Pairing", () => {
@@ -19,43 +19,31 @@ describe("Pairing", () => {
   const p1Affine = new blst.P1_Affine(p1);
   const p2Affine = new blst.P2_Affine(p2);
 
-  const msg = "msg";
-  const dst = "my-dst";
+  const msg = "assertion"; // this what we're signing
+  const DST = "MY-DST"; // domain separation tag
 
   runInstanceTestCases<Pairing>(
     {
-      aggregate: [
-        {
-          id: "pk on P1",
-          args: [p1Affine, p2Affine, msg],
-          res: 0,
-        },
-        {
-          id: "pk on P2",
-          args: [p2Affine, p1Affine, msg],
-          res: 0,
-        },
-      ],
+      aggregate: [{ args: [p2Affine, p1Affine, msg], res: 0 }],
       mul_n_aggregate: [
         {
-          id: "pk on P1",
-
           args: [
-            p1Affine,
             p2Affine,
-            new Uint8Array(),
-            new Uint8Array(),
+            p1Affine,
+            Buffer.alloc(32, 0),
+            32,
+            Buffer.alloc(32, 0),
             p1.serialize(),
           ],
           res: 0,
         },
       ],
       commit: [],
-      merge: [{ args: [new blst.Pairing(true, dst)], res: 0 }],
+      merge: [{ args: [new blst.Pairing(true, DST)], res: 0 }],
       finalverify: [{ args: [], res: false }],
     },
     function getPairing() {
-      return new blst.Pairing(true, dst);
+      return new blst.Pairing(true, DST);
     }
   );
 });
