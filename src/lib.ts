@@ -1,4 +1,5 @@
 import { blst, BLST_ERROR } from "./index";
+import { Pn_Affine } from "./types";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
@@ -38,14 +39,10 @@ export class SecretKey {
     return new SecretKey(sk);
   }
 
-  static fromSerialized(skBytes: Uint8Array): SecretKey {
+  static fromBytes(skBytes: Uint8Array): SecretKey {
     const sk = new SkConstructor();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);
-  }
-
-  static fromBytes(skBytes: Uint8Array): SecretKey {
-    return SecretKey.fromSerialized(skBytes);
   }
 
   toPublicKey(): PublicKey {
@@ -68,20 +65,27 @@ export class SecretKey {
   }
 }
 
-export class PublicKey {
-  value: PkAffine;
-
-  constructor(value: PkAffine) {
+class SerializeAffine<P extends Pn_Affine<any, any>> {
+  value: P;
+  constructor(value: P) {
     this.value = value;
   }
 
+  compress(): Uint8Array {
+    return this.value.compress();
+  }
+  serialize(): Uint8Array {
+    return this.value.serialize();
+  }
+  toBytes(): Uint8Array {
+    return this.compress();
+  }
+}
+
+export class PublicKey extends SerializeAffine<PkAffine> {
   // Accepts both compressed and serialized
   static fromBytes(pkBytes: Uint8Array): PublicKey {
     return new PublicKey(new PkAffineConstructor(pkBytes));
-  }
-
-  static fromAggregate(aggPk: AggregatePublicKey): PublicKey {
-    return new PublicKey(aggPk.value.to_affine());
   }
 
   keyValidate(): void {
@@ -89,18 +93,21 @@ export class PublicKey {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }
   }
+}
 
-  compress(): Uint8Array {
-    return this.value.compress();
+export class Signature extends SerializeAffine<SigAffine> {
+  // Accepts both compressed and serialized
+  static fromBytes(sigBytes: Uint8Array): Signature {
+    return new Signature(new SigAffineConstructor(sigBytes));
   }
+}
 
-  serialize(): Uint8Array {
-    return this.value.serialize();
+function aggregate<P extends Pn_Affine<any, any>>(points: { value: P }[]) {
+  const agg = points[0].value.to_jacobian();
+  for (const pk of points.slice(1)) {
+    agg.aggregate(pk.value);
   }
-
-  toBytes(): Uint8Array {
-    return this.compress();
-  }
+  return agg;
 }
 
 export class AggregatePublicKey {
@@ -111,64 +118,23 @@ export class AggregatePublicKey {
   }
 
   static fromPublicKey(pk: PublicKey): AggregatePublicKey {
-    const aggPk = pk.value.to_jacobian();
-    return new AggregatePublicKey(aggPk);
+    return new AggregatePublicKey(pk.value.to_jacobian());
   }
-
   static fromPublicKeys(pks: PublicKey[]): AggregatePublicKey {
-    const aggPk = AggregatePublicKey.fromPublicKey(pks[0]);
-    for (const pk of pks.slice(1)) {
-      aggPk.value.aggregate(pk.value);
-    }
-    return aggPk;
+    return new AggregatePublicKey(aggregate(pks));
   }
-
   static fromPublicKeysBytes(pks: Uint8Array[]): AggregatePublicKey {
-    return AggregatePublicKey.fromPublicKeys(
-      pks.map((pk) => PublicKey.fromBytes(pk))
-    );
+    return AggregatePublicKey.fromPublicKeys(pks.map(PublicKey.fromBytes));
   }
 
   toPublicKey(): PublicKey {
-    const pk = this.value.to_affine();
-    return new PublicKey(pk);
+    return new PublicKey(this.value.to_affine());
   }
-
   addAggregate(aggPk: AggregatePublicKey) {
     this.value.add(aggPk.value);
   }
-
   addPublicKey(pk: PublicKey) {
     this.value.aggregate(pk.value);
-  }
-}
-
-export class Signature {
-  value: SigAffine;
-
-  constructor(value: SigAffine) {
-    this.value = value;
-  }
-
-  // Accepts both compressed and serialized
-  static fromBytes(sigBytes: Uint8Array): Signature {
-    return new Signature(new SigAffineConstructor(sigBytes));
-  }
-
-  static fromAggregate(aggSig: AggregateSignature): Signature {
-    return new Signature(aggSig.value.to_affine());
-  }
-
-  compress(): Uint8Array {
-    return this.value.compress();
-  }
-
-  serialize(): Uint8Array {
-    return this.value.serialize();
-  }
-
-  toBytes(): Uint8Array {
-    return this.compress();
   }
 }
 
@@ -180,27 +146,21 @@ export class AggregateSignature {
   }
 
   static fromSignature(sig: Signature): AggregateSignature {
-    return new AggregateSignature(new SigConstructor(sig.value));
+    return new AggregateSignature(sig.value.to_jacobian());
   }
-
   static fromSignatures(sigs: Signature[]): AggregateSignature {
-    const aggSig = AggregateSignature.fromSignature(sigs[0]);
-    for (const sig of sigs.slice(1)) {
-      aggSig.value.aggregate(sig.value);
-    }
-    return aggSig;
+    return new AggregateSignature(aggregate(sigs));
   }
-
   static fromSignaturesBytes(sigs: Uint8Array[]): AggregateSignature {
-    return AggregateSignature.fromSignatures(
-      sigs.map((pk) => Signature.fromBytes(pk))
-    );
+    return AggregateSignature.fromSignatures(sigs.map(Signature.fromBytes));
   }
 
+  toSignature(): Signature {
+    return new Signature(this.value.to_affine());
+  }
   addAggregate(aggSig: AggregateSignature): void {
     this.value.add(aggSig.value);
   }
-
   addSignature(sig: Signature): void {
     this.value.aggregate(sig.value);
   }
