@@ -35,6 +35,15 @@ class ErrorBLST extends Error {
   }
 }
 
+const PkConstructor = blst.P1;
+const SigConstructor = blst.P2;
+const PkAffineConstructor = blst.P1_Affine;
+const SigAffineConstructor = blst.P2_Affine;
+type Pk = InstanceType<typeof PkConstructor>;
+type Sig = InstanceType<typeof SigConstructor>;
+type PkAffine = InstanceType<typeof PkAffineConstructor>;
+type SigAffine = InstanceType<typeof SigAffineConstructor>;
+
 export class SecretKey {
   value: Blst.SecretKey;
 
@@ -63,12 +72,12 @@ export class SecretKey {
   }
 
   toPublicKey(): PublicKey {
-    const p1 = new blst.P1(this.value);
-    return new PublicKey(p1.to_affine());
+    const pk = new PkConstructor(this.value);
+    return new PublicKey(pk.to_affine());
   }
 
   sign(msg: u8, dst: std__string, aug?: u8): Signature {
-    const sig = new blst.P2();
+    const sig = new SigConstructor();
     sig.hash_to(msg, dst, aug).sign_with(this.value);
     return new Signature(sig.to_affine());
   }
@@ -83,15 +92,15 @@ export class SecretKey {
 }
 
 export class PublicKey {
-  value: Blst.P1_Affine;
+  value: PkAffine;
 
-  constructor(value: Blst.P1_Affine) {
+  constructor(value: PkAffine) {
     this.value = value;
   }
 
   // Accepts both compressed and serialized
   static fromBytes(pk_in: u8): PublicKey {
-    return new PublicKey(new blst.P1_Affine(pk_in));
+    return new PublicKey(new PkAffineConstructor(pk_in));
   }
 
   static fromAggregate(aggPk: AggregatePublicKey): PublicKey {
@@ -118,9 +127,9 @@ export class PublicKey {
 }
 
 export class AggregatePublicKey {
-  value: Blst.P1;
+  value: Pk;
 
-  constructor(value: Blst.P1) {
+  constructor(value: Pk) {
     this.value = value;
   }
 
@@ -158,15 +167,15 @@ export class AggregatePublicKey {
 }
 
 export class Signature {
-  value: Blst.P2_Affine;
+  value: SigAffine;
 
-  constructor(value: Blst.P2_Affine) {
+  constructor(value: SigAffine) {
     this.value = value;
   }
 
   // Accepts both compressed and serialized
   static fromBytes(sig_in: u8): Signature {
-    return new Signature(new blst.P2_Affine(sig_in));
+    return new Signature(new SigAffineConstructor(sig_in));
   }
 
   static fromAggregate(aggSig: AggregateSignature): Signature {
@@ -270,14 +279,14 @@ export class Signature {
 }
 
 export class AggregateSignature {
-  value: Blst.P2;
+  value: Sig;
 
-  constructor(value: Blst.P2) {
+  constructor(value: Sig) {
     this.value = value;
   }
 
   static fromSignature(sig: Signature): AggregateSignature {
-    return new AggregateSignature(new blst.P2(sig.value));
+    return new AggregateSignature(new SigConstructor(sig.value));
   }
 
   static fromSignatures(sigs: Signature[]): AggregateSignature {
