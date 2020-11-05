@@ -31,11 +31,9 @@ enum BLST_ERROR {
 
 class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
-    super(String(BLST_ERROR));
+    super(String(blstError));
   }
 }
-
-function concatU8(a: Uint8Array, b: Uint8Array): Uint8Array {}
 
 export class SecretKey {
   value: Blst.SecretKey;
@@ -96,8 +94,8 @@ export class PublicKey {
     return new PublicKey(new blst.P1_Affine(pk_in));
   }
 
-  static fromAggregate(agg_pk: AggregatePublicKey): PublicKey {
-    return new PublicKey(agg_pk.value.to_affine());
+  static fromAggregate(aggPk: AggregatePublicKey): PublicKey {
+    return new PublicKey(aggPk.value.to_affine());
   }
 
   keyValidate(): void {
@@ -127,16 +125,16 @@ export class AggregatePublicKey {
   }
 
   static fromPublicKey(pk: PublicKey): AggregatePublicKey {
-    const agg_pk = pk.value.to_jacobian();
-    return new AggregatePublicKey(agg_pk);
+    const aggPk = pk.value.to_jacobian();
+    return new AggregatePublicKey(aggPk);
   }
 
   static fromPublicKeys(pks: PublicKey[]): AggregatePublicKey {
-    const agg_pk = AggregatePublicKey.fromPublicKey(pks[0]);
-    for (const s of pks.slice(1)) {
-      agg_pk.value.aggregate(s.value);
+    const aggPk = AggregatePublicKey.fromPublicKey(pks[0]);
+    for (const pk of pks.slice(1)) {
+      aggPk.value.aggregate(pk.value);
     }
-    return agg_pk;
+    return aggPk;
   }
 
   static fromPublicKeysSerialized(pks: u8[]): AggregatePublicKey {
@@ -150,8 +148,8 @@ export class AggregatePublicKey {
     return new PublicKey(pk);
   }
 
-  addAggregate(agg_pk: AggregatePublicKey) {
-    this.value.add(agg_pk.value);
+  addAggregate(aggPk: AggregatePublicKey) {
+    this.value.add(aggPk.value);
   }
 
   addPublicKey(pk: PublicKey) {
@@ -171,13 +169,12 @@ export class Signature {
     return new Signature(new blst.P2_Affine(sig_in));
   }
 
-  static fromAggregate(agg_sig: AggregateSignature): Signature {
-    return new Signature(agg_sig.value.to_affine());
+  static fromAggregate(aggSig: AggregateSignature): Signature {
+    return new Signature(aggSig.value.to_affine());
   }
 
-  verify(msg: u8, dst: std__string, aug: u8, pk: PublicKey): BLST_ERROR {
-    const aug_msg = concatU8(aug, msg);
-    return this.aggregateVerify([aug_msg], dst, [pk]);
+  verify(msg: u8, dst: std__string, pk: PublicKey): BLST_ERROR {
+    return this.aggregateVerify([msg], dst, [pk]);
   }
 
   aggregateVerify(msgs: u8[], dst: std__string, pks: PublicKey[]): BLST_ERROR {
@@ -205,8 +202,8 @@ export class Signature {
   }
 
   fastAggregateVerify(msg: u8, dst: std__string, pks: PublicKey[]): BLST_ERROR {
-    const agg_pk = AggregatePublicKey.fromPublicKeys(pks);
-    const pk = agg_pk.toPublicKey();
+    const aggPk = AggregatePublicKey.fromPublicKeys(pks);
+    const pk = aggPk.toPublicKey();
     return this.aggregateVerify([msg], dst, [pk]);
   }
 
@@ -284,11 +281,11 @@ export class AggregateSignature {
   }
 
   static fromSignatures(sigs: Signature[]): AggregateSignature {
-    const agg_sig = AggregateSignature.fromSignature(sigs[0]);
-    for (const s of sigs.slice(1)) {
-      agg_sig.value.aggregate(s.value);
+    const aggSig = AggregateSignature.fromSignature(sigs[0]);
+    for (const sig of sigs.slice(1)) {
+      aggSig.value.aggregate(sig.value);
     }
-    return agg_sig;
+    return aggSig;
   }
 
   static fromSignaturesSerialized(sigs: u8[]): AggregateSignature {
@@ -297,8 +294,8 @@ export class AggregateSignature {
     );
   }
 
-  addAggregate(agg_sig: AggregateSignature): void {
-    this.value.add(agg_sig.value);
+  addAggregate(aggSig: AggregateSignature): void {
+    this.value.add(aggSig.value);
   }
 
   addSignature(sig: Signature): void {
