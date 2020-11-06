@@ -5,6 +5,9 @@ BLST_WRAP_OUTPUT=blst/bindings/node.js
 BLST_NODE_OUTPUT=blst/bindings/node.js/blst.node
 BLST_NODE_TARGET=build/blst.node
 
+# Edit run.me script to debub macos builds
+cp ./run.me blst/bindings/node.js/run.me
+
 cp $BLST_WRAP_PREBUILD $BLST_WRAP_OUTPUT
 
 (cd blst/bindings/node.js; ./run.me)
