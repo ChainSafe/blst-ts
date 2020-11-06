@@ -18,12 +18,14 @@ jobs:
           node-version: ${{matrix.node}}
       - name: Install & Build
         run: yarn install
-      - name: Build
+      - name: Prepare Build
         run: |
           cp ./run.me blst/bindings/node.js/run.me
           cp blst_wrap.cpp blst/bindings/node.js/blst_wrap.cpp
-          cd blst/bindings/node.js && ./run.me && cd ../../..
-          mkdir -p build
-          cp blst/bindings/node.js/blst.node build/blst.node
+        name: run.me
+        run: ./run.me
+        working-directory: blst/bindings/node.js
+      - name: Post build
+        run: cp blst/bindings/node.js/blst.node build/blst.node
       - name: Test
         run: yarn test
