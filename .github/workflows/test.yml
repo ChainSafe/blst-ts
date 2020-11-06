@@ -26,6 +26,8 @@ jobs:
         run: ./run.me
         working-directory: blst/bindings/node.js
       - name: Post build
-        run: cp blst/bindings/node.js/blst.node build/blst.node
+        run: |
+          mkdir build
+          cp blst/bindings/node.js/blst.node build/blst.node
       - name: Test
         run: yarn test
