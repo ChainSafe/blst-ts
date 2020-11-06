@@ -7,8 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         # windows-latest disabled by now, unable to build
-        # macos-latest disabled by now, unable to build
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
         node: [12, 14]
     steps:
       - uses: actions/checkout@v2
