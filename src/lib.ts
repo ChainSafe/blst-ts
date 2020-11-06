@@ -56,12 +56,8 @@ export class SecretKey {
     return new Signature(sig.to_affine());
   }
 
-  serialize(): Uint8Array {
-    return this.value.to_bendian();
-  }
-
   toBytes(): Uint8Array {
-    return this.serialize();
+    return this.value.to_bendian();
   }
 }
 
@@ -177,14 +173,6 @@ export function fastAggregateVerify(
 ): void {
   const aggPk = AggregatePublicKey.fromPublicKeys(pks);
   const pk = aggPk.toPublicKey();
-  aggregateVerify([msg], [pk], sig);
-}
-
-export function fastAggregateVerifyPreAggregated(
-  msg: Uint8Array,
-  pk: PublicKey,
-  sig: Signature
-): void {
   aggregateVerify([msg], [pk], sig);
 }
 
