@@ -1,11 +1,14 @@
 {
   "include": ["src"],
   "compilerOptions": {
+    "outDir": "dist",
     "target": "esnext",
     "module": "commonjs",
     "pretty": true,
     "lib": ["esnext.bigint"],
     "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true
