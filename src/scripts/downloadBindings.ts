@@ -12,7 +12,6 @@ export async function checkAndDownloadBinary(binaryPath: string) {
 
   const binaryUrl = `${githubReleasesDownloadUrl}/v${version}/${binaryName}`;
 
-  console.log(`Retrieving native BLST bindings ${binaryName}...`);
   ensureDirFromFilepath(binaryPath);
   await download(binaryUrl, binaryPath);
 

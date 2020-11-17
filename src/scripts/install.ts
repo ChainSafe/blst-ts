@@ -20,6 +20,7 @@ async function install() {
     }
   }
 
+  // Fetch pre-built bindings from remote repo
   try {
     console.log(`Retrieving ${libName}...`);
     await checkAndDownloadBinary(binaryPath);
@@ -34,6 +35,7 @@ async function install() {
     }
   }
 
+  // Build bindings locally from source
   try {
     console.log(`Building ${libName} from source...`);
     await buildBindings(binaryPath);
