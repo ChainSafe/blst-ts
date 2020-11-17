@@ -17,7 +17,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{matrix.node}}
-      - name: Install & Build
+      - name: Install deps
+        run: yarn install --ignore-scripts
+      - name: Build TS
+        run: yarn build
+      - name: Build bindings
         run: yarn install
       - name: Test
         run: yarn test
