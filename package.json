@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "install": "node scripts/install.js",
+    "install": "node dist/scripts/install.js",
     "test": "mocha test/**/*",
     "build": "tsc"
   },

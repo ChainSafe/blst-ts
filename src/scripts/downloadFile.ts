@@ -1,20 +1,19 @@
-const fs = require("fs");
-const https = require("https");
+import fs from "fs";
+import https from "https";
 
-class HttpError extends Error {
-  constructor(message, statusCode) {
+export class HttpError extends Error {
+  statusCode?: number;
+  constructor(message: string, statusCode?: number) {
     super(message);
     this.statusCode = statusCode;
   }
 }
 
-module.exports.HttpError = HttpError;
-
 /**
  * Downloads file from remote HTTP[S] host and puts its contents to the
  * specified location.
  */
-module.exports.download = async function download(url, filePath) {
+export function download(url: string, filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filePath);
 
@@ -45,4 +44,4 @@ module.exports.download = async function download(url, filePath) {
 
     request.end();
   });
-};
+}
