@@ -8,9 +8,10 @@
     "dist"
   ],
   "scripts": {
-    "install": "./build.node.sh",
+    "install": "node dist/scripts/install.js",
     "test": "mocha test/**/*",
-    "build": "tsc"
+    "build": "tsc",
+    "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install"
   },
   "repository": {
     "type": "git",

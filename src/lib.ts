@@ -162,25 +162,29 @@ export class AggregateSignature {
   }
 }
 
-export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature): void {
-  aggregateVerify([msg], [pk], sig);
+export function verify(
+  msg: Uint8Array,
+  pk: PublicKey,
+  sig: Signature
+): boolean {
+  return aggregateVerify([msg], [pk], sig);
 }
 
 export function fastAggregateVerify(
   msg: Uint8Array,
   pks: PublicKey[],
   sig: Signature
-): void {
+): boolean {
   const aggPk = AggregatePublicKey.fromPublicKeys(pks);
   const pk = aggPk.toPublicKey();
-  aggregateVerify([msg], [pk], sig);
+  return aggregateVerify([msg], [pk], sig);
 }
 
 export function aggregateVerify(
   msgs: Uint8Array[],
   pks: PublicKey[],
   sig: Signature
-): void {
+): boolean {
   const n_elems = pks.length;
   if (msgs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -198,9 +202,7 @@ export function aggregateVerify(
 
   // PT constructor calls `blst_aggregated`
   const gtsig = new blst.PT(sig.value);
-  if (!ctx.finalverify(gtsig)) {
-    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
-  }
+  return ctx.finalverify(gtsig);
 }
 
 // https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
@@ -208,7 +210,7 @@ export function verifyMultipleAggregateSignatures(
   msgs: Uint8Array[],
   pks: PublicKey[],
   sigs: Signature[]
-): void {
+): boolean {
   const n_elems = pks.length;
   if (msgs.length !== n_elems || sigs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -230,8 +232,5 @@ export function verifyMultipleAggregateSignatures(
   }
 
   ctx.commit();
-
-  if (!ctx.finalverify()) {
-    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
-  }
+  return ctx.finalverify();
 }

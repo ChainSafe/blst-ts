@@ -1,4 +1,5 @@
-export const blst: Blst = require("../build/blst");
+import { getBinaryPath } from "./scripts/paths";
+export const blst: Blst = require(getBinaryPath());
 
 export interface Blst {
   SecretKey: SecretKeyConstructor;
