@@ -1,7 +1,5 @@
 import fs from "fs";
-import path from "path";
 import { exec } from "child_process";
-import { promisify } from "util";
 import { testBindings } from "./testBindings";
 import {
   bindingsDirSrc,
@@ -16,13 +14,22 @@ export async function buildBindings(binaryPath: string) {
   fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
 
   // Use BLST run.me script to build libblst.a + blst.node
-  const res = await promisify(exec)("./run.me", {
-    cwd: bindingsDirSrc,
-    maxBuffer: 1024 * 1024 * 1024,
-    timeout: 60 * 1000,
+  await new Promise((resolve, reject): void => {
+    const proc = exec(
+      "./run.me",
+      {
+        timeout: 3 * 60 * 1000, // ms
+        maxBuffer: 10e6, // bytes
+        cwd: bindingsDirSrc,
+      },
+      (err, stdout, stderr) => {
+        if (err) reject(err);
+        else resolve(stdout.trim() || stderr);
+      }
+    );
+    if (proc.stdout) proc.stdout.pipe(process.stdout);
+    if (proc.stderr) proc.stderr.pipe(process.stderr);
   });
-  if (res.stderr) console.log(res.stderr);
-  if (res.stdout) console.log(res.stdout);
 
   // Copy built .node file to expected path
   ensureDirFromFilepath(binaryPath);
