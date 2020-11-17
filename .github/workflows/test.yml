@@ -8,7 +8,7 @@ jobs:
       matrix:
         # windows-latest disabled by now, unable to build
         os: [ubuntu-latest, macos-latest]
-        node: [12, 14]
+        node: [10, 12, 14]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,3 +21,10 @@ jobs:
         run: yarn install
       - name: Test
         run: yarn test
+
+      - name: Prepare binary
+      - uses: actions/upload-artifact@v2
+        if: github.repository_owner == 'chainsafe' # && github.event_name != 'pull_request'
+        with:
+          # name: ${{ matrix.node }}
+          path: build/
