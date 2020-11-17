@@ -56,12 +56,8 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild
 
-      - name: Install deps
-        run: yarn install --ignore-scripts
-      - name: Build TS
-        run: yarn build
-      - name: Build bindings
-        run: yarn install
+      - name: Install && Build TS + bindings
+        run: yarn bootstrap
       - name: Test
         run: yarn test
 
@@ -90,10 +86,20 @@ jobs:
         with:
           name: binding.node
           path: prebuild
-      - name: Release
+
+      - name: Install && Build TS + bindings
+        run: yarn bootstrap
+
+      - name: Create Github release with prebuilds
         uses: softprops/action-gh-release@v1
         with:
-          files: build/*
+          files: prebuild/*
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NPM
+        run: npm publish --access public
+        if: ${{secrets.NPM_TOKEN}}
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
