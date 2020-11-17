@@ -1,4 +1,4 @@
-const { getBinaryPath } = require("../scripts/paths");
+import { getBinaryPath } from "./scripts/paths";
 export const blst: Blst = require(getBinaryPath());
 
 export interface Blst {
