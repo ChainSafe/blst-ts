@@ -35,6 +35,7 @@ jobs:
         run: |
           env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
             ./blst/bindings/node.js/run.me
+          cp blst/bindings/node.js/blst_wrap.cpp build/blst_wrap_${{matrix.os}}_${{matrix.node}}.cpp
 
       - name: Install deps
         run: yarn install --ignore-scripts
@@ -47,7 +48,7 @@ jobs:
       - name: Test
         run: yarn test
 
-      - name: Prepare binary
+      - name: Upload bindings
         uses: actions/upload-artifact@v2
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
