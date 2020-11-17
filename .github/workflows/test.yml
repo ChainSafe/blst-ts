@@ -1,5 +1,9 @@
 name: Test
-on: [push, pull_request]
+
+on:
+  push:
+  pull_request:
+
 jobs:
   build:
     runs-on: ${{matrix.os}}
@@ -8,7 +12,7 @@ jobs:
       matrix:
         # windows-latest disabled by now, unable to build
         os: [ubuntu-latest, macos-latest]
-        node: [10, 12, 14]
+        node: [10, 11, 12, 13, 14]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -28,7 +32,7 @@ jobs:
 
       - name: Prepare binary
         uses: actions/upload-artifact@v2
-        if: github.repository_owner == 'chainsafe' # && github.event_name != 'pull_request'
+        if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
-          # name: ${{ matrix.node }}
+          name: binding.node
           path: build/
