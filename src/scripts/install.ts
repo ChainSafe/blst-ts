@@ -6,6 +6,15 @@ import { testBindings } from "./testBindings";
 
 const libName = "BLST native bindings";
 
+// CLI runner
+install().then(
+  () => process.exit(0),
+  (e) => {
+    console.log(e.stack);
+    process.exit(1);
+  }
+);
+
 async function install() {
   const binaryPath = getBinaryPath();
 
@@ -49,5 +58,3 @@ async function install() {
   // Fallback?
   throw Error(`Error downloading and building ${libName}. No fallback`);
 }
-
-install();
