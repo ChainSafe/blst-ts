@@ -34,7 +34,7 @@ jobs:
       - name: Run.me
         run: |
           env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
-            bindings/node.js/run.me
+            ./blst/bindings/node.js/run.me
 
       - name: Install deps
         run: yarn install --ignore-scripts
