@@ -1,6 +1,6 @@
 {
-  "name": "blst-ts",
-  "version": "1.0.0",
+  "name": "@chainsafe/blst",
+  "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,8 +18,8 @@
     "url": "git+https://github.com/ChainSafe/blst-ts.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "ChainSafe Systems",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/ChainSafe/blst-ts/issues"
   },
