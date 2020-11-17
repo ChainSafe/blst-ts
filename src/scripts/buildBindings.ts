@@ -13,7 +13,8 @@ import {
 
 export async function buildBindings(binaryPath: string) {
   // Copy SWIG prebuilt
-  fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
+  if (!process.env.IGNORE_SWIG_PREBUILT)
+    fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
 
   // Use BLST run.me script to build libblst.a + blst.node
   const res = await promisify(exec)("./run.me", {

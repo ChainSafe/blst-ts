@@ -21,12 +21,29 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{matrix.node}}
+
+      - name: Setup SWIG
+        run: |
+          git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
+          cd swig;
+          ./autogen.sh;
+          ./configure --prefix=$HOME/swig;
+          make;
+          make install;
+
+      - name: Run.me
+        run: |
+          env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
+            bindings/node.js/run.me
+
       - name: Install deps
         run: yarn install --ignore-scripts
       - name: Build TS
         run: yarn build
       - name: Build bindings
         run: yarn install
+        env:
+          IGNORE_SWIG_PREBUILT: true
       - name: Test
         run: yarn test
 
