@@ -1,8 +1,11 @@
 name: Test
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+    tags:
+      - "v*.*.*"
 
 jobs:
   build-swig:
@@ -68,3 +71,29 @@ jobs:
         with:
           name: binding.node
           path: build/
+
+  publish:
+    needs: ["build-swig", "build"]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Get SWIG pre-built
+        uses: actions/download-artifact@v2
+        with:
+          name: blst_wrap.cpp
+          path: prebuild
+      - name: Get binding.node pre-builts
+        uses: actions/download-artifact@v2
+        with:
+          name: binding.node
+          path: prebuild
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/*
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
