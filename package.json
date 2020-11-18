@@ -6,7 +6,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "prebuild"
+    "prebuild",
+    "blst"
   ],
   "scripts": {
     "install": "node dist/scripts/install.js",
