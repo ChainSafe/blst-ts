@@ -1,5 +1,6 @@
+import fs from "fs";
+import fetch from "node-fetch";
 import { testBindings } from "./testBindings";
-import { download } from "./downloadFile";
 import { ensureDirFromFilepath, getBinaryName, packageJsonPath } from "./paths";
 
 const githubReleasesDownloadUrl =
@@ -13,7 +14,9 @@ export async function checkAndDownloadBinary(binaryPath: string) {
   const binaryUrl = `${githubReleasesDownloadUrl}/v${version}/${binaryName}`;
 
   ensureDirFromFilepath(binaryPath);
-  await download(binaryUrl, binaryPath);
+  const res = await fetch(binaryUrl);
+  const dest = fs.createWriteStream(binaryPath);
+  res.body.pipe(dest);
 
   // Make sure downloaded bindings work
   await testBindings(binaryPath);
