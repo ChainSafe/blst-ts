@@ -10,7 +10,7 @@ export const prebuiltSwigSrc = path.join(rootDir, "prebuild/blst_wrap.cpp");
 export const prebuiltSwigTarget = path.join(bindingsDirSrc, "blst_wrap.cpp");
 export const bindingsSrc = path.join(bindingsDirSrc, "blst.node");
 
-export const defaultBinaryDir = path.join(rootDir, "build");
+export const defaultBinaryDir = path.join(rootDir, "prebuild");
 
 /**
  * Get binary name.
