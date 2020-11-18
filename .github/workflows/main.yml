@@ -55,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild
+          path: prebuild/
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
@@ -67,7 +67,7 @@ jobs:
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding.node
-          path: build/
+          path: prebuild/
 
   publish:
     needs: ["build-swig", "build"]
@@ -81,12 +81,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild
+          path: prebuild/
       - name: Get binding.node pre-builts
         uses: actions/download-artifact@v2
         with:
           name: binding.node
-          path: prebuild
+          path: prebuild/
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
