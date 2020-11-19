@@ -4,7 +4,7 @@ import { testBindings } from "./testBindings";
 import { ensureDirFromFilepath, getBinaryName, packageJsonPath } from "./paths";
 
 const githubReleasesDownloadUrl =
-  "https://github.com/ChainSafe/blst-ts/releases/download";
+  "https://github.com/ChainSafe/blst/releases/download";
 
 export async function checkAndDownloadBinary(binaryPath: string) {
   const packageJson = require(packageJsonPath);

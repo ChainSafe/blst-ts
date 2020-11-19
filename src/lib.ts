@@ -5,7 +5,8 @@ const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const RAND_BITS = 64;
 
-class ErrorBLST extends Error {
+export { BLST_ERROR };
+export class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
     super(BLST_ERROR[blstError]);
   }
@@ -43,6 +44,11 @@ export class SecretKey {
     const sk = new SkConstructor();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);
+  }
+
+  toAggregatePublicKey(): AggregatePublicKey {
+    const pk = new PkConstructor(this.value);
+    return new AggregatePublicKey(pk);
   }
 
   toPublicKey(): PublicKey {
@@ -98,14 +104,6 @@ export class Signature extends SerializeAffine<SigAffine> {
   }
 }
 
-function aggregate<P extends Pn_Affine<any, any>>(points: { value: P }[]) {
-  const agg = points[0].value.to_jacobian();
-  for (const pk of points.slice(1)) {
-    agg.aggregate(pk.value);
-  }
-  return agg;
-}
-
 export class AggregatePublicKey {
   value: Pk;
 
@@ -117,7 +115,9 @@ export class AggregatePublicKey {
     return new AggregatePublicKey(pk.value.to_jacobian());
   }
   static fromPublicKeys(pks: PublicKey[]): AggregatePublicKey {
-    return new AggregatePublicKey(aggregate(pks));
+    return aggregatePubkeys(
+      pks.map((pk) => AggregatePublicKey.fromPublicKey(pk))
+    );
   }
   static fromPublicKeysBytes(pks: Uint8Array[]): AggregatePublicKey {
     return AggregatePublicKey.fromPublicKeys(pks.map(PublicKey.fromBytes));
@@ -145,7 +145,9 @@ export class AggregateSignature {
     return new AggregateSignature(sig.value.to_jacobian());
   }
   static fromSignatures(sigs: Signature[]): AggregateSignature {
-    return new AggregateSignature(aggregate(sigs));
+    return aggregateSignatures(
+      sigs.map((sig) => AggregateSignature.fromSignature(sig))
+    );
   }
   static fromSignaturesBytes(sigs: Uint8Array[]): AggregateSignature {
     return AggregateSignature.fromSignatures(sigs.map(Signature.fromBytes));
@@ -162,6 +164,34 @@ export class AggregateSignature {
   }
 }
 
+export function aggregatePubkeys(
+  pks: AggregatePublicKey[]
+): AggregatePublicKey {
+  if (pks.length === 0) {
+    throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
+  }
+
+  const agg = pks
+    .map((pk) => pk.value)
+    .reduce((_agg, pk) => blst.P1.add(_agg, pk));
+
+  return new AggregatePublicKey(agg);
+}
+
+export function aggregateSignatures(
+  sigs: AggregateSignature[]
+): AggregateSignature {
+  if (sigs.length === 0) {
+    throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
+  }
+
+  const agg = sigs
+    .map((sig) => sig.value)
+    .reduce((_agg, sig) => blst.P2.add(_agg, sig));
+
+  return new AggregateSignature(agg);
+}
+
 export function verify(
   msg: Uint8Array,
   pk: PublicKey,
@@ -172,10 +202,10 @@ export function verify(
 
 export function fastAggregateVerify(
   msg: Uint8Array,
-  pks: PublicKey[],
+  pks: AggregatePublicKey[],
   sig: Signature
 ): boolean {
-  const aggPk = AggregatePublicKey.fromPublicKeys(pks);
+  const aggPk = aggregatePubkeys(pks);
   const pk = aggPk.toPublicKey();
   return aggregateVerify([msg], [pk], sig);
 }

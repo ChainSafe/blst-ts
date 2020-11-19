@@ -18,19 +18,19 @@ describe("bls lib", () => {
   describe("1 msg, N pks", () => {
     const msg = Buffer.from("sample-msg");
     const sks: bls.SecretKey[] = [];
-    const pks: bls.PublicKey[] = [];
+    const pks: bls.AggregatePublicKey[] = [];
     const sigs: bls.Signature[] = [];
 
     for (let i = 0; i < n; i++) {
       const sk = bls.SecretKey.fromKeygen(Uint8Array.from(Buffer.alloc(32, i)));
       sks.push(sk);
-      pks.push(sk.toPublicKey());
+      pks.push(sk.toAggregatePublicKey());
       sigs.push(sk.sign(msg));
     }
 
     it("verify", () => {
       for (let i = 0; i < n; i++) {
-        bls.verify(msg, pks[i], sigs[i]);
+        bls.verify(msg, pks[i].toPublicKey(), sigs[i]);
       }
     });
 
