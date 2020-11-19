@@ -1,6 +1,10 @@
 import * as bls from "../../src/lib";
 
 describe("bls lib", () => {
+  before("init", () => {
+    bls.init();
+  });
+
   const n = 3;
 
   describe("1 msg, 1 pk", () => {

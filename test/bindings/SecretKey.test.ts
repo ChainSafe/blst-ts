@@ -1,4 +1,5 @@
-import { blst, SecretKey } from "../../src/bindings";
+import { blst } from "./contextInitialized";
+import { SecretKey } from "../../src/types";
 import { fromHex, runInstanceTestCases } from "../utils";
 
 describe("SecretKey", () => {

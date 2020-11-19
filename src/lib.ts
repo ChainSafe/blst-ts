@@ -1,27 +1,24 @@
 import crypto from "crypto";
-import { blst, BLST_ERROR, Pn_Affine } from "./bindings";
+import { blst, init } from "./context";
+import { BLST_ERROR, Pn_Affine } from "./types";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const RAND_BITS = 64;
 
-export { BLST_ERROR };
+export { BLST_ERROR, init };
+
 export class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
     super(BLST_ERROR[blstError]);
   }
 }
 
-const SkConstructor = blst.SecretKey;
-const PkConstructor = blst.P1;
-const SigConstructor = blst.P2;
-const PkAffineConstructor = blst.P1_Affine;
-const SigAffineConstructor = blst.P2_Affine;
-type Sk = InstanceType<typeof SkConstructor>;
-type Pk = InstanceType<typeof PkConstructor>;
-type Sig = InstanceType<typeof SigConstructor>;
-type PkAffine = InstanceType<typeof PkAffineConstructor>;
-type SigAffine = InstanceType<typeof SigAffineConstructor>;
+type Sk = InstanceType<typeof blst.SecretKey>;
+type Pk = InstanceType<typeof blst.P1>;
+type Sig = InstanceType<typeof blst.P2>;
+type PkAffine = InstanceType<typeof blst.P1_Affine>;
+type SigAffine = InstanceType<typeof blst.P2_Affine>;
 
 export class SecretKey {
   value: Sk;
@@ -35,29 +32,29 @@ export class SecretKey {
     if (ikm.length < 32) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
-    const sk = new SkConstructor();
+    const sk = new blst.SecretKey();
     sk.keygen(ikm);
     return new SecretKey(sk);
   }
 
   static fromBytes(skBytes: Uint8Array): SecretKey {
-    const sk = new SkConstructor();
+    const sk = new blst.SecretKey();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);
   }
 
   toAggregatePublicKey(): AggregatePublicKey {
-    const pk = new PkConstructor(this.value);
+    const pk = new blst.P1(this.value);
     return new AggregatePublicKey(pk);
   }
 
   toPublicKey(): PublicKey {
-    const pk = new PkConstructor(this.value);
+    const pk = new blst.P1(this.value);
     return new PublicKey(pk.to_affine());
   }
 
   sign(msg: Uint8Array): Signature {
-    const sig = new SigConstructor();
+    const sig = new blst.P2();
     sig.hash_to(msg, DST).sign_with(this.value);
     return new Signature(sig.to_affine());
   }
@@ -87,7 +84,7 @@ class SerializeAffine<P extends Pn_Affine<any, any>> {
 export class PublicKey extends SerializeAffine<PkAffine> {
   // Accepts both compressed and serialized
   static fromBytes(pkBytes: Uint8Array): PublicKey {
-    return new PublicKey(new PkAffineConstructor(pkBytes));
+    return new PublicKey(new blst.P1_Affine(pkBytes));
   }
 
   keyValidate(): void {
@@ -100,7 +97,7 @@ export class PublicKey extends SerializeAffine<PkAffine> {
 export class Signature extends SerializeAffine<SigAffine> {
   // Accepts both compressed and serialized
   static fromBytes(sigBytes: Uint8Array): Signature {
-    return new Signature(new SigAffineConstructor(sigBytes));
+    return new Signature(new blst.P2_Affine(sigBytes));
   }
 }
 

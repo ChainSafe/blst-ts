@@ -1,4 +1,4 @@
-import { blst } from "../../src/bindings";
+import { blst } from "./contextInitialized";
 
 describe("blst sample case", () => {
   it("Should verify a signature", () => {

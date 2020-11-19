@@ -1,10 +1,5 @@
-import {
-  blst,
-  BLST_ERROR,
-  P1,
-  P1_Affine,
-  P1Constructor,
-} from "../../src/bindings";
+import { blst } from "./contextInitialized";
+import { BLST_ERROR, P1, P1_Affine, P1Constructor } from "../../src/types";
 import { expectHex, fromHex, runInstanceTestCases } from "../utils";
 
 describe("P1", () => {
