@@ -20,6 +20,11 @@ export function getBinaryName() {
   const platform = process.platform;
   const arch = process.arch;
   const nodeV8CppApiVersion = process.versions.modules;
+  if (!process) throw new NotNodeJsError("global object");
+  if (!platform) throw new NotNodeJsError("process.platform");
+  if (!arch) throw new NotNodeJsError("process.arch");
+  if (!process.versions.modules)
+    throw new NotNodeJsError("process.versions.modules");
 
   return [platform, arch, nodeV8CppApiVersion, "binding.node"].join("-");
 }
@@ -38,5 +43,13 @@ export function ensureDirFromFilepath(filepath: string) {
   const dirpath = path.dirname(filepath);
   if (!fs.existsSync(dirpath)) {
     fs.mkdirSync(dirpath, { recursive: true });
+  }
+}
+
+export class NotNodeJsError extends Error {
+  constructor(missingItem: string) {
+    super(
+      `BLST bindings loader should only run in a NodeJS context: ${missingItem}`
+    );
   }
 }
