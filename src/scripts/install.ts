@@ -1,5 +1,5 @@
 import fs from "fs";
-import { checkAndDownloadBinary } from "./downloadBindings";
+import { downloadBindings } from "./downloadBindings";
 import { buildBindings } from "./buildBindings";
 import { getBinaryPath } from "./paths";
 import { testBindings } from "./testBindings";
@@ -32,7 +32,7 @@ async function install() {
   // Fetch pre-built bindings from remote repo
   try {
     console.log(`Retrieving ${libName}...`);
-    await checkAndDownloadBinary(binaryPath);
+    await downloadBindings(binaryPath);
     await testBindings(binaryPath);
     console.log(`Successfully retrieved ${libName}`);
     return;

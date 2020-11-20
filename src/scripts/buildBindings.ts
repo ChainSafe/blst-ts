@@ -7,11 +7,24 @@ import {
   ensureDirFromFilepath,
   prebuiltSwigSrc,
   prebuiltSwigTarget,
+  blstWrapCppName,
 } from "./paths";
+import { downloadReleaseAsset } from "./downloadReleaseAsset";
 
 export async function buildBindings(binaryPath: string) {
-  // Copy SWIG prebuilt
-  fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
+  // Make sure SWIG generated bindings are available or download from release assets
+  if (fs.existsSync(prebuiltSwigSrc)) {
+    fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
+  } else {
+    try {
+      await downloadReleaseAsset(blstWrapCppName, prebuiltSwigTarget);
+    } catch (e) {
+      // TODO: Make sure SWIG is available or throw
+      console.error(
+        `Error downloading prebuilt ${blstWrapCppName}. Trying to built it from source with SWIG\n${e.message}`
+      );
+    }
+  }
 
   // Use BLST run.me script to build libblst.a + blst.node
   await new Promise((resolve, reject): void => {

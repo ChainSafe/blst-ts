@@ -6,8 +6,9 @@ const rootDir = path.join(__dirname, "../..");
 export const packageJsonPath = path.join(rootDir, "package.json");
 
 export const bindingsDirSrc = path.join(rootDir, "blst/bindings/node.js");
-export const prebuiltSwigSrc = path.join(rootDir, "prebuild/blst_wrap.cpp");
-export const prebuiltSwigTarget = path.join(bindingsDirSrc, "blst_wrap.cpp");
+export const blstWrapCppName = "blst_wrap.cpp";
+export const prebuiltSwigSrc = path.join(rootDir, "prebuild", blstWrapCppName);
+export const prebuiltSwigTarget = path.join(bindingsDirSrc, blstWrapCppName);
 export const bindingsSrc = path.join(bindingsDirSrc, "blst.node");
 
 export const defaultBinaryDir = path.join(rootDir, "prebuild");
