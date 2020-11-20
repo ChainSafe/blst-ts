@@ -15,6 +15,12 @@ export async function checkAndDownloadBinary(binaryPath: string) {
 
   ensureDirFromFilepath(binaryPath);
   const res = await fetch(binaryUrl);
+
+  // Accept redirects (3xx)
+  if (res.status >= 400) {
+    throw Error(`${res.status} ${res.statusText}`);
+  }
+
   const dest = fs.createWriteStream(binaryPath);
   res.body.pipe(dest);
 
