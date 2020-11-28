@@ -56,21 +56,6 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild/
 
-      - name: Install node-gyp
-        run: npm install --global node-gyp
-
-      - name: Copy blst_wrap.cpp
-        run: cp prebuild/blst_wrap.cpp blst/bindings/node.js/blst_wrap.cpp
-
-      - name: Build with with node-gyp
-        run: |
-          cd blst/bindings/node.js
-          node-gyp configure
-          node-gyp build
-          ls build/Release
-          cp build/Release/blst.node blst.node
-          env NODE_PATH=build/Release: node runnable.js
-
       - name: Install && Build TS + bindings
         run: yarn bootstrap
       - name: Test
