@@ -3,11 +3,11 @@ import { exec } from "child_process";
 import { testBindings } from "./testBindings";
 import {
   bindingsDirSrc,
-  bindingsSrc,
   ensureDirFromFilepath,
   prebuiltSwigSrc,
   prebuiltSwigTarget,
   blstWrapCppName,
+  findBindingsFile,
 } from "./paths";
 import { downloadReleaseAsset } from "./downloadReleaseAsset";
 
@@ -29,7 +29,7 @@ export async function buildBindings(binaryPath: string) {
   // Use BLST run.me script to build libblst.a + blst.node
   await new Promise((resolve, reject): void => {
     const proc = exec(
-      "./run.me",
+      "node-gyp rebuild",
       {
         timeout: 3 * 60 * 1000, // ms
         maxBuffer: 10e6, // bytes
@@ -44,9 +44,13 @@ export async function buildBindings(binaryPath: string) {
     if (proc.stderr) proc.stderr.pipe(process.stderr);
   });
 
+  // The output of node-gyp is not at a predictable path but various
+  // depending on the OS.
+  const bindingsFileOutput = findBindingsFile(bindingsDirSrc);
+
   // Copy built .node file to expected path
   ensureDirFromFilepath(binaryPath);
-  fs.copyFileSync(bindingsSrc, binaryPath);
+  fs.copyFileSync(bindingsFileOutput, binaryPath);
 
   // Make sure downloaded bindings work
   await testBindings(binaryPath);
