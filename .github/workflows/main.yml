@@ -56,10 +56,11 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild/
 
-      # Solution from https://github.com/nodejs/node-gyp/issues/1898#issuecomment-540864130
+      # Solution from: https://github.com/nodejs/node-gyp/issues/1898#issuecomment-540864130
+      # Solution edit: https://github.com/nodejs/node-gyp/issues/119#issuecomment-331778053
       - name: Install windows build tools
         if: matrix.os == 'windows-latest' && matrix.node <= 11
-        run: npm install --global --production windows-build-tools
+        run: yarn add --production windows-build-tools --ignore-scripts
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
