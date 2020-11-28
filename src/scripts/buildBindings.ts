@@ -28,8 +28,15 @@ export async function buildBindings(binaryPath: string) {
 
   // Use BLST run.me script to build libblst.a + blst.node
   await new Promise((resolve, reject): void => {
+    const buildCmd =
+      process.platform === "darwin"
+        ? // MacOS builds fail, use previous script run.me
+          //see tracking issue https://github.com/supranational/blst/pull/43#issuecomment-735180399
+          "./run.me"
+        : "node-gyp rebuild";
+
     const proc = exec(
-      "node-gyp rebuild",
+      buildCmd,
       {
         timeout: 3 * 60 * 1000, // ms
         maxBuffer: 10e6, // bytes
