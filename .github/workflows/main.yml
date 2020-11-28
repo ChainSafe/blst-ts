@@ -41,6 +41,15 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         node: [10, 11, 12, 13, 14]
+        exclude:
+          # windows node 10,11 builds failing, tracker issue https://github.com/supranational/blst/pull/43
+          # Tried this solutions without success:
+          # Solution from: https://github.com/nodejs/node-gyp/issues/1898#issuecomment-540864130
+          # Solution edit: https://github.com/nodejs/node-gyp/issues/119#issuecomment-331778053
+          - os: windows-latest
+            node: 10
+          - os: windows-latest
+            node: 11
     steps:
       - uses: actions/checkout@v2
         with:
@@ -55,12 +64,6 @@ jobs:
         with:
           name: blst_wrap.cpp
           path: prebuild/
-
-      # Solution from: https://github.com/nodejs/node-gyp/issues/1898#issuecomment-540864130
-      # Solution edit: https://github.com/nodejs/node-gyp/issues/119#issuecomment-331778053
-      - name: Install windows build tools
-        if: matrix.os == 'windows-latest' && matrix.node <= 11
-        run: yarn add windows-build-tools --ignore-scripts
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
