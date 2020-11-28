@@ -39,8 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # windows-latest disabled by now, unable to build
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         node: [10, 11, 12, 13, 14]
     steps:
       - uses: actions/checkout@v2
@@ -56,6 +55,19 @@ jobs:
         with:
           name: blst_wrap.cpp
           path: prebuild/
+
+      - name: Install node-gyp
+        run: npm install --global node-gyp
+
+      - name: Copy blst_wrap.cpp
+        run: cp prebuild/blst_wrap.cpp blst/bindings/node.js/blst_wrap.cpp
+
+      - name: Build with with node-gyp
+        run: |
+          cd blst/bindings/node.js
+          node-gyp configure
+          node-gyp build
+          env NODE_PATH=build/Release: node runnable.js
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
