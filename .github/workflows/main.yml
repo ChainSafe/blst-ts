@@ -56,6 +56,11 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild/
 
+      # Solution from https://github.com/nodejs/node-gyp/issues/1898#issuecomment-540864130
+      - name: Install windows build tools
+        if: matrix.os == 'windows-latest'
+        run: npm install --global --production windows-build-tools
+
       - name: Install && Build TS + bindings
         run: yarn bootstrap
       - name: Test
@@ -92,7 +97,7 @@ jobs:
           name: binding.node
           path: prebuild/
 
-      - name: Install && Build TS + bindings
+      - name: Build .ts source for release
         run: yarn bootstrap
 
       - name: Create Github release with prebuilds
