@@ -19,7 +19,7 @@ export function expectHex(value: Bufferish, expected: Bufferish): void {
 }
 
 export function fromHex(hexString: string): Uint8Array {
-  return Uint8Array.from(Buffer.from(hexString, "hex"));
+  return Buffer.from(hexString, "hex");
 }
 
 /**
