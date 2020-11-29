@@ -25,6 +25,11 @@ const sig = sk.sign(msg);
 console.log(verify(msg, pk, sig)); // true
 ```
 
+This library exposes two types of classes for public keys and signatures: `PublicKey` & `AggregatePublicKey`, `Signature` & `AggregateSignature`
+
+- `PublicKey`: Contains an affine point (x,y). It's the default representation of the point and what you need to serialize to and deserialize from.
+- `AggregatePublicKey`: Contains a jacobian point (x,y,z). It's optimal to perform aggregation operations.
+
 ## Spec versioning
 
 This library has a hardcoded configuration compatible with Eth2.0 spec:
