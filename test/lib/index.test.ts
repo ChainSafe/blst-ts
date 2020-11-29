@@ -6,7 +6,7 @@ describe("bls lib", () => {
   describe("1 msg, 1 pk", () => {
     const msg = Buffer.from("sample-msg");
 
-    const sk = bls.SecretKey.fromKeygen(Uint8Array.from(Buffer.alloc(32, 1)));
+    const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, 1));
     const pk = sk.toPublicKey();
     const sig = sk.sign(msg);
 
@@ -22,7 +22,7 @@ describe("bls lib", () => {
     const sigs: bls.Signature[] = [];
 
     for (let i = 0; i < n; i++) {
-      const sk = bls.SecretKey.fromKeygen(Uint8Array.from(Buffer.alloc(32, i)));
+      const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
       sks.push(sk);
       pks.push(sk.toAggregatePublicKey());
       sigs.push(sk.sign(msg));
@@ -50,8 +50,8 @@ describe("bls lib", () => {
     const sigs: bls.Signature[] = [];
 
     for (let i = 0; i < n; i++) {
-      const msg = Uint8Array.from(Buffer.alloc(32, i));
-      const sk = bls.SecretKey.fromKeygen(Uint8Array.from(Buffer.alloc(32, 1)));
+      const msg = Buffer.alloc(32, i);
+      const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, 1));
       msgs.push(msg);
       sks.push(sk);
       pks.push(sk.toPublicKey());
