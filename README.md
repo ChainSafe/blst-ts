@@ -27,6 +27,15 @@ console.log(verify(msg, pk, sig)); // true
 
 ## Spec versioning
 
+This library has a hardcoded configuration compatible with Eth2.0 spec:
+
+| Setting        | value                                         |
+| -------------- | --------------------------------------------- |
+| PK_IN          | `G1`                                          |
+| HASH_OR_ENCODE | `true`                                        |
+| DST            | `BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_` |
+| RAND_BITS      | `64`                                          |
+
 > [spec](https://github.com/ethereum/eth2.0-specs/blob/v0.11.1/specs/phase0/beacon-chain.md#bls-signatures)
 
 > [test vectors](https://github.com/ethereum/eth2.0-spec-tests/tree/master/tests/bls)
