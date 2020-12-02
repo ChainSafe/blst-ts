@@ -1,4 +1,4 @@
-const { SecretKey, verify } = require("@chainsafe/blst");
+const { SecretKey, verify } = require("../src/lib");
 const { run, mark } = require("micro-bmark");
 const { randomBytes } = require("crypto");
 const rand = () => new Uint8Array(randomBytes(32));
