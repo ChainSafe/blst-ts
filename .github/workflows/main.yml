@@ -23,10 +23,15 @@ jobs:
           ./configure --prefix=$HOME/swig;
           make;
           make install;
-      - name: Run.me
-        run: |
-          env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
-            ./blst/bindings/node.js/run.me
+      # - name: Run.me
+      #   run: |
+      #     env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
+      #       ./blst/bindings/node.js/run.me
+      - name: Install node-gyp
+        run: npm install --global node-gyp
+      - name: Build with node-gyp
+        run: node-gyp rebuild
+        working-directory: blst/bindings/node.js
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
         with:
