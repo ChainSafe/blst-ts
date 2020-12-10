@@ -19,14 +19,21 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - uses: actions/cache@v2
+        with:
+          path: ~/swig
+          key: ${{ runner.os }}-swig-pr1746
       - name: Setup SWIG
         run: |
-          git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
-          cd swig;
-          ./autogen.sh;
-          ./configure --prefix=$HOME/swig;
-          make;
-          make install;
+          if [ ! -x ~/swig/bin/swig ]; then
+            ( git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
+              cd swig;
+              ./autogen.sh;
+              ./configure --prefix=$HOME/swig;
+              make;
+              make install;
+            )
+          fi
       # - name: Run.me
       #   run: |
       #     env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
