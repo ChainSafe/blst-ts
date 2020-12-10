@@ -38,6 +38,12 @@ jobs:
       #   run: |
       #     env PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2 \
       #       ./blst/bindings/node.js/run.me
+
+      - name: Copy patch files
+        run: |
+          cp blst_wrap.py blst/bindings/node.js/blst_wrap.py
+          cp blst.hpp blst/bindings/blst.hpp
+
       - name: Install node-gyp
         run: npm install --global node-gyp
       - name: Build with node-gyp
