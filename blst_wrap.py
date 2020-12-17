@@ -6,7 +6,10 @@ import os
 import os.path
 
 pythonScript = sys.argv[0]
+# ../blst.swg
 sourceSwgFile = sys.argv[1]
+# <(INTERMEDIATE_DIR)/blst_wrap.cpp
+# In Github actions: /home/runner/work/blst-ts/blst-ts/blst/bindings/node.js/build/Release/obj.target/blst/geni/blst_wrap.cpp
 targetCppFile = sys.argv[2]
 print("sourceSwgFile", sourceSwgFile)
 print("targetCppFile", targetCppFile)
@@ -16,11 +19,11 @@ if os.path.isfile(targetCppFile):
     print("targetCppFile already exists, skipping build")
     sys.exit(0)
 else:
-    print("targetCppFile not found, building")
-
-here = re.split(r'[/\\](?=[^/\\]*$)', sys.argv[0])
-if len(here) == 1:
-    here.insert(0, '.')
+    if os.environ['SWIG_SKIP_RUN']:
+        print("targetCppFile not found, and SWIG_SKIP_RUN=true")
+        sys.exit(201)
+    else:
+        print("targetCppFile not found, building")
 
 try:
     version = subprocess.check_output(["swig", "-version"]).decode('ascii')
@@ -56,11 +59,9 @@ else:
     print("Error checking NodeJS version")
     sys.exit(203)
 
-print("Done")
+# Copy resulting blst_wrap.cpp file from INTERMEDIATE_DIR
+# to this script's dir so it can be picked up by actions/upload-artifact
+print("Copying target cpp file")
+shutil.copyfile(targetCppFile, "./blst_wrap.cpp")
 
-# try:
-#     print("Copying target cpp file", )
-#     shutil.copyfile("{}/{}".format(here[0], pre_gen), targetCppFile)
-# except NameError:
-#     sys.stderr.write("unsupported 'node --version': {}".format(version))
-#     sys.exit(2)         # "no such file or directory"
+print("Done")

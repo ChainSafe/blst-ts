@@ -98,6 +98,8 @@ jobs:
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
+        env:
+          SWIG_SKIP_RUN: true
       - name: Test
         run: yarn test
 
