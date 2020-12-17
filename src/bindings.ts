@@ -98,12 +98,6 @@ export interface PnConstructor<Pn, Pn_Affine> {
   // P1(const P1_Affine& affine)
   new (affine: Pn_Affine): Pn;
 
-  // static P1 add(const P1& a, const P1& b)
-  add(a: Pn, b: Pn): Pn;
-  // static P1 add(const P1& a, const P1_Affine& b)
-  add(a: Pn, b: Pn_Affine): Pn;
-  // static P1 dbl(const P1& a)
-  dbl(a: Pn): Pn;
   // static const P1& generator()
   generator(): Pn;
 }

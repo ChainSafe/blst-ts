@@ -11,7 +11,7 @@ describe("blst sample case", () => {
     // generate public key and signature
     function userSender(): DataToSend {
       const SK = new blst.SecretKey();
-      SK.keygen("passw@rd");
+      SK.keygen("*".repeat(32));
       const pk = new blst.P1(SK);
       const pk_for_wire = pk.serialize();
 
@@ -31,12 +31,12 @@ describe("blst sample case", () => {
       const sig = new blst.P2_Affine(sig_for_wire);
       const pk = new blst.P1_Affine(pk_for_wire);
 
-      if (!pk.in_group()) throw "disaster"; // vet the public key
+      if (!pk.in_group()) throw "public key not in group"; // vet the public key
 
       var ctx = new blst.Pairing(true, DST);
       ctx.aggregate(pk, sig, msg, pk_for_wire);
       ctx.commit();
-      if (!ctx.finalverify()) throw "disaster";
+      if (!ctx.finalverify()) throw "final verify failed";
     }
 
     const dataSoSend = userSender();

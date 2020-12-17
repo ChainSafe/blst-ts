@@ -9,12 +9,12 @@ import { expectHex, fromHex, runInstanceTestCases } from "../utils";
 
 describe("P1", () => {
   const sample = {
-    keygen: "random",
+    keygen: "********************************", // Must be at least 32 bytes
     p1: fromHex(
-      "0a0451b32b22d58e70d422aff996faac76b40aff096e233781b33e39232c62f7f8c2a89c88a1b9b13204f7a21aed8b9e034718cb67f5dd7cc3a6f47a0bac24a354fb9b383bd43664262ad4045a87deeebdafd7a301ddbd1a3c797732b30ad7bf"
+      "0ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f0109301f36856007e1bc875ab1b00dbf47f9ead16c5562d889d8b270002ade81e78d473204fcb51ede8659bce3d95c67903bc"
     ),
     p1Comp: fromHex(
-      "8a0451b32b22d58e70d422aff996faac76b40aff096e233781b33e39232c62f7f8c2a89c88a1b9b13204f7a21aed8b9e"
+      "8ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093"
     ),
   };
 
@@ -45,31 +45,39 @@ describe("P1", () => {
         sign_with: [
           {
             args: [sk],
-            res: "1265a6e886524edf0e7fbb38e9a11f48b42f06f6908d5fb45c2bb1e42e15120248c5650aaa0f4341a870d178092d1de00045a1ae994b159100019ff274739db4a96b4f8ee8041e0c50c1244aa668e5e280ce634a92eefe58811515a11bf87f90" as any,
+            res: "0c3584dae7a2955145df1e792031e13b7bc1df4c033f59275ad3ecd2d6e6abc198bb5b76fa536b1689ddec11b191b25512eb69e2383a632201809a1fb67deede5aabe258726607c97bc5e17b30b4d26a4fd43cb7bb823d36a5c405a8ec1adc88" as any,
           },
         ],
         hash_to: [
           {
             args: [msg, DST, p1.serialize()],
-            res: "08f8e5a24ff68be5d8a5eb5116dc047f835ac3fcb2d4e827edfff3891164c6c86f42d647e6ce4702e3aac80dfa1764930c9907eca3b8b21719ffc91948a65b587fb658eafbe041322b4cfc34cfbe50f50abc4397a55058580e8ac36696519559" as any,
+            res: "0c52b57688e9659b326258de28f055137fbf0a408aa646f66fd6898afaa0c6b46d6e0974a4741d6b712b4b9b283159a617d60420d044b26613893c96c83029fae39264ba803fb08267db92b260e1878a438bb988826383ed1121ee27df8dc4b0" as any,
           },
         ],
         encode_to: [
           {
             args: [msg, DST, p1.serialize()],
-            res: "062d9a6ba17d654cdcbe145562b1a91434bb4c5bf495b33fc0564f60b984f3ec60fcd067859b3ba01c58367369f88c4c138f61991d20190b397a75eef2c6cf06a24664b058b47cae4106e616671d810bab01290e48d1f0b2a8c225a414a60e40" as any,
+            res: "01fa4ac72140c2f714c135fff2bc3e44f19e6aa65f7ed5d1329d4e404c83e0479bba01f212a17341e325b538fd8c673d054fe059092979fcf6cecf2e81b5a35bc2735b329c446820bb3b7f5bd227c284c7e99712f07fbccd4ae08bc27280d502" as any,
           },
         ],
         cneg: [
           {
             args: [true],
-            res: "0a0451b32b22d58e70d422aff996faac76b40aff096e233781b33e39232c62f7f8c2a89c88a1b9b13204f7a21aed8b9e16b9f91ed18a091d8774b33c379f88340f7bb04cb7b0dc5b4105fe9c9c29173560fc285baf7642e57d8588cd4cf4d2ec" as any,
+            res: "0ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093180da9943901cad1d5708cb567572d38b760862ec5fc75344030cff30e927d4fab8bb0335f66179a1e30c26a3986a6ef" as any,
           },
         ],
-        // Error: Method add does not exist
-        add: [],
-        // Error: Method dbl does not exist
-        dbl: [],
+        add: [
+          {
+            args: [p1Affine],
+            res: "1995e17c244b8be52aae259364646381d9a0d3b4a83c45c40ccfce11952eb259007b07e5bf96a622acb6ae0a8b94063617a8a12cc833156f99c573b4416c21e50fca56be4df635e89f63ae81108becef79ac015f4d5cd33bea4484bf278f2e7c" as any,
+          },
+        ],
+        dbl: [
+          {
+            args: [],
+            res: "1995e17c244b8be52aae259364646381d9a0d3b4a83c45c40ccfce11952eb259007b07e5bf96a622acb6ae0a8b94063617a8a12cc833156f99c573b4416c21e50fca56be4df635e89f63ae81108becef79ac015f4d5cd33bea4484bf278f2e7c" as any,
+          },
+        ],
       },
       function getP1() {
         return new blst.P1(sk);
@@ -112,18 +120,6 @@ describe("P1", () => {
   describe("static", () => {
     runInstanceTestCases<P1Constructor>(
       {
-        add: [
-          {
-            args: [p1, p1Affine],
-            res: "157d484df3b1e12b2c9128c446955d5c9f6c4e30362a8e33c51d7b67c9ac6e04b5213161822aec2a0c35eb0767887f9010b6a92c5278478c4b4e6ca827c1760bd1112f4bbaa0b4ad48b77caf6e5eaf4a77734a47c9c654ef5a3b0bc10c545bba" as any,
-          },
-        ],
-        dbl: [
-          {
-            args: [p1],
-            res: "157d484df3b1e12b2c9128c446955d5c9f6c4e30362a8e33c51d7b67c9ac6e04b5213161822aec2a0c35eb0767887f9010b6a92c5278478c4b4e6ca827c1760bd1112f4bbaa0b4ad48b77caf6e5eaf4a77734a47c9c654ef5a3b0bc10c545bba" as any,
-          },
-        ],
         generator: [
           {
             args: [],
