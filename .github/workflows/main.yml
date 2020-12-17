@@ -44,6 +44,7 @@ jobs:
         run: |
           export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2
           node-gyp rebuild
+          ls -ltrh .
         working-directory: blst/bindings/node.js
 
       - name: Upload binding.node
