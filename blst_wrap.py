@@ -5,6 +5,8 @@ import shutil
 import os
 import os.path
 
+prebuildCppFile = "./blst_wrap.cpp"
+
 pythonScript = sys.argv[0]
 # ../blst.swg
 sourceSwgFile = sys.argv[1]
@@ -21,12 +23,17 @@ print("SWIG_SKIP_RUN", SWIG_SKIP_RUN)
 if os.path.isfile(targetCppFile):
     print("targetCppFile already exists, skipping build")
     sys.exit(0)
+
+if os.path.isfile(prebuildCppFile):
+    print("prebuildCppFile found, skipping build")
+    shutil.copyfile(prebuildCppFile, targetCppFile)
+    sys.exit(0)
+
+if SWIG_SKIP_RUN:
+    print("targetCppFile not found, and SWIG_SKIP_RUN=true")
+    sys.exit(201)
 else:
-    if SWIG_SKIP_RUN:
-        print("targetCppFile not found, and SWIG_SKIP_RUN=true")
-        sys.exit(201)
-    else:
-        print("targetCppFile not found, building")
+    print("targetCppFile not found, building")
 
 try:
     version = subprocess.check_output(["swig", "-version"]).decode('ascii')
@@ -65,6 +72,6 @@ else:
 # Copy resulting blst_wrap.cpp file from INTERMEDIATE_DIR
 # to this script's dir so it can be picked up by actions/upload-artifact
 print("Copying target cpp file")
-shutil.copyfile(targetCppFile, "./blst_wrap.cpp")
+shutil.copyfile(targetCppFile, prebuildCppFile)
 
 print("Done")
