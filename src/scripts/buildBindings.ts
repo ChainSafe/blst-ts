@@ -7,7 +7,7 @@ import {
   ensureDirFromFilepath,
   findBindingsFile,
   BINDINGS_DIR,
-  BLST_WRAP_CPP_TARGET,
+  BLST_WRAP_CPP_PREBUILD,
   BLST_WRAP_PY_PATCH,
   BLST_WRAP_PY_FILE,
   BINDING_GYP_PATCH,
@@ -17,22 +17,22 @@ import {
 export async function buildBindings(binaryPath: string) {
   if (
     process.env.BLST_WRAP_CPP_FORCE_BUILD &&
-    fs.existsSync(BLST_WRAP_CPP_TARGET)
+    fs.existsSync(BLST_WRAP_CPP_PREBUILD)
   ) {
     console.log(
-      `BLST_WRAP_CPP_FORCE_BUILD=true, cleaning existing BLST_WRAP_CPP_TARGET ${BLST_WRAP_CPP_TARGET}`
+      `BLST_WRAP_CPP_FORCE_BUILD=true, cleaning existing BLST_WRAP_CPP_PREBUILD ${BLST_WRAP_CPP_PREBUILD}`
     );
-    fs.unlinkSync(BLST_WRAP_CPP_TARGET);
+    fs.unlinkSync(BLST_WRAP_CPP_PREBUILD);
   }
 
   // Make sure SWIG generated bindings are available or download from release assets
-  if (fs.existsSync(BLST_WRAP_CPP_TARGET)) {
+  if (fs.existsSync(BLST_WRAP_CPP_PREBUILD)) {
     console.log(
-      `BLST_WRAP_CPP_TARGET ${BLST_WRAP_CPP_TARGET} exists, SWIG will be skipped`
+      `BLST_WRAP_CPP_PREBUILD ${BLST_WRAP_CPP_PREBUILD} exists, SWIG will be skipped`
     );
   } else {
     if (process.env.SWIG_SKIP_RUN) {
-      throw Error(`Prebuild SWIG not found ${BLST_WRAP_CPP_TARGET}`);
+      throw Error(`Prebuild SWIG not found ${BLST_WRAP_CPP_PREBUILD}`);
     } else {
       await assertSupportedSwigVersion();
       console.log("Building bindings from src");
@@ -48,17 +48,18 @@ export async function buildBindings(binaryPath: string) {
   const nodeGypExec = require.resolve(
     path.join("node-gyp", "bin", "node-gyp.js")
   );
-  const cwd = BINDINGS_DIR;
-  const env = { ...process.env, BLST_WRAP_CPP_TARGET };
 
   console.log("Launching node-gyp", {
     nodeJsExec,
     nodeGypExec,
-    cwd,
-    BLST_WRAP_CPP_TARGET,
+    cwd: BINDINGS_DIR,
+    BLST_WRAP_CPP_PREBUILD,
   });
 
-  await exec(nodeJsExec, [nodeGypExec, "rebuild"], { cwd, env });
+  await exec(nodeJsExec, [nodeGypExec, "rebuild"], {
+    cwd: BINDINGS_DIR,
+    env: { ...process.env, BLST_WRAP_CPP_PREBUILD },
+  });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.

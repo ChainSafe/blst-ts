@@ -12,21 +12,23 @@ SOURCE_SWIG_FILE = sys.argv[1]
 # <(INTERMEDIATE_DIR)/blst_wrap.cpp
 # In Github actions: /home/runner/work/blst-ts/blst-ts/blst/bindings/node.js/build/Release/obj.target/blst/geni/blst_wrap.cpp
 BLST_WRAP_CPP_TARGET = sys.argv[2]
+BLST_WRAP_CPP_PREBUILD = os.getenv('BLST_WRAP_CPP_PREBUILD')
 SWIG_SKIP_RUN = os.getenv('SWIG_SKIP_RUN')
 
 print("SOURCE_SWIG_FILE", SOURCE_SWIG_FILE)
 print("BLST_WRAP_CPP_TARGET", BLST_WRAP_CPP_TARGET)
+print("BLST_WRAP_CPP_PREBUILD", BLST_WRAP_CPP_PREBUILD)
 print("SWIG_SKIP_RUN", SWIG_SKIP_RUN)
 print("CWD", os.getcwd())
 
 
-if os.path.isfile(BLST_WRAP_CPP_TARGET):
-    print("BLST_WRAP_CPP_TARGET found, skipping build")
+if BLST_WRAP_CPP_PREBUILD and os.path.isfile(BLST_WRAP_CPP_PREBUILD):
+    print("Copying and using BLST_WRAP_CPP_PREBUILD")
+    shutil.copyfile(BLST_WRAP_CPP_PREBUILD, BLST_WRAP_CPP_TARGET)
     sys.exit(0)
 else:
     if SWIG_SKIP_RUN:
-        print("BLST_WRAP_CPP_TARGET not found, but it should exist since SWIG_SKIP_RUN=true")
-        print(os.listdir())
+        print("BLST_WRAP_CPP_PREBUILD not found, but it should exist since SWIG_SKIP_RUN=true")
         sys.exit(201)
     else:
         print("BLST_WRAP_CPP_TARGET not found, building")
@@ -51,18 +53,10 @@ except OSError as e:
         print("Error checking SWIG version", e)
     sys.exit(e.errno)
 
-nodeVersion = subprocess.check_output(["node", "--version"]).decode('ascii')
-nodeSemver = re.match(r'^v([0-9]+)', nodeVersion)
-if nodeSemver:
-    maj = int(nodeSemver.group(1))
-    if maj >= 16:
-        pass
-    elif maj >= 12:
-        pre_gen = "blst_wrap.v12.cpp"
-    elif maj >= 8:
-        pre_gen = "blst_wrap.v8.cpp"
-else:
-    print("Error checking NodeJS version")
-    sys.exit(203)
+
+if BLST_WRAP_CPP_PREBUILD:
+    print("Copying built BLST_WRAP_CPP_TARGET to BLST_WRAP_CPP_PREBUILD")
+    shutil.copyfile(BLST_WRAP_CPP_TARGET, BLST_WRAP_CPP_PREBUILD)
+
 
 print("Done")

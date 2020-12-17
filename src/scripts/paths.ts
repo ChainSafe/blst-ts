@@ -10,7 +10,7 @@ export const BINDINGS_DIR = path.join(ROOT_DIR, "blst/bindings/node.js");
 // Paths for blst_wrap.cpp
 // Resolve path to absolute since it will be used from a different working dir
 // when running blst_wrap.py
-export const BLST_WRAP_CPP_TARGET = path.resolve(
+export const BLST_WRAP_CPP_PREBUILD = path.resolve(
   ROOT_DIR,
   "prebuild",
   "blst_wrap.cpp"
