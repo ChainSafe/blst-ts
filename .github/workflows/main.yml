@@ -53,6 +53,7 @@ jobs:
         with:
           name: blst_wrap.cpp
           path: blst/bindings/node.js/blst_wrap.cpp
+          if-no-files-found: error
 
   build:
     needs: ["build-swig"]
@@ -100,6 +101,7 @@ jobs:
         with:
           name: binding.node
           path: prebuild/
+          if-no-files-found: error
 
   publish:
     needs: ["build-swig", "build"]
