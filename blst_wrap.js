@@ -39,7 +39,7 @@ function getSwigMajorVersion() {
     console.log({ swigVersionOutput });
 
     // ["SWIG Version 4", "4"]
-    const match = o.match(/SWIG Version ([0-9]+)/);
+    const match = swigVersionOutput.match(/SWIG Version ([0-9]+)/);
     const majorVersion = parseInt(match && match[1]);
     if (!majorVersion) {
       throw Error("Unexpected SWIG version format " + majorVersion);
