@@ -3,43 +3,44 @@ import { exec } from "./exec";
 import { testBindings } from "./testBindings";
 import { assertSupportedSwigVersion } from "./swig";
 import {
-  bindingsDirSrc,
   ensureDirFromFilepath,
-  prebuiltSwigSrc,
-  prebuiltSwigTarget,
   findBindingsFile,
-  PREBUILD_BLST_WRAP_PATH,
-  blstWrapPyPatchPath,
+  BINDINGS_DIR,
+  BLST_WRAP_CPP_TARGET,
+  BLST_WRAP_PY_PATCH,
+  BLST_WRAP_PY_FILE,
+  BINDING_GYP_PATCH,
+  BINDING_GYP_FILE,
 } from "./paths";
 
 export async function buildBindings(binaryPath: string) {
   // Make sure SWIG generated bindings are available or download from release assets
-  if (fs.existsSync(prebuiltSwigSrc)) {
+  if (fs.existsSync(BLST_WRAP_CPP_TARGET)) {
     console.log(
-      `Copying prebuild SWIG output from ${prebuiltSwigSrc} to ${prebuiltSwigTarget}`
+      `BLST_WRAP_CPP_TARGET ${BLST_WRAP_CPP_TARGET} exists, SWIG will be skipped`
     );
-    fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
   } else {
-    if (process.env["SWIG_SKIP_RUN"]) {
-      throw Error(`Prebuild SWIG not found ${prebuiltSwigSrc}`);
+    if (process.env.SWIG_SKIP_RUN) {
+      throw Error(`Prebuild SWIG not found ${BLST_WRAP_CPP_TARGET}`);
     } else {
       await assertSupportedSwigVersion();
       console.log("Building bindings from src");
     }
   }
 
-  // Copy patched blst_wrap.py script
-  fs.copyFileSync(blstWrapPyPatchPath, PREBUILD_BLST_WRAP_PATH);
+  // Copy patched blst_wrap.py and bindings.gyp
+  fs.copyFileSync(BLST_WRAP_PY_PATCH, BLST_WRAP_PY_FILE);
+  fs.copyFileSync(BINDING_GYP_PATCH, BINDING_GYP_FILE);
 
   // Use BLST run.me script to build libblst.a + blst.node
   await exec("node-gyp", ["rebuild"], {
-    cwd: bindingsDirSrc,
-    env: { PREBUILD_BLST_WRAP_PATH: PREBUILD_BLST_WRAP_PATH },
+    cwd: BINDINGS_DIR,
+    env: { BLST_WRAP_CPP_TARGET },
   });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.
-  const bindingsFileOutput = findBindingsFile(bindingsDirSrc);
+  const bindingsFileOutput = findBindingsFile(BINDINGS_DIR);
 
   // Copy built .node file to expected path
   ensureDirFromFilepath(binaryPath);

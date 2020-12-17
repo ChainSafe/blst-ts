@@ -8,7 +8,7 @@
     {
       'target_name': 'blst',
       'sources': [
-        '<(INTERMEDIATE_DIR)/blst_wrap.cpp',
+        '$(BLST_WRAP_CPP_TARGET)',
         '../../src/server.c',
       ],
       'include_dirs': [ '..' ],
@@ -32,7 +32,7 @@
           'action_name': 'blst_wrap',
           'variables': { 'cmd' : [ 'blst_wrap.py', '../blst.swg' ] },
           'inputs':  [ '<@(cmd)' ],
-          'outputs': [ '<(INTERMEDIATE_DIR)/blst_wrap.cpp' ],
+          'outputs': [ '$(BLST_WRAP_CPP_TARGET)' ],
           'action':  [ 'python', '<@(cmd)', '<@(_outputs)' ],
         },
       ],
