@@ -81,8 +81,13 @@ jobs:
         run: yarn bootstrap
         env:
           SWIG_SKIP_RUN: true
+
       - name: Test
+        if: matrix.os != 'macOS-latest'
         run: yarn test
+      - name: Test with retry
+        if: matrix.os == 'macOS-latest'
+        run: ./test-with-retry.sh
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
