@@ -20,10 +20,6 @@ export const BLST_WRAP_CPP_PREBUILD = path.resolve(
 export const BLST_WRAP_PY_PATCH = path.join(ROOT_DIR, "blst_wrap.py");
 export const BLST_WRAP_PY_FILE = path.join(BINDINGS_DIR, "blst_wrap.py");
 
-// Paths for custom bindings.gyp file for node-gyp
-export const BINDING_GYP_PATCH = path.join(ROOT_DIR, "binding.gyp");
-export const BINDING_GYP_FILE = path.join(BINDINGS_DIR, "binding.gyp");
-
 /**
  * Get binary name.
  * name: {platform}-{arch}-{v8 version}.node
