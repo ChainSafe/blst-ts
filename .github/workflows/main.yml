@@ -50,6 +50,9 @@ jobs:
             node: 10
           - os: windows-latest
             node: 11
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v2
         with:
