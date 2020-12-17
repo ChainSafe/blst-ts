@@ -32,9 +32,9 @@ export async function buildBindings(binaryPath: string) {
   fs.copyFileSync(blstWrapPyPatchPath, PREBUILD_BLST_WRAP_PATH);
 
   // Use BLST run.me script to build libblst.a + blst.node
-  await exec("node-gyp rebuild", {
+  await exec("node-gyp", ["rebuild"], {
     cwd: bindingsDirSrc,
-    // env: { PREBUILD_BLST_WRAP_PATH: PREBUILD_BLST_WRAP_PATH },
+    env: { PREBUILD_BLST_WRAP_PATH: PREBUILD_BLST_WRAP_PATH },
   });
 
   // The output of node-gyp is not at a predictable path but various

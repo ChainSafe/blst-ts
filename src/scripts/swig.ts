@@ -14,7 +14,7 @@ export async function assertSupportedSwigVersion() {
  * Parses major version for swig -version
  */
 export async function getSwigMajorVersion(): Promise<number> {
-  const swigVersionOutput = await exec("swig -version").catch((e) => {
+  const swigVersionOutput = await exec("swig", ["-version"]).catch((e) => {
     e.message = `SWIG is not installed ${e.message}`;
     throw e;
   });
