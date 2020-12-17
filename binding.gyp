@@ -30,7 +30,7 @@
       'actions' : [
         {
           'action_name': 'blst_wrap',
-          'variables': { 'cmd' : [ 'blst_wrap.js', '../blst.swg' ] },
+          'variables': { 'cmd' : [ '../../../dist/scripts/blst_wrap.js', '../blst.swg' ] },
           'inputs':  [ '<@(cmd)' ],
           'outputs': [ '<(INTERMEDIATE_DIR)/blst_wrap.cpp' ],
           'action':  [ 'node', '<@(cmd)', '<@(_outputs)' ],

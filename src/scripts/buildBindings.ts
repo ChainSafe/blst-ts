@@ -1,5 +1,5 @@
 import fs from "fs";
-import { exec } from "child_process";
+import { exec } from "./exec";
 import { testBindings } from "./testBindings";
 import {
   bindingsDirSrc,
@@ -27,22 +27,7 @@ export async function buildBindings(binaryPath: string) {
   }
 
   // Use BLST run.me script to build libblst.a + blst.node
-  await new Promise((resolve, reject): void => {
-    const proc = exec(
-      "node-gyp rebuild",
-      {
-        timeout: 3 * 60 * 1000, // ms
-        maxBuffer: 10e6, // bytes
-        cwd: bindingsDirSrc,
-      },
-      (err, stdout, stderr) => {
-        if (err) reject(err);
-        else resolve(stdout.trim() || stderr);
-      }
-    );
-    if (proc.stdout) proc.stdout.pipe(process.stdout);
-    if (proc.stderr) proc.stderr.pipe(process.stderr);
-  });
+  await exec("node-gyp rebuild", { cwd: bindingsDirSrc });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.
