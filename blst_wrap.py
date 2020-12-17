@@ -5,7 +5,7 @@ import shutil
 import os
 import os.path
 
-prebuildCppFile = "./blst_wrap.cpp"
+prebuildCppFile = "blst_wrap.cpp"
 
 pythonScript = sys.argv[0]
 # ../blst.swg
@@ -17,23 +17,21 @@ SWIG_SKIP_RUN = os.getenv('SWIG_SKIP_RUN')
 
 print("sourceSwgFile", sourceSwgFile)
 print("targetCppFile", targetCppFile)
+print("prebuildCppFile", prebuildCppFile)
 print("SWIG_SKIP_RUN", SWIG_SKIP_RUN)
 
-
-if os.path.isfile(targetCppFile):
-    print("targetCppFile already exists, skipping build")
-    sys.exit(0)
 
 if os.path.isfile(prebuildCppFile):
     print("prebuildCppFile found, skipping build")
     shutil.copyfile(prebuildCppFile, targetCppFile)
     sys.exit(0)
-
-if SWIG_SKIP_RUN:
-    print("targetCppFile not found, and SWIG_SKIP_RUN=true")
-    sys.exit(201)
 else:
-    print("targetCppFile not found, building")
+    if SWIG_SKIP_RUN:
+        print("prebuildCppFile not found, and SWIG_SKIP_RUN=true")
+        print(os.listdir())
+        sys.exit(201)
+    else:
+        print("prebuildCppFile not found, building")
 
 try:
     version = subprocess.check_output(["swig", "-version"]).decode('ascii')
