@@ -90,6 +90,12 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild/
 
+      - name: Copy patch files
+        run: |
+          cp binding.gyp blst/bindings/node.js/binding.gyp
+          cp blst_wrap.js blst/bindings/node.js/blst_wrap.js
+          cp blst_wrap.py blst/bindings/node.js/blst_wrap.py
+
       - name: Install && Build TS + bindings
         run: yarn bootstrap
       - name: Test
