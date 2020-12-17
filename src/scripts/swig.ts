@@ -18,7 +18,6 @@ export async function getSwigMajorVersion(): Promise<number> {
     e.message = `SWIG is not installed ${e.message}`;
     throw e;
   });
-  console.log({ swigVersionOutput });
 
   // ["SWIG Version 4", "4"]
   const match = swigVersionOutput.match(/SWIG Version ([0-9]+)/);
