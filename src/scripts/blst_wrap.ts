@@ -21,18 +21,15 @@ async function runSwig() {
 
   // Build blst_wrap.cpp with SWIG
   try {
-    await exec(
-      [
-        "swig",
-        "-c++",
-        "-javascript",
-        "-node",
-        "-DV8_VERSION=0x060000",
-        "-o",
-        targetCppFile,
-        sourceSwgFile,
-      ].join(" ")
-    );
+    await exec("swig", [
+      "-c++",
+      "-javascript",
+      "-node",
+      "-DV8_VERSION=0x060000",
+      "-o",
+      targetCppFile,
+      sourceSwgFile,
+    ]);
   } catch (e) {
     console.error("Error running SWIG");
     throw e;
