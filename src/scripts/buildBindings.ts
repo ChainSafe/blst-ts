@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import { exec } from "./exec";
 import { testBindings } from "./testBindings";
 import { assertSupportedSwigVersion } from "./swig";
@@ -33,7 +34,12 @@ export async function buildBindings(binaryPath: string) {
   fs.copyFileSync(BINDING_GYP_PATCH, BINDING_GYP_FILE);
 
   // Use BLST run.me script to build libblst.a + blst.node
-  await exec("node-gyp", ["rebuild"], {
+  const nodeJsExec = process.execPath;
+  const nodeGypExec = require.resolve(
+    path.join("node-gyp", "bin", "node-gyp.js")
+  );
+
+  await exec(nodeJsExec, [nodeGypExec, "rebuild"], {
     cwd: BINDINGS_DIR,
     env: { BLST_WRAP_CPP_TARGET },
   });
