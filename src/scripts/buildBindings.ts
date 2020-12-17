@@ -33,16 +33,17 @@ export async function buildBindings(binaryPath: string) {
   fs.copyFileSync(BLST_WRAP_PY_PATCH, BLST_WRAP_PY_FILE);
   fs.copyFileSync(BINDING_GYP_PATCH, BINDING_GYP_FILE);
 
-  // Use BLST run.me script to build libblst.a + blst.node
+  // From https://github.com/sass/node-sass/blob/769f3a6f5a3949bd8e69c6b0a5d385a9c07924b4/scripts/build.js#L59
   const nodeJsExec = process.execPath;
   const nodeGypExec = require.resolve(
     path.join("node-gyp", "bin", "node-gyp.js")
   );
+  const cwd = BINDINGS_DIR;
+  const env = { ...process.env, BLST_WRAP_CPP_TARGET };
 
-  await exec(nodeJsExec, [nodeGypExec, "rebuild"], {
-    cwd: BINDINGS_DIR,
-    env: { BLST_WRAP_CPP_TARGET },
-  });
+  console.log("Launching node-gyp", { nodeJsExec, nodeGypExec, cwd, env });
+
+  await exec(nodeJsExec, [nodeGypExec, "rebuild"], { cwd, env });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.
