@@ -1,4 +1,4 @@
-import child_process from "child_process";
+const child_process = require("child_process");
 
 const sourceSwgFile = process.argv[1];
 const targetCppFile = process.argv[2];
