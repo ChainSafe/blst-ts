@@ -11,15 +11,18 @@ sourceSwgFile = sys.argv[1]
 # <(INTERMEDIATE_DIR)/blst_wrap.cpp
 # In Github actions: /home/runner/work/blst-ts/blst-ts/blst/bindings/node.js/build/Release/obj.target/blst/geni/blst_wrap.cpp
 targetCppFile = sys.argv[2]
+SWIG_SKIP_RUN = os.getenv('SWIG_SKIP_RUN')
+
 print("sourceSwgFile", sourceSwgFile)
 print("targetCppFile", targetCppFile)
+print("SWIG_SKIP_RUN", SWIG_SKIP_RUN)
 
 
 if os.path.isfile(targetCppFile):
     print("targetCppFile already exists, skipping build")
     sys.exit(0)
 else:
-    if os.environ['SWIG_SKIP_RUN']:
+    if SWIG_SKIP_RUN:
         print("targetCppFile not found, and SWIG_SKIP_RUN=true")
         sys.exit(201)
     else:
