@@ -13,7 +13,7 @@ describe("SecretKey", () => {
   runInstanceTestCases<SecretKey>(
     {
       keygen: [
-        { id: "from string", args: ["randomString"] },
+        { id: "from string", args: ["randomString".padEnd(32, "0")] },
         { id: "from Buffer", args: [sampleHex] },
         { id: "with two args", args: [sampleHex, info] },
         { id: "from short ikm", args: [new Uint8Array([0])] },

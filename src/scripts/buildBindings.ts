@@ -1,52 +1,66 @@
 import fs from "fs";
-import { exec } from "child_process";
+import path from "path";
+import { exec } from "./exec";
 import { testBindings } from "./testBindings";
+import { assertSupportedSwigVersion } from "./swig";
 import {
-  bindingsDirSrc,
   ensureDirFromFilepath,
-  prebuiltSwigSrc,
-  prebuiltSwigTarget,
-  blstWrapCppName,
   findBindingsFile,
+  BINDINGS_DIR,
+  BLST_WRAP_CPP_PREBUILD,
+  BLST_WRAP_PY_PATCH,
+  BLST_WRAP_PY_FILE,
 } from "./paths";
-import { downloadReleaseAsset } from "./downloadReleaseAsset";
 
 export async function buildBindings(binaryPath: string) {
+  if (
+    process.env.BLST_WRAP_CPP_FORCE_BUILD &&
+    fs.existsSync(BLST_WRAP_CPP_PREBUILD)
+  ) {
+    console.log(
+      `BLST_WRAP_CPP_FORCE_BUILD=true, cleaning existing BLST_WRAP_CPP_PREBUILD ${BLST_WRAP_CPP_PREBUILD}`
+    );
+    fs.unlinkSync(BLST_WRAP_CPP_PREBUILD);
+  }
+
   // Make sure SWIG generated bindings are available or download from release assets
-  if (fs.existsSync(prebuiltSwigSrc)) {
-    fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
+  if (fs.existsSync(BLST_WRAP_CPP_PREBUILD)) {
+    console.log(
+      `BLST_WRAP_CPP_PREBUILD ${BLST_WRAP_CPP_PREBUILD} exists, SWIG will be skipped`
+    );
   } else {
-    try {
-      await downloadReleaseAsset(blstWrapCppName, prebuiltSwigTarget);
-    } catch (e) {
-      // TODO: Make sure SWIG is available or throw
-      console.error(
-        `Error downloading prebuilt ${blstWrapCppName}. Trying to built it from source with SWIG\n${e.message}`
-      );
+    if (process.env.SWIG_SKIP_RUN) {
+      throw Error(`Prebuild SWIG not found ${BLST_WRAP_CPP_PREBUILD}`);
+    } else {
+      await assertSupportedSwigVersion();
+      console.log("Building bindings from src");
     }
   }
 
-  // Use BLST run.me script to build libblst.a + blst.node
-  await new Promise((resolve, reject): void => {
-    const proc = exec(
-      "node-gyp rebuild",
-      {
-        timeout: 3 * 60 * 1000, // ms
-        maxBuffer: 10e6, // bytes
-        cwd: bindingsDirSrc,
-      },
-      (err, stdout, stderr) => {
-        if (err) reject(err);
-        else resolve(stdout.trim() || stderr);
-      }
-    );
-    if (proc.stdout) proc.stdout.pipe(process.stdout);
-    if (proc.stderr) proc.stderr.pipe(process.stderr);
+  // Copy patched blst_wrap.py and bindings.gyp
+  fs.copyFileSync(BLST_WRAP_PY_PATCH, BLST_WRAP_PY_FILE);
+
+  // From https://github.com/sass/node-sass/blob/769f3a6f5a3949bd8e69c6b0a5d385a9c07924b4/scripts/build.js#L59
+  const nodeJsExec = process.execPath;
+  const nodeGypExec = require.resolve(
+    path.join("node-gyp", "bin", "node-gyp.js")
+  );
+
+  console.log("Launching node-gyp", {
+    nodeJsExec,
+    nodeGypExec,
+    cwd: BINDINGS_DIR,
+    BLST_WRAP_CPP_PREBUILD,
+  });
+
+  await exec(nodeJsExec, [nodeGypExec, "rebuild"], {
+    cwd: BINDINGS_DIR,
+    env: { ...process.env, BLST_WRAP_CPP_PREBUILD },
   });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.
-  const bindingsFileOutput = findBindingsFile(bindingsDirSrc);
+  const bindingsFileOutput = findBindingsFile(BINDINGS_DIR);
 
   // Copy built .node file to expected path
   ensureDirFromFilepath(binaryPath);

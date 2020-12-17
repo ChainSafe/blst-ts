@@ -40,7 +40,8 @@ async function install() {
     if (e.statusCode === 404) {
       console.error(`${libName} not available: ${e.message}`);
     } else {
-      console.error(`Error importing ${libName}: ${e.stack}`);
+      e.message = `Error importing ${libName}: ${e.message}`;
+      console.error(e);
     }
   }
 
@@ -52,7 +53,8 @@ async function install() {
     console.log(`Successfully built ${libName} from source`);
     return;
   } catch (e) {
-    console.error(`Error building ${libName}: ${e.stack}`);
+    e.message = `Error building ${libName}: ${e.message}`;
+    console.error(e);
   }
 
   // Fallback?
