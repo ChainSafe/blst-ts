@@ -8,7 +8,7 @@ import {
   prebuiltSwigSrc,
   prebuiltSwigTarget,
   findBindingsFile,
-  blstWrapPyTargetPath,
+  PREBUILD_BLST_WRAP_PATH,
   blstWrapPyPatchPath,
 } from "./paths";
 
@@ -29,10 +29,13 @@ export async function buildBindings(binaryPath: string) {
   }
 
   // Copy patched blst_wrap.py script
-  fs.copyFileSync(blstWrapPyPatchPath, blstWrapPyTargetPath);
+  fs.copyFileSync(blstWrapPyPatchPath, PREBUILD_BLST_WRAP_PATH);
 
   // Use BLST run.me script to build libblst.a + blst.node
-  await exec("node-gyp rebuild", { cwd: bindingsDirSrc });
+  await exec("node-gyp rebuild", {
+    cwd: bindingsDirSrc,
+    env: { PREBUILD_BLST_WRAP_PATH: PREBUILD_BLST_WRAP_PATH },
+  });
 
   // The output of node-gyp is not at a predictable path but various
   // depending on the OS.

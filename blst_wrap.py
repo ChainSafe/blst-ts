@@ -5,33 +5,34 @@ import shutil
 import os
 import os.path
 
-prebuildCppFile = "blst_wrap.cpp"
+
 
 pythonScript = sys.argv[0]
 # ../blst.swg
-sourceSwgFile = sys.argv[1]
+SOURCE_SWIG_FILE = sys.argv[1]
 # <(INTERMEDIATE_DIR)/blst_wrap.cpp
 # In Github actions: /home/runner/work/blst-ts/blst-ts/blst/bindings/node.js/build/Release/obj.target/blst/geni/blst_wrap.cpp
-targetCppFile = sys.argv[2]
+TARGET_CPP_FILE = sys.argv[2]
+PREBUILD_BLST_WRAP_PATH = os.getenv('PREBUILD_BLST_WRAP_PATH') or "blst_wrap.cpp"
 SWIG_SKIP_RUN = os.getenv('SWIG_SKIP_RUN')
 
-print("sourceSwgFile", sourceSwgFile)
-print("targetCppFile", targetCppFile)
-print("prebuildCppFile", prebuildCppFile)
+print("SOURCE_SWIG_FILE", SOURCE_SWIG_FILE)
+print("TARGET_CPP_FILE", TARGET_CPP_FILE)
+print("PREBUILD_BLST_WRAP_PATH", PREBUILD_BLST_WRAP_PATH)
 print("SWIG_SKIP_RUN", SWIG_SKIP_RUN)
 
 
-if os.path.isfile(prebuildCppFile):
-    print("prebuildCppFile found, skipping build")
-    shutil.copyfile(prebuildCppFile, targetCppFile)
+if os.path.isfile(PREBUILD_BLST_WRAP_PATH):
+    print("PREBUILD_BLST_WRAP_PATH found, skipping build")
+    shutil.copyfile(PREBUILD_BLST_WRAP_PATH, TARGET_CPP_FILE)
     sys.exit(0)
 else:
     if SWIG_SKIP_RUN:
-        print("prebuildCppFile not found, and SWIG_SKIP_RUN=true")
+        print("PREBUILD_BLST_WRAP_PATH not found, and SWIG_SKIP_RUN=true")
         print(os.listdir())
         sys.exit(201)
     else:
-        print("prebuildCppFile not found, building")
+        print("PREBUILD_BLST_WRAP_PATH not found, building")
 
 try:
     version = subprocess.check_output(["swig", "-version"]).decode('ascii')
@@ -41,7 +42,7 @@ try:
         print("Running SWIG...")
         subprocess.check_call(["swig", "-c++", "-javascript",
                                        "-node", "-DV8_VERSION=0x060000",
-                                       "-o", targetCppFile, sourceSwgFile])
+                                       "-o", TARGET_CPP_FILE, SOURCE_SWIG_FILE])
     else:
         print("Unsupported swig version")
         sys.exit(202)
@@ -70,6 +71,6 @@ else:
 # Copy resulting blst_wrap.cpp file from INTERMEDIATE_DIR
 # to this script's dir so it can be picked up by actions/upload-artifact
 print("Copying target cpp file")
-shutil.copyfile(targetCppFile, prebuildCppFile)
+shutil.copyfile(TARGET_CPP_FILE, PREBUILD_BLST_WRAP_PATH)
 
 print("Done")
