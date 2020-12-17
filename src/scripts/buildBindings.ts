@@ -1,29 +1,25 @@
 import fs from "fs";
 import { exec } from "./exec";
 import { testBindings } from "./testBindings";
+import { assertSupportedSwigVersion } from "./swig";
 import {
   bindingsDirSrc,
   ensureDirFromFilepath,
   prebuiltSwigSrc,
   prebuiltSwigTarget,
-  blstWrapCppName,
   findBindingsFile,
 } from "./paths";
-import { downloadReleaseAsset } from "./downloadReleaseAsset";
 
 export async function buildBindings(binaryPath: string) {
   // Make sure SWIG generated bindings are available or download from release assets
-  if (fs.existsSync(prebuiltSwigSrc)) {
+  if (process.env["SWIG_SKIP_RUN"]) {
+    console.log(
+      `Copying prebuild SWIG output from ${prebuiltSwigSrc} to ${prebuiltSwigTarget}`
+    );
     fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
   } else {
-    try {
-      await downloadReleaseAsset(blstWrapCppName, prebuiltSwigTarget);
-    } catch (e) {
-      // TODO: Make sure SWIG is available or throw
-      console.error(
-        `Error downloading prebuilt ${blstWrapCppName}. Trying to built it from source with SWIG\n${e.message}`
-      );
-    }
+    await assertSupportedSwigVersion();
+    console.log("Building bindings from src");
   }
 
   // Use BLST run.me script to build libblst.a + blst.node

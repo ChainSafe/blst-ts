@@ -2,6 +2,7 @@ import sys
 import subprocess
 import re
 import shutil
+import os
 import os.path
 
 pythonScript = sys.argv[0]

@@ -1,4 +1,5 @@
 import { exec } from "./exec";
+import { assertSupportedSwigVersion } from "./swig";
 
 // CLI runner
 runSwig().then(
@@ -16,10 +17,7 @@ async function runSwig() {
   console.log({ sourceSwgFile, targetCppFile });
 
   // Check SWIG version
-  const swigMajorVersion = await getSwigMajorVersion();
-  if (swigMajorVersion < 4) {
-    throw Error("Unsupported SWIG version, must be >= 4");
-  }
+  await assertSupportedSwigVersion();
 
   // Build blst_wrap.cpp with SWIG
   try {
@@ -41,26 +39,4 @@ async function runSwig() {
   }
 
   console.log("Done");
-}
-
-/**
- * Parses major version for swig -version
- */
-async function getSwigMajorVersion(): Promise<number> {
-  try {
-    const swigVersionOutput = await exec("swig -version");
-    console.log({ swigVersionOutput });
-
-    // ["SWIG Version 4", "4"]
-    const match = swigVersionOutput.match(/SWIG Version ([0-9]+)/);
-    const majorVersion = match ? parseInt(match[1]) : null;
-    if (!majorVersion) {
-      throw Error("Unexpected SWIG version format " + majorVersion);
-    }
-
-    return majorVersion;
-  } catch (e) {
-    console.error("Error getting SWIG major version");
-    throw e;
-  }
 }
