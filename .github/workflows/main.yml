@@ -19,7 +19,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
+      - name: Cache SWIG setup
+        id: cache-swig-setup
+        uses: actions/cache@v2
+        with:
+          path: ~/swig
+          key: ${{ runner.os }}-swig-pr1746
       - name: Setup SWIG
+        if: steps.cache-swig-setup.outputs.cache-hit != 'true'
         run: |
           git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
           cd swig;
