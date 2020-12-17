@@ -15,6 +15,16 @@ import {
 } from "./paths";
 
 export async function buildBindings(binaryPath: string) {
+  if (
+    process.env.BLST_WRAP_CPP_FORCE_BUILD &&
+    fs.existsSync(BLST_WRAP_CPP_TARGET)
+  ) {
+    console.log(
+      `BLST_WRAP_CPP_FORCE_BUILD=true, cleaning existing BLST_WRAP_CPP_TARGET ${BLST_WRAP_CPP_TARGET}`
+    );
+    fs.unlinkSync(BLST_WRAP_CPP_TARGET);
+  }
+
   // Make sure SWIG generated bindings are available or download from release assets
   if (fs.existsSync(BLST_WRAP_CPP_TARGET)) {
     console.log(
@@ -41,7 +51,12 @@ export async function buildBindings(binaryPath: string) {
   const cwd = BINDINGS_DIR;
   const env = { ...process.env, BLST_WRAP_CPP_TARGET };
 
-  console.log("Launching node-gyp", { nodeJsExec, nodeGypExec, cwd, env });
+  console.log("Launching node-gyp", {
+    nodeJsExec,
+    nodeGypExec,
+    cwd,
+    BLST_WRAP_CPP_TARGET,
+  });
 
   await exec(nodeJsExec, [nodeGypExec, "rebuild"], { cwd, env });
 

@@ -41,6 +41,8 @@ jobs:
           yarn bootstrap
           ls -ltrh .
         working-directory: blst/bindings/node.js
+        env:
+          BLST_WRAP_CPP_FORCE_BUILD: true
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
