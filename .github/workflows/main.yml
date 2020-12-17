@@ -36,7 +36,9 @@ jobs:
           make install;
 
       - name: Copy patch files
-        run: cp blst_wrap.py blst/bindings/node.js/blst_wrap.py
+        run: |
+          cp binding.gyp blst/bindings/node.js/binding.gyp
+          cp blst_wrap.js blst/bindings/node.js/blst_wrap.js
 
       - name: Install node-gyp
         run: npm install --global node-gyp
