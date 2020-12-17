@@ -35,12 +35,6 @@ jobs:
           make;
           make install;
 
-      - name: Copy patch files
-        run: |
-          cp binding.gyp blst/bindings/node.js/binding.gyp
-          cp blst_wrap.js blst/bindings/node.js/blst_wrap.js
-          cp blst_wrap.py blst/bindings/node.js/blst_wrap.py
-
       - name: Install && Build TS + bindings
         run: |
           export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2
@@ -89,12 +83,6 @@ jobs:
         with:
           name: blst_wrap.cpp
           path: prebuild/
-
-      - name: Copy patch files
-        run: |
-          cp binding.gyp blst/bindings/node.js/binding.gyp
-          cp blst_wrap.js blst/bindings/node.js/blst_wrap.js
-          cp blst_wrap.py blst/bindings/node.js/blst_wrap.py
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap

@@ -8,19 +8,28 @@ import {
   prebuiltSwigSrc,
   prebuiltSwigTarget,
   findBindingsFile,
+  blstWrapPyTargetPath,
+  blstWrapPyPatchPath,
 } from "./paths";
 
 export async function buildBindings(binaryPath: string) {
   // Make sure SWIG generated bindings are available or download from release assets
-  if (process.env["SWIG_SKIP_RUN"]) {
+  if (fs.existsSync(prebuiltSwigSrc)) {
     console.log(
       `Copying prebuild SWIG output from ${prebuiltSwigSrc} to ${prebuiltSwigTarget}`
     );
     fs.copyFileSync(prebuiltSwigSrc, prebuiltSwigTarget);
   } else {
-    await assertSupportedSwigVersion();
-    console.log("Building bindings from src");
+    if (process.env["SWIG_SKIP_RUN"]) {
+      throw Error(`Prebuild SWIG not found ${prebuiltSwigSrc}`);
+    } else {
+      await assertSupportedSwigVersion();
+      console.log("Building bindings from src");
+    }
   }
+
+  // Copy patched blst_wrap.py script
+  fs.copyFileSync(blstWrapPyPatchPath, blstWrapPyTargetPath);
 
   // Use BLST run.me script to build libblst.a + blst.node
   await exec("node-gyp rebuild", { cwd: bindingsDirSrc });

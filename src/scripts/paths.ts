@@ -11,6 +11,10 @@ export const blstWrapCppName = "blst_wrap.cpp";
 export const prebuiltSwigSrc = path.join(rootDir, "prebuild", blstWrapCppName);
 export const prebuiltSwigTarget = path.join(bindingsDirSrc, blstWrapCppName);
 
+export const blstWrapPyName = "blst_wrap.py";
+export const blstWrapPyPatchPath = path.join("./", blstWrapPyName);
+export const blstWrapPyTargetPath = path.join(bindingsDirSrc, blstWrapPyName);
+
 export const defaultBinaryDir = path.join(rootDir, "prebuild");
 
 /**
