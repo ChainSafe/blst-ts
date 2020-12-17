@@ -40,12 +40,10 @@ jobs:
           cp binding.gyp blst/bindings/node.js/binding.gyp
           cp blst_wrap.js blst/bindings/node.js/blst_wrap.js
 
-      - name: Install node-gyp
-        run: npm install --global node-gyp
-      - name: Build with node-gyp
+      - name: Install && Build TS + bindings
         run: |
           export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2
-          node-gyp rebuild
+          yarn bootstrap
           ls -ltrh .
         working-directory: blst/bindings/node.js
 
