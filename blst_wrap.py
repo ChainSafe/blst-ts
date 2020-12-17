@@ -2,12 +2,20 @@ import sys
 import subprocess
 import re
 import shutil
+import os.path
 
 pythonScript = sys.argv[0]
 sourceSwgFile = sys.argv[1]
 targetCppFile = sys.argv[2]
 print("sourceSwgFile", sourceSwgFile)
 print("targetCppFile", targetCppFile)
+
+
+if os.path.isfile(targetCppFile):
+    print("targetCppFile already exists, skipping build")
+    sys.exit(0)
+else:
+    print("targetCppFile not found, building")
 
 here = re.split(r'[/\\](?=[^/\\]*$)', sys.argv[0])
 if len(here) == 1:
