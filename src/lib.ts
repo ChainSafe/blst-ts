@@ -91,6 +91,9 @@ export class PublicKey extends SerializeAffine<PkAffine> {
   }
 
   keyValidate(): void {
+    if (this.value.is_inf()) {
+      throw new ErrorBLST(BLST_ERROR.BLST_PK_IS_INFINITY);
+    }
     if (!this.value.in_group()) {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }
