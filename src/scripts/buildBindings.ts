@@ -8,8 +8,6 @@ import {
   findBindingsFile,
   BINDINGS_DIR,
   BLST_WRAP_CPP_PREBUILD,
-  BLST_WRAP_PY_PATCH,
-  BLST_WRAP_PY_FILE,
 } from "./paths";
 
 export async function buildBindings(binaryPath: string) {
@@ -36,9 +34,6 @@ export async function buildBindings(binaryPath: string) {
       console.log("Building bindings from src");
     }
   }
-
-  // Copy patched blst_wrap.py and bindings.gyp
-  fs.copyFileSync(BLST_WRAP_PY_PATCH, BLST_WRAP_PY_FILE);
 
   // From https://github.com/sass/node-sass/blob/769f3a6f5a3949bd8e69c6b0a5d385a9c07924b4/scripts/build.js#L59
   const nodeJsExec = process.execPath;
