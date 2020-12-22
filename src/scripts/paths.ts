@@ -16,10 +16,6 @@ export const BLST_WRAP_CPP_PREBUILD = path.resolve(
   "blst_wrap.cpp"
 );
 
-// Paths for custom python script to build blst_wrap.cpp
-export const BLST_WRAP_PY_PATCH = path.join(ROOT_DIR, "blst_wrap.py");
-export const BLST_WRAP_PY_FILE = path.join(BINDINGS_DIR, "blst_wrap.py");
-
 /**
  * Get binary name.
  * name: {platform}-{arch}-{v8 version}.node
