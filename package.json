@@ -13,7 +13,8 @@
     "install": "node dist/scripts/install.js",
     "test": "mocha test/**/*",
     "build": "tsc",
-    "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install"
+    "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
+    "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp"
   },
   "repository": {
     "type": "git",

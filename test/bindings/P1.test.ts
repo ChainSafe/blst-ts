@@ -36,10 +36,14 @@ describe("P1", () => {
 
     runInstanceTestCases<P1>(
       {
+        dup: [{ args: [], res: new blst.P1(sk) }],
         to_affine: [{ args: [], res: p1Affine }],
         serialize: [{ args: [], res: sample.p1 }],
         compress: [{ args: [], res: sample.p1Comp }],
+        on_curve: [{ args: [], res: true }],
+        in_group: [{ args: [], res: true }],
         is_inf: [{ args: [], res: false }],
+        is_equal: [{ args: [new blst.P1(sk)], res: true }],
         // TODO: Skip tests for now
         aggregate: [],
         sign_with: [
@@ -60,9 +64,22 @@ describe("P1", () => {
             res: "01fa4ac72140c2f714c135fff2bc3e44f19e6aa65f7ed5d1329d4e404c83e0479bba01f212a17341e325b538fd8c673d054fe059092979fcf6cecf2e81b5a35bc2735b329c446820bb3b7f5bd227c284c7e99712f07fbccd4ae08bc27280d502" as any,
           },
         ],
+        mult: [
+          {
+            // BigIng works fine but breaks in older versions of node
+            args: [new Uint8Array([2])],
+            res: "1995e17c244b8be52aae259364646381d9a0d3b4a83c45c40ccfce11952eb259007b07e5bf96a622acb6ae0a8b94063617a8a12cc833156f99c573b4416c21e50fca56be4df635e89f63ae81108becef79ac015f4d5cd33bea4484bf278f2e7c" as any,
+          },
+        ],
         cneg: [
           {
             args: [true],
+            res: "0ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093180da9943901cad1d5708cb567572d38b760862ec5fc75344030cff30e927d4fab8bb0335f66179a1e30c26a3986a6ef" as any,
+          },
+        ],
+        neg: [
+          {
+            args: [],
             res: "0ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093180da9943901cad1d5708cb567572d38b760862ec5fc75344030cff30e927d4fab8bb0335f66179a1e30c26a3986a6ef" as any,
           },
         ],
@@ -98,12 +115,14 @@ describe("P1", () => {
 
     runInstanceTestCases<P1_Affine>(
       {
+        dup: [{ args: [], res: new blst.P1_Affine(p1) }],
         to_jacobian: [{ args: [], res: p1 }],
         serialize: [{ args: [], res: sample.p1 }],
         compress: [{ args: [], res: sample.p1Comp }],
         on_curve: [{ args: [], res: true }],
         in_group: [{ args: [], res: true }],
         is_inf: [{ args: [], res: false }],
+        is_equal: [{ args: [new blst.P1_Affine(p1)], res: true }],
         core_verify: [
           {
             args: [p2Affine, true, msg, DST],

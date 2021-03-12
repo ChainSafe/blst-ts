@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { blst, BLST_ERROR, Pn_Affine } from "./bindings";
+import { blst, BLST_ERROR } from "./bindings";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
@@ -67,10 +67,15 @@ export class SecretKey {
   }
 }
 
-class SerializeAffine<P extends Pn_Affine<any, any>> {
-  value: P;
-  constructor(value: P) {
+export class PublicKey {
+  value: PkAffine;
+  constructor(value: PkAffine) {
     this.value = value;
+  }
+
+  // Accepts both compressed and serialized
+  static fromBytes(pkBytes: Uint8Array): PublicKey {
+    return new PublicKey(new PkAffineConstructor(pkBytes));
   }
 
   compress(): Uint8Array {
@@ -81,13 +86,6 @@ class SerializeAffine<P extends Pn_Affine<any, any>> {
   }
   toBytes(): Uint8Array {
     return this.compress();
-  }
-}
-
-export class PublicKey extends SerializeAffine<PkAffine> {
-  // Accepts both compressed and serialized
-  static fromBytes(pkBytes: Uint8Array): PublicKey {
-    return new PublicKey(new PkAffineConstructor(pkBytes));
   }
 
   keyValidate(): void {
@@ -100,10 +98,25 @@ export class PublicKey extends SerializeAffine<PkAffine> {
   }
 }
 
-export class Signature extends SerializeAffine<SigAffine> {
+export class Signature {
+  value: SigAffine;
+  constructor(value: SigAffine) {
+    this.value = value;
+  }
+
   // Accepts both compressed and serialized
   static fromBytes(sigBytes: Uint8Array): Signature {
     return new Signature(new SigAffineConstructor(sigBytes));
+  }
+
+  compress(): Uint8Array {
+    return this.value.compress();
+  }
+  serialize(): Uint8Array {
+    return this.value.serialize();
+  }
+  toBytes(): Uint8Array {
+    return this.compress();
   }
 }
 
@@ -258,7 +271,6 @@ export function verifyMultipleAggregateSignatures(
       pks[i].value,
       sigs[i].value,
       rand,
-      RAND_BITS,
       msgs[i]
     );
     if (result !== BLST_ERROR.BLST_SUCCESS) {

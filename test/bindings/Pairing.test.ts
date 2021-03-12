@@ -31,7 +31,6 @@ describe("Pairing", () => {
             p2Affine,
             p1Affine,
             Buffer.alloc(32, 0),
-            32,
             Buffer.alloc(32, 0),
             p1.serialize(),
           ],
