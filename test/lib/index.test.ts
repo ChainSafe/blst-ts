@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import * as bls from "../../src/lib";
 
 describe("bls lib", () => {
@@ -11,7 +12,8 @@ describe("bls lib", () => {
     const sig = sk.sign(msg);
 
     it("verify", () => {
-      bls.verify(msg, pk, sig);
+      const valid = bls.verify(msg, pk, sig);
+      expect(valid).to.equal(true);
     });
   });
 
@@ -30,16 +32,18 @@ describe("bls lib", () => {
 
     it("verify", () => {
       for (let i = 0; i < n; i++) {
-        bls.verify(msg, pks[i].toPublicKey(), sigs[i]);
+        const valid = bls.verify(msg, pks[i].toPublicKey(), sigs[i]);
+        expect(valid).to.equal(true, `Invalid ${i}`);
       }
     });
 
     it("fastAggregateVerify", () => {
-      bls.fastAggregateVerify(
+      const valid = bls.fastAggregateVerify(
         msg,
         pks,
         bls.AggregateSignature.fromSignatures(sigs).toSignature()
       );
+      expect(valid).to.equal(true);
     });
   });
 
@@ -60,20 +64,23 @@ describe("bls lib", () => {
 
     it("verify", () => {
       for (let i = 0; i < n; i++) {
-        bls.verify(msgs[i], pks[i], sigs[i]);
+        const valid = bls.verify(msgs[i], pks[i], sigs[i]);
+        expect(valid).to.equal(true, `Invalid ${i}`);
       }
     });
 
     it("aggregateVerify", () => {
-      bls.aggregateVerify(
+      const valid = bls.aggregateVerify(
         msgs,
         pks,
         bls.AggregateSignature.fromSignatures(sigs).toSignature()
       );
+      expect(valid).to.equal(true);
     });
 
     it("verifyMultipleAggregateSignatures", () => {
-      bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+      const valid = bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+      expect(valid).to.equal(true);
     });
   });
 });
