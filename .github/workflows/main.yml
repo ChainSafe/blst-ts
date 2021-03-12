@@ -84,6 +84,11 @@ jobs:
       - name: Test
         run: yarn test
 
+      - name: worker-threads
+        run: |
+          cp runnable.threads.js blst/bindings/node.js/runnable.threads.js
+          node blst/bindings/node.js/runnable.threads.js
+
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
