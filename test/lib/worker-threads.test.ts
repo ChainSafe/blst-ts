@@ -5,12 +5,12 @@ describe("worker_threads test", function () {
   const nodeJsMajorVer = parseInt(nodeJsSemver.split(".")[0]);
 
   it("Should not throw when importing in two threads", async function () {
-    if (!nodeJsMajorVer) {
-      throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
-    }
-    if (nodeJsMajorVer < 12) {
-      this.skip();
-    }
+    // if (!nodeJsMajorVer) {
+    //   throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
+    // }
+    // if (nodeJsMajorVer < 12) {
+    //   this.skip();
+    // }
 
     const { Worker } = await import("worker_threads");
 
