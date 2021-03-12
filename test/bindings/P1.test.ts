@@ -66,7 +66,8 @@ describe("P1", () => {
         ],
         mult: [
           {
-            args: [BigInt(2)],
+            // BigIng works fine but breaks in older versions of node
+            args: [new Uint8Array([2])],
             res: "1995e17c244b8be52aae259364646381d9a0d3b4a83c45c40ccfce11952eb259007b07e5bf96a622acb6ae0a8b94063617a8a12cc833156f99c573b4416c21e50fca56be4df635e89f63ae81108becef79ac015f4d5cd33bea4484bf278f2e7c" as any,
           },
         ],

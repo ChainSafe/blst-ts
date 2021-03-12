@@ -59,7 +59,7 @@ describe("P2", () => {
         ],
         mult: [
           {
-            args: [BigInt(2)],
+            args: [new Uint8Array([2])],
             res: "047e2e55ca05d77e8e051d2fe878db4bf96517bd44f7b8f26fd2acae6d166270faeeb121f2f073da979909fa1393e0e9194c271ed6023f2536c654312d4ebbed446c84e5f746c496b3e5efdb9ca81a57779c131a067f9c90610ac9fd9a0eaafc086b36516cc11aa30d86cbd335738bc272ce5ae8487c244104b3aa0ce7f2d4a1b1aac476d1baa66a12fc4c562511d919042d77ed5a4f8ed6a3dbaca06540e082ef1209b3a9d27c4adc35d28cb7fbee0836a07ead9579b9043fb056c24e108fbe" as any,
           },
         ],
