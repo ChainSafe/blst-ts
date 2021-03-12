@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "install": "node dist/scripts/install.js",
-    "test": "mocha test/**/*",
+    "test": "mocha test/**/*.test.ts",
     "build": "tsc",
     "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
     "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp"
