@@ -29,10 +29,14 @@ describe("P2", () => {
   describe("P2", () => {
     runInstanceTestCases<P2>(
       {
+        dup: [{ args: [], res: new blst.P2(sk) }],
         to_affine: [{ args: [], res: p2Affine }],
         serialize: [{ args: [], res: sample.p2 }],
         compress: [{ args: [], res: sample.p2Comp }],
+        on_curve: [{ args: [], res: true }],
+        in_group: [{ args: [], res: true }],
         is_inf: [{ args: [], res: false }],
+        is_equal: [{ args: [new blst.P2(sk)], res: true }],
         // TODO: Skip tests for now
         aggregate: [],
         sign_with: [
@@ -53,9 +57,21 @@ describe("P2", () => {
             res: "084536d707307b83c841cdd5ce427bc73a77b88fe167b15f23a85e3a7049a4403f3b84f10855f0ef5e361b93dddee3b418d89f3e31d257caa91ddab18810a72210124353e7d2fc1be81834ca8ca4d609b377189b1e1fce59946d8cd9ec2c7de51254fe50be47ebcb706e2fec12c1558be92db177a9196d8bba4b88ace1d96194980abceeed35a0ff7aedebac9d774855180fb6823d581be6bee21364c2e247205ad580f3f641ed6f39a44424a24c14b48cc3f57f02eb6756ac986fca517cdc33" as any,
           },
         ],
+        mult: [
+          {
+            args: [BigInt(2)],
+            res: "047e2e55ca05d77e8e051d2fe878db4bf96517bd44f7b8f26fd2acae6d166270faeeb121f2f073da979909fa1393e0e9194c271ed6023f2536c654312d4ebbed446c84e5f746c496b3e5efdb9ca81a57779c131a067f9c90610ac9fd9a0eaafc086b36516cc11aa30d86cbd335738bc272ce5ae8487c244104b3aa0ce7f2d4a1b1aac476d1baa66a12fc4c562511d919042d77ed5a4f8ed6a3dbaca06540e082ef1209b3a9d27c4adc35d28cb7fbee0836a07ead9579b9043fb056c24e108fbe" as any,
+          },
+        ],
         cneg: [
           {
             args: [true],
+            res: "057565542eaa01ef2b910bf0eaba4d98a1e5b8b79cc425db08f8780732d0ea9bc85fc6175f272b2344bb27bc572ebf14022e52689dcedfccf44a00e5bd1aa59db44517217d6b0f21b372169ee761938c28914ddcb9663de54db288e760a8e14f0abab4204031095ba6e7653234fcb628af5a2c0d0a9f4d1e6c511e31de41afdf950f833fb3e552d4a673fcf4d6eaf36314e4573465f017e18c735e429742dafc10405a0d17ba00e5af751f0588edd5dcd77ca8c24c95e2d6bc7a78e93d7b5b23" as any,
+          },
+        ],
+        neg: [
+          {
+            args: [],
             res: "057565542eaa01ef2b910bf0eaba4d98a1e5b8b79cc425db08f8780732d0ea9bc85fc6175f272b2344bb27bc572ebf14022e52689dcedfccf44a00e5bd1aa59db44517217d6b0f21b372169ee761938c28914ddcb9663de54db288e760a8e14f0abab4204031095ba6e7653234fcb628af5a2c0d0a9f4d1e6c511e31de41afdf950f833fb3e552d4a673fcf4d6eaf36314e4573465f017e18c735e429742dafc10405a0d17ba00e5af751f0588edd5dcd77ca8c24c95e2d6bc7a78e93d7b5b23" as any,
           },
         ],
@@ -84,12 +100,14 @@ describe("P2", () => {
 
     runInstanceTestCases<P2_Affine>(
       {
+        dup: [{ args: [], res: new blst.P2_Affine(p2) }],
         to_jacobian: [{ args: [], res: p2 }],
         serialize: [{ args: [], res: sample.p2 }],
         compress: [{ args: [], res: sample.p2Comp }],
         on_curve: [{ args: [], res: true }],
         in_group: [{ args: [], res: true }],
         is_inf: [{ args: [], res: false }],
+        is_equal: [{ args: [new blst.P2_Affine(p2)], res: true }],
         core_verify: [
           {
             args: [p1Affine, true, msg, DST],
