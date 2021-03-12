@@ -22,9 +22,17 @@ static const char *const BLST_ERROR_str [] = {
     "BLST_ERROR: point is not in group",
     "BLST_ERROR: context type mismatch",
     "BLST_ERROR: verify failed",
+    "BLST_ERROR: public key is infinite",
 };
 
 #define SWIG_PYTHON_STRICT_BYTE_CHAR
+
+#ifdef _WIN32
+# include <malloc.h>
+# ifndef alloca
+#  define alloca(s) _alloca(s)
+# endif
+#endif
 
 
 #ifdef __cplusplus
@@ -1927,14 +1935,6 @@ int SWIG_AsVal_bool (SWIGV8_VALUE obj, bool *val)
 }
 
 
-#ifdef _WIN32
-# include <malloc.h>
-# ifndef alloca
-#  define alloca(s) _alloca(s)
-# endif
-#endif
-
-
 #define SWIGV8_INIT blst_initialize
 
 
@@ -2098,22 +2098,22 @@ static SwigV8ReturnValue _wrap_SecretKey_keygen__SWIG_0(const SwigV8Arguments &a
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_keygen" "', argument " "1"" of type '" "blst::SecretKey *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_keygen', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_keygen', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -2155,22 +2155,22 @@ static SwigV8ReturnValue _wrap_SecretKey_keygen__SWIG_1(const SwigV8Arguments &a
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_keygen" "', argument " "1"" of type '" "blst::SecretKey *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_keygen', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_keygen', "
+      "expecting <Buffer> or <String>");
   }
+  
   (arg1)->keygen((byte const *)arg2,arg3);
   jsresult = SWIGV8_UNDEFINED();
   
@@ -2247,19 +2247,19 @@ static SwigV8ReturnValue _wrap_SecretKey_from_bendian(const SwigV8Arguments &arg
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_from_bendian" "', argument " "1"" of type '" "blst::SecretKey *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      if (av->ByteLength() != 32)
-      SWIG_exception_fail(SWIG_IndexError, "in method 'SecretKey_from_bendian', "
-        "expecting 32 bytes");
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_from_bendian', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    if (av->ByteLength() != 32)
+    SWIG_exception_fail(SWIG_IndexError, "in method 'SecretKey_from_bendian', "
+      "expecting 32 bytes");
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_from_bendian', "
+      "expecting <Buffer>");
   }
+  
   (arg1)->from_bendian((byte const (*))arg2);
   jsresult = SWIGV8_UNDEFINED();
   
@@ -2290,19 +2290,19 @@ static SwigV8ReturnValue _wrap_SecretKey_from_lendian(const SwigV8Arguments &arg
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_from_lendian" "', argument " "1"" of type '" "blst::SecretKey *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      if (av->ByteLength() != 32)
-      SWIG_exception_fail(SWIG_IndexError, "in method 'SecretKey_from_lendian', "
-        "expecting 32 bytes");
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_from_lendian', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    if (av->ByteLength() != 32)
+    SWIG_exception_fail(SWIG_IndexError, "in method 'SecretKey_from_lendian', "
+      "expecting 32 bytes");
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'SecretKey_from_lendian', "
+      "expecting <Buffer>");
   }
+  
   (arg1)->from_lendian((byte const (*))arg2);
   jsresult = SWIGV8_UNDEFINED();
   
@@ -2334,9 +2334,7 @@ static SwigV8ReturnValue _wrap_SecretKey_to_bendian(const SwigV8Arguments &args)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_to_bendian" "', argument " "1"" of type '" "blst::SecretKey const *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::SecretKey const *)arg1)->to_bendian(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -2378,9 +2376,7 @@ static SwigV8ReturnValue _wrap_SecretKey_to_lendian(const SwigV8Arguments &args)
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "SecretKey_to_lendian" "', argument " "1"" of type '" "blst::SecretKey const *""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::SecretKey const *)arg1)->to_lendian(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -2487,16 +2483,16 @@ static SwigV8ReturnValue _wrap_new_P1_Affine__SWIG_1(const SwigV8Arguments &args
   byte *arg1 = (byte *) 0 ;
   blst::P1_Affine *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P1_Affine__SWIG_1.");
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg1 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'new_P1_Affine', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg1 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'new_P1_Affine', "
+      "expecting <Buffer>");
   }
+  
   try {
     result = (blst::P1_Affine *)new blst::P1_Affine((byte const *)arg1);
   } catch(BLST_ERROR &_e) {
@@ -2608,6 +2604,34 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P1_Affine_dup(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1_Affine *arg1 = (blst::P1_Affine *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P1_Affine result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_Affine_dup.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1_Affine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_Affine_dup" "', argument " "1"" of type '" "blst::P1_Affine const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1_Affine * >(argp1);
+  result = ((blst::P1_Affine const *)arg1)->dup();
+  jsresult = SWIG_NewPointerObj((new blst::P1_Affine(static_cast< const blst::P1_Affine& >(result))), SWIGTYPE_p_blst__P1_Affine, SWIG_POINTER_OWN |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P1_Affine_to_jacobian(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -2653,9 +2677,7 @@ static SwigV8ReturnValue _wrap_P1_Affine_serialize(const SwigV8Arguments &args) 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_Affine_serialize" "', argument " "1"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1_Affine * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P1_Affine const *)arg1)->serialize(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -2697,9 +2719,7 @@ static SwigV8ReturnValue _wrap_P1_Affine_compress(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_Affine_compress" "', argument " "1"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1_Affine * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P1_Affine const *)arg1)->compress(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -2808,6 +2828,46 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P1_Affine_is_equal(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1_Affine *arg1 = (blst::P1_Affine *) 0 ;
+  blst::P1_Affine *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  bool result;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_Affine_is_equal.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1_Affine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_Affine_is_equal" "', argument " "1"" of type '" "blst::P1_Affine const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1_Affine * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__P1_Affine,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P1_Affine_is_equal" "', argument " "2"" of type '" "blst::P1_Affine const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P1_Affine_is_equal" "', argument " "2"" of type '" "blst::P1_Affine const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::P1_Affine * >(argp2);
+  result = (bool)((blst::P1_Affine const *)arg1)->is_equal((blst::P1_Affine const &)*arg2);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_0(const SwigV8Arguments &args, V8ErrorHandler &SWIGV8_ErrorHandler)
 {
   SWIGV8_HANDLESCOPE();
@@ -2848,22 +2908,22 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_0(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P1_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -2875,22 +2935,22 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_0(const SwigV8Argumen
     }
     arg6 = ptr;
   }
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg7 = (byte *)buf->GetData() + av->ByteOffset();
-      arg8 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg8 = SWIGV8_UTF8_LENGTH(str);
-      arg7 = (byte *)alloca(arg8);
-      SWIGV8_WRITE_UTF8(str, (char *)arg7, arg8);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg7 = (byte *)buf->GetData() + av->ByteOffset();
+    arg8 = av->ByteLength();
+  } else if (args[4]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[4]);
+    arg8 = SWIGV8_UTF8_LENGTH(str);
+    arg7 = (byte *)alloca(arg8);
+    SWIGV8_WRITE_UTF8(str, (char *)arg7, arg8);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)((blst::P1_Affine const *)arg1)->core_verify((blst::P2_Affine const &)*arg2,arg3,(byte const *)arg4,arg5,(std::string const &)*arg6,(byte const *)arg7,arg8);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -2947,22 +3007,22 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_1(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P1_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -2974,16 +3034,16 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_1(const SwigV8Argumen
     }
     arg6 = ptr;
   }
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg7 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg7 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)((blst::P1_Affine const *)arg1)->core_verify((blst::P2_Affine const &)*arg2,arg3,(byte const *)arg4,arg5,(std::string const &)*arg6,(byte const *)arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -3040,22 +3100,22 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_2(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P1_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -3119,22 +3179,22 @@ static SwigV8ReturnValue _wrap_P1_Affine_core_verify__SWIG_3(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P1_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)((blst::P1_Affine const *)arg1)->core_verify((blst::P2_Affine const &)*arg2,arg3,(byte const *)arg4,arg5);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -3233,12 +3293,12 @@ static SwigV8ReturnValue _wrap_P1_Affine_generator(const SwigV8Arguments &args) 
   SWIGV8_HANDLESCOPE();
   
   SWIGV8_VALUE jsresult;
-  blst::P1_Affine *result = 0 ;
+  blst::P1_Affine result;
   
   if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_Affine_generator.");
   
-  result = (blst::P1_Affine *) &blst::P1_Affine::generator();
-  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_blst__P1_Affine, 0 |  0 );
+  result = blst::P1_Affine::generator();
+  jsresult = SWIG_NewPointerObj((new blst::P1_Affine(static_cast< const blst::P1_Affine& >(result))), SWIGTYPE_p_blst__P1_Affine, SWIG_POINTER_OWN |  0 );
   
   SWIGV8_RETURN(jsresult);
   
@@ -3309,19 +3369,19 @@ static SwigV8ReturnValue _wrap_new_P1__SWIG_1(const SwigV8Arguments &args, V8Err
   
   SWIGV8_OBJECT self = args.Holder();
   blst::SecretKey *arg1 = 0 ;
-  void *argp1 = 0 ;
+  void *argp1 ;
   int res1 = 0 ;
   blst::P1 *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P1__SWIG_1.");
   res1 = SWIG_ConvertPtr(args[0], &argp1, SWIGTYPE_p_blst__SecretKey,  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_P1" "', argument " "1"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_P1" "', argument " "1"" of type '" "blst::SecretKey const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_P1" "', argument " "1"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_P1" "', argument " "1"" of type '" "blst::SecretKey const &""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  result = (blst::P1 *)new blst::P1(*arg1);
+  result = (blst::P1 *)new blst::P1((blst::SecretKey const &)*arg1);
   
   
   
@@ -3342,16 +3402,16 @@ static SwigV8ReturnValue _wrap_new_P1__SWIG_2(const SwigV8Arguments &args, V8Err
   byte *arg1 = (byte *) 0 ;
   blst::P1 *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P1__SWIG_2.");
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg1 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'new_P1', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg1 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'new_P1', "
+      "expecting <Buffer>");
   }
+  
   try {
     result = (blst::P1 *)new blst::P1((byte const *)arg1);
   } catch(BLST_ERROR &_e) {
@@ -3478,6 +3538,34 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P1_dup(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P1 result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_dup.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_dup" "', argument " "1"" of type '" "blst::P1 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  result = ((blst::P1 const *)arg1)->dup();
+  jsresult = SWIG_NewPointerObj((new blst::P1(static_cast< const blst::P1& >(result))), SWIGTYPE_p_blst__P1, SWIG_POINTER_OWN |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P1_to_affine(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -3523,9 +3611,7 @@ static SwigV8ReturnValue _wrap_P1_serialize(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_serialize" "', argument " "1"" of type '" "blst::P1 const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P1 const *)arg1)->serialize(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -3567,9 +3653,7 @@ static SwigV8ReturnValue _wrap_P1_compress(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_compress" "', argument " "1"" of type '" "blst::P1 const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P1 const *)arg1)->compress(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -3584,6 +3668,62 @@ static SwigV8ReturnValue _wrap_P1_compress(const SwigV8Arguments &args) {
     
   }
   
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P1_on_curve(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_on_curve.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_on_curve" "', argument " "1"" of type '" "blst::P1 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  result = (bool)((blst::P1 const *)arg1)->on_curve();
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P1_in_group(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_in_group.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_in_group" "', argument " "1"" of type '" "blst::P1 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  result = (bool)((blst::P1 const *)arg1)->in_group();
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
   
   
   SWIGV8_RETURN(jsresult);
@@ -3612,6 +3752,46 @@ static SwigV8ReturnValue _wrap_P1_is_inf(const SwigV8Arguments &args) {
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
   result = (bool)((blst::P1 const *)arg1)->is_inf();
   jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P1_is_equal(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  blst::P1 *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  bool result;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_is_equal.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_is_equal" "', argument " "1"" of type '" "blst::P1 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__P1,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P1_is_equal" "', argument " "2"" of type '" "blst::P1 const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P1_is_equal" "', argument " "2"" of type '" "blst::P1 const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::P1 * >(argp2);
+  result = (bool)((blst::P1 const *)arg1)->is_equal((blst::P1 const &)*arg2);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
   
   
   SWIGV8_RETURN(jsresult);
@@ -3673,7 +3853,7 @@ static SwigV8ReturnValue _wrap_P1_sign_with(const SwigV8Arguments &args) {
   blst::SecretKey *arg2 = 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 = 0 ;
+  void *argp2 ;
   int res2 = 0 ;
   blst::P1 *result = 0 ;
   
@@ -3686,13 +3866,13 @@ static SwigV8ReturnValue _wrap_P1_sign_with(const SwigV8Arguments &args) {
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
   res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__SecretKey,  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P1_sign_with" "', argument " "2"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P1_sign_with" "', argument " "2"" of type '" "blst::SecretKey const &""'"); 
   }
   if (!argp2) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P1_sign_with" "', argument " "2"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P1_sign_with" "', argument " "2"" of type '" "blst::SecretKey const &""'"); 
   }
   arg2 = reinterpret_cast< blst::SecretKey * >(argp2);
-  result = (blst::P1 *)(arg1)->sign_with(*arg2);
+  result = (blst::P1 *)(arg1)->sign_with((blst::SecretKey const &)*arg2);
   (void)result; jsresult = args.Holder(); 
   
   
@@ -3726,22 +3906,22 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_0(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_hash_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -3753,22 +3933,22 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_0(const SwigV8Arguments &args, V
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-      arg6 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg6 = SWIGV8_UTF8_LENGTH(str);
-      arg5 = (byte *)alloca(arg6);
-      SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+    arg6 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg6 = SWIGV8_UTF8_LENGTH(str);
+    arg5 = (byte *)alloca(arg6);
+    SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P1 *)(arg1)->hash_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5,arg6);
   (void)result; jsresult = args.Holder(); 
   
@@ -3804,22 +3984,22 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_1(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_hash_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -3831,16 +4011,16 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_1(const SwigV8Arguments &args, V
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer>");
   }
+  
   result = (blst::P1 *)(arg1)->hash_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5);
   (void)result; jsresult = args.Holder(); 
   
@@ -3876,22 +4056,22 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_2(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_hash_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -3934,22 +4114,22 @@ static SwigV8ReturnValue _wrap_P1_hash_to__SWIG_3(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_hash_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P1 *)(arg1)->hash_to((byte const *)arg2,arg3);
   (void)result; jsresult = args.Holder(); 
   
@@ -4063,22 +4243,22 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_0(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_encode_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -4090,22 +4270,22 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_0(const SwigV8Arguments &args,
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-      arg6 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg6 = SWIGV8_UTF8_LENGTH(str);
-      arg5 = (byte *)alloca(arg6);
-      SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+    arg6 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg6 = SWIGV8_UTF8_LENGTH(str);
+    arg5 = (byte *)alloca(arg6);
+    SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P1 *)(arg1)->encode_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5,arg6);
   (void)result; jsresult = args.Holder(); 
   
@@ -4141,22 +4321,22 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_1(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_encode_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -4168,16 +4348,16 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_1(const SwigV8Arguments &args,
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer>");
   }
+  
   result = (blst::P1 *)(arg1)->encode_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5);
   (void)result; jsresult = args.Holder(); 
   
@@ -4213,22 +4393,22 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_2(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_encode_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -4271,22 +4451,22 @@ static SwigV8ReturnValue _wrap_P1_encode_to__SWIG_3(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_encode_to" "', argument " "1"" of type '" "blst::P1 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P1 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P1 *)(arg1)->encode_to((byte const *)arg2,arg3);
   (void)result; jsresult = args.Holder(); 
   
@@ -4379,6 +4559,77 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P1_mult(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  byte *arg2 = (byte *) 0 ;
+  size_t arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P1 *result = 0 ;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_mult.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_mult" "', argument " "1"" of type '" "blst::P1 *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[0]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[0]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg3 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_mult', "
+      "expecting unsigned value");
+    arg2 = (byte *)words;
+    arg3 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg2;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
+    }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P1_mult', "
+      "expecting <Buffer> or <BigInt>");
+  }
+  
+  result = (blst::P1 *)(arg1)->mult((byte const *)arg2,arg3);
+  (void)result; jsresult = args.Holder(); 
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P1_cneg(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -4406,6 +4657,34 @@ static SwigV8ReturnValue _wrap_P1_cneg(const SwigV8Arguments &args) {
   result = (blst::P1 *)(arg1)->cneg(arg2);
   (void)result; jsresult = args.Holder(); 
   
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P1_neg(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 *arg1 = (blst::P1 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P1 *result = 0 ;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_neg.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P1, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P1_neg" "', argument " "1"" of type '" "blst::P1 *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P1 * >(argp1);
+  result = (blst::P1 *)(arg1)->neg();
+  (void)result; jsresult = args.Holder(); 
   
   
   SWIGV8_RETURN(jsresult);
@@ -4573,12 +4852,12 @@ static SwigV8ReturnValue _wrap_P1_generator(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
   SWIGV8_VALUE jsresult;
-  blst::P1 *result = 0 ;
+  blst::P1 result;
   
   if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P1_generator.");
   
-  result = (blst::P1 *) &blst::P1::generator();
-  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_blst__P1, 0 |  0 );
+  result = blst::P1::generator();
+  jsresult = SWIG_NewPointerObj((new blst::P1(static_cast< const blst::P1& >(result))), SWIGTYPE_p_blst__P1, SWIG_POINTER_OWN |  0 );
   
   SWIGV8_RETURN(jsresult);
   
@@ -4651,16 +4930,16 @@ static SwigV8ReturnValue _wrap_new_P2_Affine__SWIG_1(const SwigV8Arguments &args
   byte *arg1 = (byte *) 0 ;
   blst::P2_Affine *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P2_Affine__SWIG_1.");
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg1 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'new_P2_Affine', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg1 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'new_P2_Affine', "
+      "expecting <Buffer>");
   }
+  
   try {
     result = (blst::P2_Affine *)new blst::P2_Affine((byte const *)arg1);
   } catch(BLST_ERROR &_e) {
@@ -4772,6 +5051,34 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P2_Affine_dup(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2_Affine *arg1 = (blst::P2_Affine *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P2_Affine result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_Affine_dup.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2_Affine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_Affine_dup" "', argument " "1"" of type '" "blst::P2_Affine const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2_Affine * >(argp1);
+  result = ((blst::P2_Affine const *)arg1)->dup();
+  jsresult = SWIG_NewPointerObj((new blst::P2_Affine(static_cast< const blst::P2_Affine& >(result))), SWIGTYPE_p_blst__P2_Affine, SWIG_POINTER_OWN |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P2_Affine_to_jacobian(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -4817,9 +5124,7 @@ static SwigV8ReturnValue _wrap_P2_Affine_serialize(const SwigV8Arguments &args) 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_Affine_serialize" "', argument " "1"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2_Affine * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P2_Affine const *)arg1)->serialize(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -4861,9 +5166,7 @@ static SwigV8ReturnValue _wrap_P2_Affine_compress(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_Affine_compress" "', argument " "1"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2_Affine * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P2_Affine const *)arg1)->compress(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -4972,6 +5275,46 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P2_Affine_is_equal(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2_Affine *arg1 = (blst::P2_Affine *) 0 ;
+  blst::P2_Affine *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  bool result;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_Affine_is_equal.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2_Affine, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_Affine_is_equal" "', argument " "1"" of type '" "blst::P2_Affine const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2_Affine * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__P2_Affine,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P2_Affine_is_equal" "', argument " "2"" of type '" "blst::P2_Affine const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P2_Affine_is_equal" "', argument " "2"" of type '" "blst::P2_Affine const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::P2_Affine * >(argp2);
+  result = (bool)((blst::P2_Affine const *)arg1)->is_equal((blst::P2_Affine const &)*arg2);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_0(const SwigV8Arguments &args, V8ErrorHandler &SWIGV8_ErrorHandler)
 {
   SWIGV8_HANDLESCOPE();
@@ -5012,22 +5355,22 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_0(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P2_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -5039,22 +5382,22 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_0(const SwigV8Argumen
     }
     arg6 = ptr;
   }
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg7 = (byte *)buf->GetData() + av->ByteOffset();
-      arg8 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg8 = SWIGV8_UTF8_LENGTH(str);
-      arg7 = (byte *)alloca(arg8);
-      SWIGV8_WRITE_UTF8(str, (char *)arg7, arg8);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg7 = (byte *)buf->GetData() + av->ByteOffset();
+    arg8 = av->ByteLength();
+  } else if (args[4]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[4]);
+    arg8 = SWIGV8_UTF8_LENGTH(str);
+    arg7 = (byte *)alloca(arg8);
+    SWIGV8_WRITE_UTF8(str, (char *)arg7, arg8);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)((blst::P2_Affine const *)arg1)->core_verify((blst::P1_Affine const &)*arg2,arg3,(byte const *)arg4,arg5,(std::string const &)*arg6,(byte const *)arg7,arg8);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -5111,22 +5454,22 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_1(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P2_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -5138,16 +5481,16 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_1(const SwigV8Argumen
     }
     arg6 = ptr;
   }
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg7 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg7 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)((blst::P2_Affine const *)arg1)->core_verify((blst::P1_Affine const &)*arg2,arg3,(byte const *)arg4,arg5,(std::string const &)*arg6,(byte const *)arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -5204,22 +5547,22 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_2(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P2_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res6 = SWIG_AsPtr_std_string(args[3], &ptr);
@@ -5283,22 +5626,22 @@ static SwigV8ReturnValue _wrap_P2_Affine_core_verify__SWIG_3(const SwigV8Argumen
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "P2_Affine_core_verify" "', argument " "3"" of type '" "bool""'");
   } 
   arg3 = static_cast< bool >(val3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_Affine_core_verify', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)((blst::P2_Affine const *)arg1)->core_verify((blst::P1_Affine const &)*arg2,arg3,(byte const *)arg4,arg5);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -5397,12 +5740,12 @@ static SwigV8ReturnValue _wrap_P2_Affine_generator(const SwigV8Arguments &args) 
   SWIGV8_HANDLESCOPE();
   
   SWIGV8_VALUE jsresult;
-  blst::P2_Affine *result = 0 ;
+  blst::P2_Affine result;
   
   if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_Affine_generator.");
   
-  result = (blst::P2_Affine *) &blst::P2_Affine::generator();
-  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_blst__P2_Affine, 0 |  0 );
+  result = blst::P2_Affine::generator();
+  jsresult = SWIG_NewPointerObj((new blst::P2_Affine(static_cast< const blst::P2_Affine& >(result))), SWIGTYPE_p_blst__P2_Affine, SWIG_POINTER_OWN |  0 );
   
   SWIGV8_RETURN(jsresult);
   
@@ -5473,19 +5816,19 @@ static SwigV8ReturnValue _wrap_new_P2__SWIG_1(const SwigV8Arguments &args, V8Err
   
   SWIGV8_OBJECT self = args.Holder();
   blst::SecretKey *arg1 = 0 ;
-  void *argp1 = 0 ;
+  void *argp1 ;
   int res1 = 0 ;
   blst::P2 *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P2__SWIG_1.");
   res1 = SWIG_ConvertPtr(args[0], &argp1, SWIGTYPE_p_blst__SecretKey,  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_P2" "', argument " "1"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_P2" "', argument " "1"" of type '" "blst::SecretKey const &""'"); 
   }
   if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_P2" "', argument " "1"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_P2" "', argument " "1"" of type '" "blst::SecretKey const &""'"); 
   }
   arg1 = reinterpret_cast< blst::SecretKey * >(argp1);
-  result = (blst::P2 *)new blst::P2(*arg1);
+  result = (blst::P2 *)new blst::P2((blst::SecretKey const &)*arg1);
   
   
   
@@ -5506,16 +5849,16 @@ static SwigV8ReturnValue _wrap_new_P2__SWIG_2(const SwigV8Arguments &args, V8Err
   byte *arg1 = (byte *) 0 ;
   blst::P2 *result;
   if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_P2__SWIG_2.");
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg1 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'new_P2', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg1 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'new_P2', "
+      "expecting <Buffer>");
   }
+  
   try {
     result = (blst::P2 *)new blst::P2((byte const *)arg1);
   } catch(BLST_ERROR &_e) {
@@ -5642,6 +5985,34 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P2_dup(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P2 result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_dup.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_dup" "', argument " "1"" of type '" "blst::P2 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  result = ((blst::P2 const *)arg1)->dup();
+  jsresult = SWIG_NewPointerObj((new blst::P2(static_cast< const blst::P2& >(result))), SWIGTYPE_p_blst__P2, SWIG_POINTER_OWN |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P2_to_affine(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -5687,9 +6058,7 @@ static SwigV8ReturnValue _wrap_P2_serialize(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_serialize" "', argument " "1"" of type '" "blst::P2 const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P2 const *)arg1)->serialize(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -5731,9 +6100,7 @@ static SwigV8ReturnValue _wrap_P2_compress(const SwigV8Arguments &args) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_compress" "', argument " "1"" of type '" "blst::P2 const *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    arg2 = temp2;
-  }
+  arg2 = temp2; 
   ((blst::P2 const *)arg1)->compress(arg2);
   jsresult = SWIGV8_UNDEFINED();
   {
@@ -5748,6 +6115,62 @@ static SwigV8ReturnValue _wrap_P2_compress(const SwigV8Arguments &args) {
     
   }
   
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P2_on_curve(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_on_curve.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_on_curve" "', argument " "1"" of type '" "blst::P2 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  result = (bool)((blst::P2 const *)arg1)->on_curve();
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P2_in_group(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_in_group.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_in_group" "', argument " "1"" of type '" "blst::P2 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  result = (bool)((blst::P2 const *)arg1)->in_group();
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
   
   
   SWIGV8_RETURN(jsresult);
@@ -5776,6 +6199,46 @@ static SwigV8ReturnValue _wrap_P2_is_inf(const SwigV8Arguments &args) {
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
   result = (bool)((blst::P2 const *)arg1)->is_inf();
   jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P2_is_equal(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  blst::P2 *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  bool result;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_is_equal.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_is_equal" "', argument " "1"" of type '" "blst::P2 const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__P2,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P2_is_equal" "', argument " "2"" of type '" "blst::P2 const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P2_is_equal" "', argument " "2"" of type '" "blst::P2 const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::P2 * >(argp2);
+  result = (bool)((blst::P2 const *)arg1)->is_equal((blst::P2 const &)*arg2);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
   
   
   SWIGV8_RETURN(jsresult);
@@ -5837,7 +6300,7 @@ static SwigV8ReturnValue _wrap_P2_sign_with(const SwigV8Arguments &args) {
   blst::SecretKey *arg2 = 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  void *argp2 = 0 ;
+  void *argp2 ;
   int res2 = 0 ;
   blst::P2 *result = 0 ;
   
@@ -5850,13 +6313,13 @@ static SwigV8ReturnValue _wrap_P2_sign_with(const SwigV8Arguments &args) {
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
   res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__SecretKey,  0 );
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P2_sign_with" "', argument " "2"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "P2_sign_with" "', argument " "2"" of type '" "blst::SecretKey const &""'"); 
   }
   if (!argp2) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P2_sign_with" "', argument " "2"" of type '" "blst::SecretKey &""'"); 
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "P2_sign_with" "', argument " "2"" of type '" "blst::SecretKey const &""'"); 
   }
   arg2 = reinterpret_cast< blst::SecretKey * >(argp2);
-  result = (blst::P2 *)(arg1)->sign_with(*arg2);
+  result = (blst::P2 *)(arg1)->sign_with((blst::SecretKey const &)*arg2);
   (void)result; jsresult = args.Holder(); 
   
   
@@ -5890,22 +6353,22 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_0(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_hash_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -5917,22 +6380,22 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_0(const SwigV8Arguments &args, V
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-      arg6 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg6 = SWIGV8_UTF8_LENGTH(str);
-      arg5 = (byte *)alloca(arg6);
-      SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+    arg6 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg6 = SWIGV8_UTF8_LENGTH(str);
+    arg5 = (byte *)alloca(arg6);
+    SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P2 *)(arg1)->hash_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5,arg6);
   (void)result; jsresult = args.Holder(); 
   
@@ -5968,22 +6431,22 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_1(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_hash_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -5995,16 +6458,16 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_1(const SwigV8Arguments &args, V
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer>");
   }
+  
   result = (blst::P2 *)(arg1)->hash_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5);
   (void)result; jsresult = args.Holder(); 
   
@@ -6040,22 +6503,22 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_2(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_hash_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -6098,22 +6561,22 @@ static SwigV8ReturnValue _wrap_P2_hash_to__SWIG_3(const SwigV8Arguments &args, V
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_hash_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_hash_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P2 *)(arg1)->hash_to((byte const *)arg2,arg3);
   (void)result; jsresult = args.Holder(); 
   
@@ -6227,22 +6690,22 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_0(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_encode_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -6254,22 +6717,22 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_0(const SwigV8Arguments &args,
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-      arg6 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg6 = SWIGV8_UTF8_LENGTH(str);
-      arg5 = (byte *)alloca(arg6);
-      SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+    arg6 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg6 = SWIGV8_UTF8_LENGTH(str);
+    arg5 = (byte *)alloca(arg6);
+    SWIGV8_WRITE_UTF8(str, (char *)arg5, arg6);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P2 *)(arg1)->encode_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5,arg6);
   (void)result; jsresult = args.Holder(); 
   
@@ -6305,22 +6768,22 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_1(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_encode_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -6332,16 +6795,16 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_1(const SwigV8Arguments &args,
     }
     arg4 = ptr;
   }
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg5 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg5 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer>");
   }
+  
   result = (blst::P2 *)(arg1)->encode_to((byte const *)arg2,arg3,(std::string const &)*arg4,(byte const *)arg5);
   (void)result; jsresult = args.Holder(); 
   
@@ -6377,22 +6840,22 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_2(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_encode_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   {
     std::string *ptr = (std::string *)0;
     res4 = SWIG_AsPtr_std_string(args[1], &ptr);
@@ -6435,22 +6898,22 @@ static SwigV8ReturnValue _wrap_P2_encode_to__SWIG_3(const SwigV8Arguments &args,
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_encode_to" "', argument " "1"" of type '" "blst::P2 *""'"); 
   }
   arg1 = reinterpret_cast< blst::P2 * >(argp1);
-  {
-    if (args[0]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[0]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[0]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[0]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[0]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_encode_to', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::P2 *)(arg1)->encode_to((byte const *)arg2,arg3);
   (void)result; jsresult = args.Holder(); 
   
@@ -6543,6 +7006,77 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_P2_mult(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  byte *arg2 = (byte *) 0 ;
+  size_t arg3 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P2 *result = 0 ;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_mult.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_mult" "', argument " "1"" of type '" "blst::P2 *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  
+  if (args[0]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[0]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[0]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[0]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg3 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_mult', "
+      "expecting unsigned value");
+    arg2 = (byte *)words;
+    arg3 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg2;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
+    }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'P2_mult', "
+      "expecting <Buffer> or <BigInt>");
+  }
+  
+  result = (blst::P2 *)(arg1)->mult((byte const *)arg2,arg3);
+  (void)result; jsresult = args.Holder(); 
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_P2_cneg(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -6570,6 +7104,34 @@ static SwigV8ReturnValue _wrap_P2_cneg(const SwigV8Arguments &args) {
   result = (blst::P2 *)(arg1)->cneg(arg2);
   (void)result; jsresult = args.Holder(); 
   
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_P2_neg(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 *arg1 = (blst::P2 *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::P2 *result = 0 ;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_neg.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__P2, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "P2_neg" "', argument " "1"" of type '" "blst::P2 *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2 * >(argp1);
+  result = (blst::P2 *)(arg1)->neg();
+  (void)result; jsresult = args.Holder(); 
   
   
   SWIGV8_RETURN(jsresult);
@@ -6737,12 +7299,12 @@ static SwigV8ReturnValue _wrap_P2_generator(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
   SWIGV8_VALUE jsresult;
-  blst::P2 *result = 0 ;
+  blst::P2 result;
   
   if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_P2_generator.");
   
-  result = (blst::P2 *) &blst::P2::generator();
-  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_blst__P2, 0 |  0 );
+  result = blst::P2::generator();
+  jsresult = SWIG_NewPointerObj((new blst::P2(static_cast< const blst::P2& >(result))), SWIGTYPE_p_blst__P2, SWIG_POINTER_OWN |  0 );
   
   SWIGV8_RETURN(jsresult);
   
@@ -6787,6 +7349,44 @@ static void _wrap_delete_P2(v8::Persistent<v8::Value> object, void *parameter) {
           object.Clear();
 #endif
         }
+
+
+static SwigV8ReturnValue _wrap_G1(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P1 result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_G1.");
+  
+  result = blst::G1();
+  jsresult = SWIG_NewPointerObj((new blst::P1(static_cast< const blst::P1& >(result))), SWIGTYPE_p_blst__P1, SWIG_POINTER_OWN |  0 );
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_G2(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::P2 result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_G2.");
+  
+  result = blst::G2();
+  jsresult = SWIG_NewPointerObj((new blst::P2(static_cast< const blst::P2& >(result))), SWIGTYPE_p_blst__P2, SWIG_POINTER_OWN |  0 );
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
 
 
 static SwigV8ReturnValue _wrap_new_PT__SWIG_0(const SwigV8Arguments &args, V8ErrorHandler &SWIGV8_ErrorHandler) {
@@ -6851,6 +7451,49 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_new_PT__SWIG_2(const SwigV8Arguments &args, V8ErrorHandler &SWIGV8_ErrorHandler) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_OBJECT self = args.Holder();
+  blst::P2_Affine *arg1 = 0 ;
+  blst::P1_Affine *arg2 = 0 ;
+  void *argp1 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  blst::PT *result;
+  if(args.Length() != 2) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_new_PT__SWIG_2.");
+  res1 = SWIG_ConvertPtr(args[0], &argp1, SWIGTYPE_p_blst__P2_Affine,  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "new_PT" "', argument " "1"" of type '" "blst::P2_Affine const &""'"); 
+  }
+  if (!argp1) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_PT" "', argument " "1"" of type '" "blst::P2_Affine const &""'"); 
+  }
+  arg1 = reinterpret_cast< blst::P2_Affine * >(argp1);
+  res2 = SWIG_ConvertPtr(args[1], &argp2, SWIGTYPE_p_blst__P1_Affine,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_PT" "', argument " "2"" of type '" "blst::P1_Affine const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "new_PT" "', argument " "2"" of type '" "blst::P1_Affine const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::P1_Affine * >(argp2);
+  result = (blst::PT *)new blst::PT((blst::P2_Affine const &)*arg1,(blst::P1_Affine const &)*arg2);
+  
+  
+  
+  
+  
+  SWIGV8_SetPrivateData(self, result, SWIGTYPE_p_blst__PT, SWIG_POINTER_OWN);
+  SWIGV8_RETURN(self);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_new_PT(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -6889,10 +7532,217 @@ static SwigV8ReturnValue _wrap_new_PT(const SwigV8Arguments &args) {
 #endif
   }
   
+  if(args.Length() == 2) {
+    errorHandler.err.Clear();
+#if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
+    self = _wrap_new_PT__SWIG_2(args, errorHandler);
+    if(errorHandler.err.IsEmpty()) {
+      SWIGV8_ESCAPE(self);
+    }
+#else
+    _wrap_new_PT__SWIG_2(args, errorHandler);
+    if(errorHandler.err.IsEmpty()) {
+      return;
+    }
+#endif
+  }
+  
   
   // default:
   SWIG_exception_fail(SWIG_ERROR, "Illegal arguments for construction of _exports_PT");
   
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_dup(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  SwigValueWrapper< blst::PT > result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_dup.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_dup" "', argument " "1"" of type '" "blst::PT const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  result = ((blst::PT const *)arg1)->dup();
+  jsresult = SWIG_NewPointerObj((new blst::PT(static_cast< const blst::PT& >(result))), SWIGTYPE_p_blst__PT, SWIG_POINTER_OWN |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_is_one(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool result;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_is_one.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_is_one" "', argument " "1"" of type '" "blst::PT const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  result = (bool)((blst::PT const *)arg1)->is_one();
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_is_equal(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  blst::PT *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  bool result;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_is_equal.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_is_equal" "', argument " "1"" of type '" "blst::PT const *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__PT,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "PT_is_equal" "', argument " "2"" of type '" "blst::PT const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "PT_is_equal" "', argument " "2"" of type '" "blst::PT const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::PT * >(argp2);
+  result = (bool)((blst::PT const *)arg1)->is_equal((blst::PT const &)*arg2);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_sqr(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::PT *result = 0 ;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_sqr.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_sqr" "', argument " "1"" of type '" "blst::PT *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  result = (blst::PT *)(arg1)->sqr();
+  (void)result; jsresult = args.Holder(); 
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_mul(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  blst::PT *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  blst::PT *result = 0 ;
+  
+  if(args.Length() != 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_mul.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_mul" "', argument " "1"" of type '" "blst::PT *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  res2 = SWIG_ConvertPtr(args[0], &argp2, SWIGTYPE_p_blst__PT,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "PT_mul" "', argument " "2"" of type '" "blst::PT const &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "PT_mul" "', argument " "2"" of type '" "blst::PT const &""'"); 
+  }
+  arg2 = reinterpret_cast< blst::PT * >(argp2);
+  result = (blst::PT *)(arg1)->mul((blst::PT const &)*arg2);
+  (void)result; jsresult = args.Holder(); 
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_PT_final_exp(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  blst::PT *arg1 = (blst::PT *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  blst::PT *result = 0 ;
+  
+  if(args.Length() != 0) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_PT_final_exp.");
+  
+  res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__PT, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "PT_final_exp" "', argument " "1"" of type '" "blst::PT *""'"); 
+  }
+  arg1 = reinterpret_cast< blst::PT * >(argp1);
+  result = (blst::PT *)(arg1)->final_exp();
+  (void)result; jsresult = args.Holder(); 
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
 fail:
   SWIGV8_RETURN(SWIGV8_UNDEFINED());
 }
@@ -6951,22 +7801,22 @@ static SwigV8ReturnValue _wrap_new_Pairing__SWIG_0(const SwigV8Arguments &args, 
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "new_Pairing" "', argument " "1"" of type '" "bool""'");
   } 
   arg1 = static_cast< bool >(val1);
-  {
-    if (args[1]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[1]);
-      auto buf = av->Buffer();
-      arg2 = (byte *)buf->GetData() + av->ByteOffset();
-      arg3 = av->ByteLength();
-    } else if (args[1]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[1]);
-      arg3 = SWIGV8_UTF8_LENGTH(str);
-      arg2 = (byte *)alloca(arg3);
-      SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'new_Pairing', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[1]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[1]);
+    auto buf = av->Buffer();
+    arg2 = (byte *)buf->GetData() + av->ByteOffset();
+    arg3 = av->ByteLength();
+  } else if (args[1]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[1]);
+    arg3 = SWIGV8_UTF8_LENGTH(str);
+    arg2 = (byte *)alloca(arg3);
+    SWIGV8_WRITE_UTF8(str, (char *)arg2, arg3);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'new_Pairing', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (blst::Pairing *)new blst::Pairing(arg1,(byte const *)arg2,arg3);
   
   
@@ -7142,38 +7992,38 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_0(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[3]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[3]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[3]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7224,32 +8074,32 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_1(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[3]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7300,22 +8150,22 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_2(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7366,38 +8216,38 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_3(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[3]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[3]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[3]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7448,32 +8298,32 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_4(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[3]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7524,22 +8374,22 @@ static SwigV8ReturnValue _wrap_Pairing_aggregate__SWIG_5(const SwigV8Arguments &
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-      arg5 = av->ByteLength();
-    } else if (args[2]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[2]);
-      arg5 = SWIGV8_UTF8_LENGTH(str);
-      arg4 = (byte *)alloca(arg5);
-      SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = av->ByteLength();
+  } else if (args[2]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[2]);
+    arg5 = SWIGV8_UTF8_LENGTH(str);
+    arg4 = (byte *)alloca(arg5);
+    SWIGV8_WRITE_UTF8(str, (char *)arg4, arg5);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5);
   jsresult = SWIG_From_int(static_cast< int >(result));
   
@@ -7686,8 +8536,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_0(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -7705,57 +8553,80 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_0(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[5]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[5]);
-      auto buf = av->Buffer();
-      arg8 = (byte *)buf->GetData() + av->ByteOffset();
-      arg9 = av->ByteLength();
-    } else if (args[5]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[5]);
-      arg9 = SWIGV8_UTF8_LENGTH(str);
-      arg8 = (byte *)alloca(arg9);
-      SWIGV8_WRITE_UTF8(str, (char *)arg8, arg9);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg8 = (byte *)buf->GetData() + av->ByteOffset();
+    arg9 = av->ByteLength();
+  } else if (args[4]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[4]);
+    arg9 = SWIGV8_UTF8_LENGTH(str);
+    arg8 = (byte *)alloca(arg9);
+    SWIGV8_WRITE_UTF8(str, (char *)arg8, arg9);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7,(byte const *)arg8,arg9);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -7790,8 +8661,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_1(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -7809,51 +8678,74 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_1(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[5]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[5]);
-      auto buf = av->Buffer();
-      arg8 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
-    }
+  
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg8 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7,(byte const *)arg8);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -7888,8 +8780,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_2(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -7907,41 +8797,64 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_2(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P2_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P2_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P1_Affine const *)arg2,(blst::P2_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -7976,8 +8889,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_3(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -7995,57 +8906,80 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_3(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[5]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[5]);
-      auto buf = av->Buffer();
-      arg8 = (byte *)buf->GetData() + av->ByteOffset();
-      arg9 = av->ByteLength();
-    } else if (args[5]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[5]);
-      arg9 = SWIGV8_UTF8_LENGTH(str);
-      arg8 = (byte *)alloca(arg9);
-      SWIGV8_WRITE_UTF8(str, (char *)arg8, arg9);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg8 = (byte *)buf->GetData() + av->ByteOffset();
+    arg9 = av->ByteLength();
+  } else if (args[4]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[4]);
+    arg9 = SWIGV8_UTF8_LENGTH(str);
+    arg8 = (byte *)alloca(arg9);
+    SWIGV8_WRITE_UTF8(str, (char *)arg8, arg9);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7,(byte const *)arg8,arg9);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -8080,8 +9014,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_4(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -8099,51 +9031,74 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_4(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
-  {
-    if (args[5]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[5]);
-      auto buf = av->Buffer();
-      arg8 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
-    }
+  
+  
+  if (args[4]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
+    auto buf = av->Buffer();
+    arg8 = (byte *)buf->GetData() + av->ByteOffset();
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7,(byte const *)arg8);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -8178,8 +9133,6 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_5(const SwigV8Argum
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
-  size_t val5 ;
-  int ecode5 = 0 ;
   BLST_ERROR result;
   
   res1 = SWIG_ConvertPtr(args.Holder(), &argp1,SWIGTYPE_p_blst__Pairing, 0 |  0 );
@@ -8197,41 +9150,64 @@ static SwigV8ReturnValue _wrap_Pairing_mul_n_aggregate__SWIG_5(const SwigV8Argum
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "Pairing_mul_n_aggregate" "', argument " "3"" of type '" "blst::P1_Affine const *""'"); 
   }
   arg3 = reinterpret_cast< blst::P1_Affine * >(argp3);
-  {
-    if (args[2]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
-      auto buf = av->Buffer();
-      arg4 = (byte *)buf->GetData() + av->ByteOffset();
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer>");
+  
+  if (args[2]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[2]);
+    auto buf = av->Buffer();
+    arg4 = (byte *)buf->GetData() + av->ByteOffset();
+    arg5 = 8*av->ByteLength();
+#if V8_MAJOR_VERSION >=6 && V8_MINOR_VERSION >= 8
+  } else if (args[2]->IsBigInt()) {
+    auto bi = v8::Local<v8::BigInt>::Cast(args[2]);
+    int sign, word_count = bi->WordCount();
+    uint64_t* words = (uint64_t*)alloca(arg5 = word_count*sizeof(uint64_t));
+    
+    bi->ToWordsArray(&sign, &word_count, words);
+    if (sign)
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting unsigned value");
+    arg4 = (byte *)words;
+    arg5 *= 8;
+    
+    const union {
+      long one;
+      char little;
+    } is_endian = {
+      1 
+    };
+    
+    if (!is_endian.little) {
+      byte* p = arg4;
+      for (int i = 0; i < word_count; i++) {
+        uint64_t val = words[i];
+        for (size_t j = 0; j < sizeof(val); j++, val >>= 8)
+        *p++ = (byte)val;
+      }
     }
+#endif
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <BigInt>");
   }
-  ecode5 = SWIG_AsVal_size_t(args[3], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "Pairing_mul_n_aggregate" "', argument " "5"" of type '" "size_t""'");
-  } 
-  arg5 = static_cast< size_t >(val5);
-  {
-    if (args[4]->IsArrayBufferView()) {
-      auto av = v8::Local<v8::ArrayBufferView>::Cast(args[4]);
-      auto buf = av->Buffer();
-      arg6 = (byte *)buf->GetData() + av->ByteOffset();
-      arg7 = av->ByteLength();
-    } else if (args[4]->IsString()) {
-      auto str = SWIGV8_TO_STRING(args[4]);
-      arg7 = SWIGV8_UTF8_LENGTH(str);
-      arg6 = (byte *)alloca(arg7);
-      SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
-    } else {
-      SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
-        "expecting <Buffer> or <String>");
-    }
+  
+  
+  if (args[3]->IsArrayBufferView()) {
+    auto av = v8::Local<v8::ArrayBufferView>::Cast(args[3]);
+    auto buf = av->Buffer();
+    arg6 = (byte *)buf->GetData() + av->ByteOffset();
+    arg7 = av->ByteLength();
+  } else if (args[3]->IsString()) {
+    auto str = SWIGV8_TO_STRING(args[3]);
+    arg7 = SWIGV8_UTF8_LENGTH(str);
+    arg6 = (byte *)alloca(arg7);
+    SWIGV8_WRITE_UTF8(str, (char *)arg6, arg7);
+  } else {
+    SWIG_exception_fail(SWIG_TypeError, "in method 'Pairing_mul_n_aggregate', "
+      "expecting <Buffer> or <String>");
   }
+  
   result = (BLST_ERROR)(arg1)->mul_n_aggregate((blst::P2_Affine const *)arg2,(blst::P1_Affine const *)arg3,(byte const *)arg4,arg5,(byte const *)arg6,arg7);
   jsresult = SWIG_From_int(static_cast< int >(result));
-  
-  
   
   
   
@@ -8253,7 +9229,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   OverloadErrorHandler errorHandler;
   
   
-  if(args.Length() == 6) {
+  if(args.Length() == 5) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_0(args, errorHandler);
@@ -8269,7 +9245,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   }
   
   
-  if(args.Length() == 6) {
+  if(args.Length() == 5) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_1(args, errorHandler);
@@ -8285,7 +9261,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   }
   
   
-  if(args.Length() == 5) {
+  if(args.Length() == 4) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_2(args, errorHandler);
@@ -8301,7 +9277,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   }
   
   
-  if(args.Length() == 6) {
+  if(args.Length() == 5) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_3(args, errorHandler);
@@ -8317,7 +9293,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   }
   
   
-  if(args.Length() == 6) {
+  if(args.Length() == 5) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_4(args, errorHandler);
@@ -8333,7 +9309,7 @@ static SwigV8ReturnValue _wrap_Pairing__wrap_Pairing_mul_n_aggregate(const SwigV
   }
   
   
-  if(args.Length() == 5) {
+  if(args.Length() == 4) {
     errorHandler.err.Clear();
 #if (V8_MAJOR_VERSION-0) < 4 && (SWIG_V8_VERSION < 0x031903)
     jsresult = _wrap_Pairing_mul_n_aggregate__SWIG_5(args, errorHandler);
@@ -9076,42 +10052,64 @@ SWIGV8_AddMemberFunction(_exports_SecretKey_class, "from_bendian", _wrap_SecretK
 SWIGV8_AddMemberFunction(_exports_SecretKey_class, "from_lendian", _wrap_SecretKey_from_lendian);
 SWIGV8_AddMemberFunction(_exports_SecretKey_class, "to_bendian", _wrap_SecretKey_to_bendian);
 SWIGV8_AddMemberFunction(_exports_SecretKey_class, "to_lendian", _wrap_SecretKey_to_lendian);
+SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "dup", _wrap_P1_Affine_dup);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "to_jacobian", _wrap_P1_Affine_to_jacobian);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "serialize", _wrap_P1_Affine_serialize);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "compress", _wrap_P1_Affine_compress);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "on_curve", _wrap_P1_Affine_on_curve);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "in_group", _wrap_P1_Affine_in_group);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "is_inf", _wrap_P1_Affine_is_inf);
+SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "is_equal", _wrap_P1_Affine_is_equal);
 SWIGV8_AddMemberFunction(_exports_P1_Affine_class, "core_verify", _wrap_P1_Affine__wrap_P1_Affine_core_verify);
+SWIGV8_AddMemberFunction(_exports_P1_class, "dup", _wrap_P1_dup);
 SWIGV8_AddMemberFunction(_exports_P1_class, "to_affine", _wrap_P1_to_affine);
 SWIGV8_AddMemberFunction(_exports_P1_class, "serialize", _wrap_P1_serialize);
 SWIGV8_AddMemberFunction(_exports_P1_class, "compress", _wrap_P1_compress);
+SWIGV8_AddMemberFunction(_exports_P1_class, "on_curve", _wrap_P1_on_curve);
+SWIGV8_AddMemberFunction(_exports_P1_class, "in_group", _wrap_P1_in_group);
 SWIGV8_AddMemberFunction(_exports_P1_class, "is_inf", _wrap_P1_is_inf);
+SWIGV8_AddMemberFunction(_exports_P1_class, "is_equal", _wrap_P1_is_equal);
 SWIGV8_AddMemberFunction(_exports_P1_class, "aggregate", _wrap_P1_aggregate);
 SWIGV8_AddMemberFunction(_exports_P1_class, "sign_with", _wrap_P1_sign_with);
 SWIGV8_AddMemberFunction(_exports_P1_class, "hash_to", _wrap_P1__wrap_P1_hash_to);
 SWIGV8_AddMemberFunction(_exports_P1_class, "encode_to", _wrap_P1__wrap_P1_encode_to);
+SWIGV8_AddMemberFunction(_exports_P1_class, "mult", _wrap_P1_mult);
 SWIGV8_AddMemberFunction(_exports_P1_class, "cneg", _wrap_P1_cneg);
+SWIGV8_AddMemberFunction(_exports_P1_class, "neg", _wrap_P1_neg);
 SWIGV8_AddMemberFunction(_exports_P1_class, "add", _wrap_P1__wrap_P1_add);
 SWIGV8_AddMemberFunction(_exports_P1_class, "dbl", _wrap_P1_dbl);
+SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "dup", _wrap_P2_Affine_dup);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "to_jacobian", _wrap_P2_Affine_to_jacobian);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "serialize", _wrap_P2_Affine_serialize);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "compress", _wrap_P2_Affine_compress);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "on_curve", _wrap_P2_Affine_on_curve);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "in_group", _wrap_P2_Affine_in_group);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "is_inf", _wrap_P2_Affine_is_inf);
+SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "is_equal", _wrap_P2_Affine_is_equal);
 SWIGV8_AddMemberFunction(_exports_P2_Affine_class, "core_verify", _wrap_P2_Affine__wrap_P2_Affine_core_verify);
+SWIGV8_AddMemberFunction(_exports_P2_class, "dup", _wrap_P2_dup);
 SWIGV8_AddMemberFunction(_exports_P2_class, "to_affine", _wrap_P2_to_affine);
 SWIGV8_AddMemberFunction(_exports_P2_class, "serialize", _wrap_P2_serialize);
 SWIGV8_AddMemberFunction(_exports_P2_class, "compress", _wrap_P2_compress);
+SWIGV8_AddMemberFunction(_exports_P2_class, "on_curve", _wrap_P2_on_curve);
+SWIGV8_AddMemberFunction(_exports_P2_class, "in_group", _wrap_P2_in_group);
 SWIGV8_AddMemberFunction(_exports_P2_class, "is_inf", _wrap_P2_is_inf);
+SWIGV8_AddMemberFunction(_exports_P2_class, "is_equal", _wrap_P2_is_equal);
 SWIGV8_AddMemberFunction(_exports_P2_class, "aggregate", _wrap_P2_aggregate);
 SWIGV8_AddMemberFunction(_exports_P2_class, "sign_with", _wrap_P2_sign_with);
 SWIGV8_AddMemberFunction(_exports_P2_class, "hash_to", _wrap_P2__wrap_P2_hash_to);
 SWIGV8_AddMemberFunction(_exports_P2_class, "encode_to", _wrap_P2__wrap_P2_encode_to);
+SWIGV8_AddMemberFunction(_exports_P2_class, "mult", _wrap_P2_mult);
 SWIGV8_AddMemberFunction(_exports_P2_class, "cneg", _wrap_P2_cneg);
+SWIGV8_AddMemberFunction(_exports_P2_class, "neg", _wrap_P2_neg);
 SWIGV8_AddMemberFunction(_exports_P2_class, "add", _wrap_P2__wrap_P2_add);
 SWIGV8_AddMemberFunction(_exports_P2_class, "dbl", _wrap_P2_dbl);
+SWIGV8_AddMemberFunction(_exports_PT_class, "dup", _wrap_PT_dup);
+SWIGV8_AddMemberFunction(_exports_PT_class, "is_one", _wrap_PT_is_one);
+SWIGV8_AddMemberFunction(_exports_PT_class, "is_equal", _wrap_PT_is_equal);
+SWIGV8_AddMemberFunction(_exports_PT_class, "sqr", _wrap_PT_sqr);
+SWIGV8_AddMemberFunction(_exports_PT_class, "mul", _wrap_PT_mul);
+SWIGV8_AddMemberFunction(_exports_PT_class, "final_exp", _wrap_PT_final_exp);
 SWIGV8_AddMemberFunction(_exports_Pairing_class, "aggregate", _wrap_Pairing__wrap_Pairing_aggregate);
 SWIGV8_AddMemberFunction(_exports_Pairing_class, "mul_n_aggregate", _wrap_Pairing__wrap_Pairing_mul_n_aggregate);
 SWIGV8_AddMemberFunction(_exports_Pairing_class, "commit", _wrap_Pairing_commit);
@@ -9225,6 +10223,8 @@ v8::Local<v8::Object> _exports_Pairing_obj = _exports_Pairing_class_0->GetFuncti
 SWIGV8_AddStaticFunction(_exports_P1_obj, "generator", _wrap_P1_generator);
 SWIGV8_AddStaticFunction(_exports_P2_Affine_obj, "generator", _wrap_P2_Affine_generator);
 SWIGV8_AddStaticFunction(_exports_P2_obj, "generator", _wrap_P2_generator);
+SWIGV8_AddStaticFunction(exports_obj, "G1", _wrap_G1);
+SWIGV8_AddStaticFunction(exports_obj, "G2", _wrap_G2);
 
 
   /* register classes */
