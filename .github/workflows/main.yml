@@ -81,13 +81,14 @@ jobs:
         run: yarn bootstrap
         env:
           SWIG_SKIP_RUN: true
-      - name: Test
-        run: yarn test
 
       - name: worker-threads
         run: |
           cp runnable.threads.js blst/bindings/node.js/runnable.threads.js
           node blst/bindings/node.js/runnable.threads.js
+
+      - name: Test
+        run: yarn test
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
