@@ -28,12 +28,9 @@ jobs:
           make;
           make install;
 
-      - name: Check files
-        run: ls /swig/share/swig/
-
       - name: Install && Build TS + bindings
         run: |
-          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2
+          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.1.0
           yarn bootstrap
           ls -ltrh .
         working-directory: blst/bindings/node.js
