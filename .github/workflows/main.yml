@@ -19,14 +19,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: Cache SWIG setup
-        id: cache-swig-setup
-        uses: actions/cache@v2
-        with:
-          path: ~/swig
-          key: ${{ runner.os }}-swig-pr1973
       - name: Setup SWIG
-        if: steps.cache-swig-setup.outputs.cache-hit != 'true'
         run: |
           git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
           cd swig;
@@ -34,6 +27,9 @@ jobs:
           ./configure --prefix=$HOME/swig;
           make;
           make install;
+
+      - name: Check files
+        run: ls /swig/share/swig/
 
       - name: Install && Build TS + bindings
         run: |
