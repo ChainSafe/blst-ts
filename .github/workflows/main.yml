@@ -24,11 +24,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/swig
-          key: ${{ runner.os }}-swig-pr1746
+          key: ${{ runner.os }}-swig-pr1973
       - name: Setup SWIG
         if: steps.cache-swig-setup.outputs.cache-hit != 'true'
         run: |
-          git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
+          git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
           cd swig;
           ./autogen.sh;
           ./configure --prefix=$HOME/swig;
