@@ -19,16 +19,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12
-      - name: Cache SWIG setup
-        id: cache-swig-setup
-        uses: actions/cache@v2
-        with:
-          path: ~/swig
-          key: ${{ runner.os }}-swig-pr1746
       - name: Setup SWIG
-        if: steps.cache-swig-setup.outputs.cache-hit != 'true'
         run: |
-          git clone -b pr/new-node-fixes https://github.com/yegorich/swig;
+          git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
           cd swig;
           ./autogen.sh;
           ./configure --prefix=$HOME/swig;
@@ -37,7 +30,7 @@ jobs:
 
       - name: Install && Build TS + bindings
         run: |
-          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.0.2
+          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.1.0
           yarn bootstrap
           ls -ltrh .
         working-directory: blst/bindings/node.js
