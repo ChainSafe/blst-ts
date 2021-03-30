@@ -11,6 +11,11 @@ export interface Blst {
   Pairing: PairingConstructor;
   G1(): P1;
   G2(): P2;
+
+  BLS12_381_G1: P1_Affine;
+  BLS12_381_NEG_G1: P1_Affine;
+  BLS12_381_G2: P2_Affine;
+  BLS12_381_NEG_G2: P2_Affine;
 }
 
 // blst.hpp types
