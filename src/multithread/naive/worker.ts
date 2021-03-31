@@ -4,9 +4,6 @@ import * as bls from "../../lib";
 export type WorkerApi = typeof workerApi;
 
 const workerApi = {
-  echo(a: unknown) {
-    return a;
-  },
   verify(msg: Uint8Array, pk: Uint8Array, sig: Uint8Array) {
     return bls.verify(
       msg,
@@ -24,6 +21,17 @@ const workerApi = {
       pks.map(bls.PublicKey.fromBytes),
       sigs.map(bls.Signature.fromBytes)
     );
+  },
+
+  // Test methods
+  ping(n: number) {
+    return n;
+  },
+  receive(msgs: Uint8Array[], pks: Uint8Array[], sigs: Uint8Array[]) {},
+  serders(msgs: Uint8Array[], pks: Uint8Array[], sigs: Uint8Array[]) {
+    msgs;
+    pks.map(bls.PublicKey.fromBytes);
+    sigs.map(bls.Signature.fromBytes);
   },
 };
 

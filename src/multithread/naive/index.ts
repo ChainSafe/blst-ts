@@ -47,4 +47,32 @@ export class BlsMultiThreadNaive {
       )
     );
   }
+
+  // Test methods
+
+  async ping(n: number): Promise<number> {
+    return await this.pool.queue((worker) => worker.ping(n));
+  }
+
+  async receive(
+    msgs: Uint8Array[],
+    pks: Uint8Array[],
+    sigs: Uint8Array[]
+  ): Promise<void> {
+    await this.pool.queue((worker) => worker.receive(msgs, pks, sigs));
+  }
+
+  async serders(
+    msgs: Uint8Array[],
+    pks: bls.PublicKey[],
+    sigs: bls.Signature[]
+  ): Promise<void> {
+    await this.pool.queue((worker) =>
+      worker.serders(
+        msgs,
+        pks.map((pk) => pk.serialize()),
+        sigs.map((sig) => sig.serialize())
+      )
+    );
+  }
 }
