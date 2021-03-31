@@ -12,25 +12,16 @@ type ThreadType = Thread &
 
 export class BlsMultiThreadNaive {
   pool: Pool<ThreadType>;
-  workerCount = 8;
 
-  constructor() {
+  constructor(workerCount?: number) {
     this.pool = Pool(
       () => (spawn(new Worker("./worker.js")) as any) as Promise<ThreadType>,
-      this.workerCount
+      workerCount
     );
   }
 
   async destroy() {
     await this.pool.terminate(true);
-  }
-
-  async startAll() {
-    await Promise.all(
-      Array.from({ length: this.workerCount }, (_, i) => i).map((i) =>
-        this.pool.queue((worker) => worker.echo(i))
-      )
-    );
   }
 
   async verify(

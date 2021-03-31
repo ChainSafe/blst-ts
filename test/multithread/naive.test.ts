@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import * as bls from "../../src/lib";
 import { BlsMultiThreadNaive } from "../../src/multithread/naive";
+import { warmUpWorkers } from "./utils";
 
 describe("bls pool naive", function () {
   const n = 16;
@@ -10,7 +11,7 @@ describe("bls pool naive", function () {
     // Starting all threads may take a while due to ts-node compilation
     this.timeout(20 * 1000);
     pool = new BlsMultiThreadNaive();
-    await pool.startAll();
+    await warmUpWorkers(pool);
   });
 
   after(async function () {

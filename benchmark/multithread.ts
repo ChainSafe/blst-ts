@@ -1,105 +1,137 @@
-import crypto from "crypto";
+import os from "os";
 import * as bls from "../src/lib";
 import { BlsMultiThreadNaive } from "../src/multithread/naive";
+import { warmUpWorkers } from "../test/multithread/utils";
 import { runBenchmark } from "./runner";
 
-const dst = "BLS_SIG_BLS12381G2-SHA256-SSWU-RO_POP_";
-const hashOrEncode = true;
-const msg = Buffer.from("Mr F was here");
-
 (async function () {
-  const runs = 32;
-  const n = 128;
+  const maxMs = 10000;
+  const sigCount = 128;
 
-  console.log("Starting pool");
+  // Not actual physical CPU core count
+  // To get the physical count see
+  // (1) https://gist.github.com/jakoboo/82be8c031bc09cf2e75dac9253645f2a
+  // (2) https://www.npmjs.com/package/physical-cpu-count
+  const logicalCpuCount = os.cpus().length;
+
+  console.log("Warming up workers...");
   const pool = new BlsMultiThreadNaive();
-  await pool.startAll();
-  console.log("Started pool");
+  await warmUpWorkers(pool);
 
-  // BLS verify
-
-  await runBenchmark({
-    id: "BLS verify",
-    before: () => {
-      const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
-      return { pk: sk.toPublicKey(), sig: sk.sign(msg) };
-    },
-    beforeEach: (arg) => arg,
-    run: ({ pk, sig }) => {
-      for (let i = 0; i < n; i++) {
-        bls.verify(msg, pk, sig);
-      }
-    },
-    runs,
-  });
-
-  await runBenchmark({
-    id: "BLS verify multithread naive",
-    before: () => {
-      const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
-      return { pk: sk.toPublicKey(), sig: sk.sign(msg) };
-    },
-    beforeEach: (arg) => arg,
-    run: async ({ pk, sig }) => {
-      await Promise.all(
-        Array.from({ length: n }, (_, i) => i).map((i) =>
-          pool.verify(msg, pk, sig)
-        )
-      );
-    },
-    runs,
-  });
+  console.log("Preparing test data...");
+  const msgs: Uint8Array[] = [];
+  const sks: bls.SecretKey[] = [];
+  const pks: bls.PublicKey[] = [];
+  const sigs: bls.Signature[] = [];
+  for (let i = 0; i < sigCount; i++) {
+    const msg = Buffer.alloc(32, i);
+    const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
+    msgs.push(msg);
+    sks.push(sk);
+    pks.push(sk.toPublicKey());
+    sigs.push(sk.sign(msg));
+  }
 
   // BLS batch verify
 
-  await runBenchmark({
-    id: "BLS batch verify",
-    before: () => {
-      const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
-      const pk = sk.toPublicKey();
-      const sig = sk.sign(msg);
-      return {
-        msgs: Array.from({ length: n }, (_, i) => msg),
-        pks: Array.from({ length: n }, (_, i) => pk),
-        sigs: Array.from({ length: n }, (_, i) => sig),
-      };
-    },
-    beforeEach: (arg) => arg,
-    run: ({ msgs, pks, sigs }) => {
-      bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
-    },
-    runs,
-  });
+  {
+    const results: { i: number; serie: number; parallel: number }[] = [];
 
-  await runBenchmark({
-    id: "BLS batch verify multithread naive",
-    before: () => {
-      const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
+    for (let workers = 1; workers <= logicalCpuCount; workers++) {
+      const serie = await runBenchmark({
+        id: "BLS batch verify",
+        before: () => {},
+        beforeEach: () => {},
+        run: () => {
+          for (let j = 0; j < workers; j++) {
+            bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+          }
+        },
+        maxMs,
+      });
+
+      const parallel = await runBenchmark({
+        id: "BLS batch verify multithread naive",
+        before: () => {},
+        beforeEach: () => {},
+        run: async () => {
+          await Promise.all(
+            Array.from({ length: workers }, (_, i) => i).map(() =>
+              pool.verifyMultipleAggregateSignatures(msgs, pks, sigs)
+            )
+          );
+        },
+        maxMs,
+      });
+
+      results.push({
+        i: workers,
+        serie: serie / workers,
+        parallel: parallel / workers,
+      });
+    }
+
+    console.log(
+      results
+        .map(({ i, serie, parallel }) =>
+          [i, serie, parallel, parallel / serie].join(", ")
+        )
+        .join("\n")
+    );
+  }
+
+  // BLS verify
+
+  {
+    const results: { i: number; serie: number; parallel: number }[] = [];
+
+    for (let workers = 1; workers <= 8; workers++) {
+      const msg = Buffer.alloc(32, 1);
+      const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, 1));
       const pk = sk.toPublicKey();
       const sig = sk.sign(msg);
-      return {
-        msgs: Array.from({ length: n }, (_, i) => msg),
-        pks: Array.from({ length: n }, (_, i) => pk),
-        sigs: Array.from({ length: n }, (_, i) => sig),
-      };
-    },
-    beforeEach: (arg) => arg,
-    run: async ({ msgs, pks, sigs }) => {
-      const perWorker = 16;
-      await Promise.all(
-        Array.from({ length: n / perWorker }, (_, i) => i).map((i) => {
-          const from = i * perWorker;
-          const to = (i + 1) * perWorker;
-          return pool.verifyMultipleAggregateSignatures(
-            msgs.slice(from, to),
-            pks.slice(from, to),
-            sigs.slice(from, to)
+
+      const serie = await runBenchmark({
+        id: "BLS verify",
+        before: () => {},
+        beforeEach: () => {},
+        run: () => {
+          for (let i = 0; i < workers; i++) {
+            bls.verify(msg, pk, sig);
+          }
+        },
+        maxMs,
+      });
+
+      const parallel = await runBenchmark({
+        id: "BLS verify multithread naive",
+        before: () => {},
+        beforeEach: () => {},
+        run: async () => {
+          await Promise.all(
+            Array.from({ length: workers }, (_, i) => i).map(() =>
+              pool.verify(msg, pk, sig)
+            )
           );
-        })
-      );
-    },
-    runs,
-  });
+        },
+        maxMs,
+      });
+
+      results.push({
+        i: workers,
+        serie: serie / workers,
+        parallel: parallel / workers,
+      });
+    }
+
+    console.log(
+      results
+        .map(({ i, serie, parallel }) =>
+          [i, serie, parallel, parallel / serie].join(", ")
+        )
+        .join("\n")
+    );
+  }
 
   console.log("Destroying pool");
   await pool.destroy();
