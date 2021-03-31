@@ -15,7 +15,7 @@ export class BlsMultiThreadNaive {
 
   constructor(workerCount?: number) {
     this.pool = Pool(
-      () => (spawn(new Worker("./worker.js")) as any) as Promise<ThreadType>,
+      () => (spawn(new Worker("./worker")) as any) as Promise<ThreadType>,
       workerCount
     );
   }
