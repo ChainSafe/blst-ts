@@ -1,3 +1,5 @@
+import path from "path";
+
 describe("worker_threads test", function () {
   const nodeJsSemver = process.versions.node;
   const nodeJsMajorVer = parseInt(nodeJsSemver.split(".")[0]);
@@ -12,11 +14,25 @@ describe("worker_threads test", function () {
 
     const { Worker } = await import("worker_threads");
 
-    // Create two workers so blst.node is imported twice to trigger the error
+    // Create multiple workers so blst.node is imported twice to trigger the error
     // blst/bindings/node.js$ node worker-threads.js
     // Error: Module did not self-register: 'blst/bindings/node.js/blst.node'.
 
-    const worker1 = new Worker("./runnable.js");
-    const worker2 = new Worker("./runnable.js");
+    async function run(i: number) {
+      await new Promise<void>((resolve, reject) => {
+        const worker = new Worker(path.join(__dirname, "threads/runnable.js"));
+
+        worker.on("error", reject);
+        worker.on("exit", (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(Error(`exit code ${code}`));
+          }
+        });
+      });
+    }
+
+    await Promise.all(Array.from({ length: 8 }, (_, i) => run(i)));
   });
 });

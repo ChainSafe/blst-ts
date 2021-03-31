@@ -3,7 +3,7 @@ import { blst, BLST_ERROR } from "./bindings";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
-const RAND_BITS = 64;
+const RAND_BYTES = 8;
 
 export { BLST_ERROR };
 export class ErrorBLST extends Error {
@@ -266,7 +266,7 @@ export function verifyMultipleAggregateSignatures(
 
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
   for (let i = 0; i < n_elems; i++) {
-    const rand = crypto.randomBytes(RAND_BITS);
+    const rand = crypto.randomBytes(RAND_BYTES);
     const result = ctx.mul_n_aggregate(
       pks[i].value,
       sigs[i].value,
