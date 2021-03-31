@@ -1,6 +1,6 @@
 import os from "os";
-import * as bls from "../../src/lib";
-import { BlsMultiThreadNaive } from "../../src/multithread/naive";
+import * as bls from "../../../src/lib";
+import { BlsMultiThreadNaive } from "./index";
 
 export async function warmUpWorkers(pool: BlsMultiThreadNaive) {
   const msg = Buffer.alloc(32, 1);

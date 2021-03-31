@@ -20,16 +20,11 @@ describe("worker_threads test", function () {
 
     async function run(i: number) {
       await new Promise<void>((resolve, reject) => {
-        const worker = new Worker(path.join(__dirname, "threads/runnable.js"), {
-          workerData: {
-            path: "./runnable.ts",
-          },
-        });
+        const worker = new Worker(path.join(__dirname, "threads/runnable.js"));
 
         worker.on("error", reject);
         worker.on("exit", (code) => {
           if (code === 0) {
-            console.log(`Worker ${i} done`);
             resolve();
           } else {
             reject(Error(`exit code ${code}`));

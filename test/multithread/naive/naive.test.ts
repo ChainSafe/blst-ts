@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import * as bls from "../../src/lib";
-import { BlsMultiThreadNaive } from "../../src/multithread/naive";
+import * as bls from "../../../src/lib";
+import { BlsMultiThreadNaive } from "./index";
 import { warmUpWorkers } from "./utils";
 
 describe("bls pool naive", function () {
