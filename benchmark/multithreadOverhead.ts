@@ -21,6 +21,9 @@ import { runBenchmark } from "./runner";
 
   // Ping
 
+  // Benchmarking postMessage with raw .js scripts it takes 1.7ms one way
+  // Benchmarking with SharedArrayBuffers and Atomics it still takes 1.7ms
+
   {
     const results: { i: number; avg: number }[] = [];
 
