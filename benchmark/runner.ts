@@ -6,6 +6,7 @@ export async function runBenchmark<T1, T2 = T1, R = void>({
   run,
   check,
   runs = 512,
+  maxMs = 2000,
   id,
 }: {
   before: () => PromiseOptional<T1>;
@@ -13,13 +14,16 @@ export async function runBenchmark<T1, T2 = T1, R = void>({
   run: (input: T2) => PromiseOptional<R>;
   check?: (result: R) => boolean;
   runs?: number;
+  maxMs?: number;
   id: string;
-}): Promise<void> {
+}): Promise<number> {
   const diffsNanoSec: bigint[] = [];
 
   const inputAll = await before();
 
-  for (let i = 0; i < runs; i++) {
+  let start = Date.now();
+  let i = 0;
+  while (i++ < runs && Date.now() - start < maxMs) {
     const input = await beforeEach(inputAll, i);
 
     const start = process.hrtime.bigint();
@@ -34,7 +38,9 @@ export async function runBenchmark<T1, T2 = T1, R = void>({
   const average = averageBigint(diffsNanoSec);
   const averageNs = Number(average);
   // eslint-disable-next-line no-console
-  console.log(formatRow({ id, averageNs })); // ±1.74%
+  console.log(formatRow({ id, averageNs, runsDone: i - 1 })); // ±1.74%
+
+  return averageNs;
 }
 
 function averageBigint(arr: bigint[]): bigint {
@@ -45,12 +51,13 @@ function averageBigint(arr: bigint[]): bigint {
 function formatRow({
   id,
   averageNs,
+  runsDone,
 }: {
   id: string;
   averageNs: number;
+  runsDone: number;
 }): string {
   const precision = 7;
-  const numLen = 13;
   const idMaxLen = 64;
 
   const opsPerSec = 1e9 / averageNs;
@@ -60,8 +67,9 @@ function formatRow({
   // Scalar multiplication G2 (255-bit, constant-time)                              3133.117 ops/s       319171 ns/op
 
   let row = [
-    `${opsPerSec.toPrecision(precision).padStart(numLen)} ops/s`,
-    `${averageNs.toPrecision(precision).padStart(numLen)} ns/op`,
+    `${opsPerSec.toPrecision(precision).padStart(13)} ops/s`,
+    `${averageNs.toPrecision(precision).padStart(13)} ns/op`,
+    `${String(runsDone).padStart(6)} runs`,
   ].join(" ");
 
   const idLen = Math.min(process.stdout.columns - row.length - 1, idMaxLen);
