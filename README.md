@@ -45,6 +45,13 @@ This library has a hardcoded configuration compatible with Eth2.0 spec:
 
 > [test vectors](https://github.com/ethereum/eth2.0-spec-tests/tree/master/tests/bls)
 
+## Developing
+
+Note that this repo contains a git submodule. Make sure the git submodule `blst` is populated before attempting to build locally. After cloning run:
+```
+git submodule update --init --recursive
+```
+
 ## License
 
 Apache-2.0
