@@ -187,12 +187,12 @@ export function aggregatePubkeys(
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
-  const agg = pks[0];
+  const agg = pks[0].value.dup();
   for (const pk of pks.slice(1)) {
-    agg.value.add(pk.value);
+    agg.add(pk.value);
   }
 
-  return new AggregatePublicKey(agg.value);
+  return new AggregatePublicKey(agg);
 }
 
 export function aggregateSignatures(
@@ -202,12 +202,12 @@ export function aggregateSignatures(
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
-  const agg = sigs[0];
+  const agg = sigs[0].value.dup();
   for (const pk of sigs.slice(1)) {
-    agg.value.add(pk.value);
+    agg.add(pk.value);
   }
 
-  return new AggregateSignature(agg.value);
+  return new AggregateSignature(agg);
 }
 
 export function verify(
