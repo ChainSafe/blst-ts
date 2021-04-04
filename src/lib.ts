@@ -187,8 +187,8 @@ export function aggregatePubkeys(
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
-  const agg = pks[0].value.dup();
-  for (const pk of pks.slice(1)) {
+  const agg = new PkConstructor(); // Faster than using .dup()
+  for (const pk of pks) {
     agg.add(pk.value);
   }
 
@@ -202,8 +202,8 @@ export function aggregateSignatures(
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
-  const agg = sigs[0].value.dup();
-  for (const pk of sigs.slice(1)) {
+  const agg = new SigConstructor(); // Faster than using .dup()
+  for (const pk of sigs) {
     agg.add(pk.value);
   }
 

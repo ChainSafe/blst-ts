@@ -206,12 +206,22 @@ const msg = Buffer.from("Mr F was here");
       return sk;
     });
 
+    // Fastest than using .dup()
     await runBenchmark<InstanceType<typeof blst.P1>[]>({
       id: `BLS aggregate ${aggCount} from P1[] with .add`,
       before: () => sks.map((sk) => new blst.P1(sk)),
       run: (pks) => {
         const agg = new blst.P1();
         for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+      id: `BLS aggregate ${aggCount} from P1[] with .add add .dup first`,
+      before: () => sks.map((sk) => new blst.P1(sk)),
+      run: (pks) => {
+        const agg = pks[0].dup();
+        for (const pk of pks.slice(1)) agg.add(pk);
       },
     });
 
@@ -224,6 +234,7 @@ const msg = Buffer.from("Mr F was here");
       },
     });
 
+    // This is way more expensive because .aggregate does a group check on each key
     await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
       id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
       before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
