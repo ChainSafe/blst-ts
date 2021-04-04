@@ -1,5 +1,5 @@
-import { blst, SecretKey } from "../../src/bindings";
-import { fromHex, runInstanceTestCases } from "../utils";
+import { blst, SecretKey } from "../../../src/bindings";
+import { fromHex, runInstanceTestCases } from "../../utils";
 
 describe("SecretKey", () => {
   const sampleHex = fromHex(

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import * as bls from "../../../src/lib";
+import * as bls from "../../../../src/lib";
 import { BlsMultiThreadNaive } from "./index";
 import { warmUpWorkers } from "./utils";
 

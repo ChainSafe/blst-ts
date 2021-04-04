@@ -1,5 +1,5 @@
 import { expose } from "threads/worker";
-import * as bls from "../../../src/lib";
+import * as bls from "../../../../src/lib";
 
 export type WorkerApi = typeof workerApi;
 

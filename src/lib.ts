@@ -8,7 +8,7 @@ const RAND_BYTES = 8;
 export { BLST_ERROR };
 export class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
-    super(BLST_ERROR[blstError]);
+    super(`BLST_ERROR: ${BLST_ERROR[blstError]}`);
   }
 }
 
@@ -55,6 +55,11 @@ export class SecretKey {
   }
 
   static fromBytes(skBytes: Uint8Array): SecretKey {
+    // draft-irtf-cfrg-bls-signature-04 does not allow SK == 0
+    if (skBytes.every((byte) => byte === 0)) {
+      throw new ErrorBLST(BLST_ERROR.ZERO_SECRET_KEY);
+    }
+
     const sk = new SkConstructor();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);

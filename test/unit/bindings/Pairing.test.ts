@@ -1,5 +1,5 @@
-import { blst, Pairing } from "../../src/bindings";
-import { fromHex, runInstanceTestCases } from "../utils";
+import { blst, Pairing } from "../../../src/bindings";
+import { fromHex, runInstanceTestCases } from "../../utils";
 
 describe("Pairing", () => {
   const sample = {

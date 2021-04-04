@@ -1,5 +1,5 @@
 import { spawn, Pool, Worker, Thread } from "threads";
-import * as bls from "../../../src/lib";
+import * as bls from "../../../../src/lib";
 import { WorkerApi } from "./worker";
 
 type ThreadType = Thread &

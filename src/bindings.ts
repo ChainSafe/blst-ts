@@ -214,4 +214,5 @@ export enum BLST_ERROR {
   BLST_PK_IS_INFINITY = 6,
   // Extra errors not in native bindings
   EMPTY_AGGREGATE_ARRAY = "EMPTY_AGGREGATE_ARRAY",
+  ZERO_SECRET_KEY = "ZERO_SECRET_KEY",
 }

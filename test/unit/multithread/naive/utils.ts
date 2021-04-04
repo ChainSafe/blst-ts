@@ -1,5 +1,5 @@
 import os from "os";
-import * as bls from "../../../src/lib";
+import * as bls from "../../../../src/lib";
 import { BlsMultiThreadNaive } from "./index";
 
 export async function warmUpWorkers(pool: BlsMultiThreadNaive) {

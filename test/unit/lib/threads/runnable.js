@@ -1,4 +1,4 @@
-const bls = require("../../../dist/lib");
+const bls = require("../../../../dist/lib");
 
 const msg = Buffer.from("sample-msg");
 

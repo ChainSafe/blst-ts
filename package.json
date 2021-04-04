@@ -11,10 +11,12 @@
   ],
   "scripts": {
     "install": "node dist/scripts/install.js",
-    "test": "mocha test/**/*.test.ts",
     "build": "tsc",
     "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
-    "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp"
+    "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp",
+    "test:unit": "mocha 'test/unit/**/*.test.ts'",
+    "test:spec": "mocha 'test/spec/**/*.test.ts'",
+    "download-test-cases": "ts-node test/downloadSpecTests.ts"
   },
   "repository": {
     "type": "git",
@@ -28,6 +30,7 @@
   },
   "homepage": "https://github.com/ChainSafe/blst-ts#readme",
   "devDependencies": {
+    "@chainsafe/lodestar-spec-test-util": "^0.18.0",
     "@types/chai": "^4.2.13",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.11.5",
