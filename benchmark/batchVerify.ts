@@ -18,7 +18,6 @@ const msg = Buffer.from("Mr F was here");
         const sig = sk.sign(msg);
         return { pk, sig };
       },
-      beforeEach: (arg) => arg,
       run: ({ pk, sig }) => {
         for (let j = 0; j < i; j++) {
           bls.verify(msg, pk, sig);
@@ -38,7 +37,6 @@ const msg = Buffer.from("Mr F was here");
           sigs: Array.from({ length: i }, (_, i) => sig),
         };
       },
-      beforeEach: (arg) => arg,
       run: ({ msgs, pks, sigs }) => {
         bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
       },

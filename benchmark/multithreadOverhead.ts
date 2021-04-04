@@ -1,7 +1,7 @@
 import os from "os";
 import * as bls from "../src/lib";
-import { BlsMultiThreadNaive } from "../test/multithread/naive";
-import { warmUpWorkers } from "../test/multithread/naive/utils";
+import { BlsMultiThreadNaive } from "../test/unit/multithread/naive";
+import { warmUpWorkers } from "../test/unit/multithread/naive/utils";
 import { runBenchmark } from "./runner";
 
 (async function () {
@@ -31,7 +31,6 @@ import { runBenchmark } from "./runner";
       const avg = await runBenchmark({
         id: `Ping num (${workers} workers)`,
         before: () => {},
-        beforeEach: () => {},
         run: async () => {
           await Promise.all(
             Array.from({ length: workers }, (_, i) => i).map(() => pool.ping(3))
@@ -67,7 +66,6 @@ import { runBenchmark } from "./runner";
         const avg = await runBenchmark({
           id: `Receive msg ${i}`,
           before: () => {},
-          beforeEach: () => {},
           run: async () => {
             await Promise.all(
               Array.from({ length: workers }, (_, i) => i).map(() =>
@@ -110,7 +108,6 @@ import { runBenchmark } from "./runner";
         const avg = await runBenchmark({
           id: `Send receive msg + serdes ${i}`,
           before: () => {},
-          beforeEach: () => {},
           run: async () => {
             await Promise.all(
               Array.from({ length: workers }, (_, i) => i).map(() =>

@@ -1,7 +1,7 @@
 import os from "os";
 import * as bls from "../src/lib";
-import { BlsMultiThreadNaive } from "../test/multithread/naive";
-import { warmUpWorkers } from "../test/multithread/naive/utils";
+import { BlsMultiThreadNaive } from "../test/unit/multithread/naive";
+import { warmUpWorkers } from "../test/unit/multithread/naive/utils";
 import { runBenchmark } from "./runner";
 
 (async function () {
@@ -41,7 +41,6 @@ import { runBenchmark } from "./runner";
       const serie = await runBenchmark({
         id: "BLS batch verify",
         before: () => {},
-        beforeEach: () => {},
         run: () => {
           for (let j = 0; j < workers; j++) {
             bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
@@ -53,7 +52,6 @@ import { runBenchmark } from "./runner";
       const parallel = await runBenchmark({
         id: "BLS batch verify multithread naive",
         before: () => {},
-        beforeEach: () => {},
         run: async () => {
           await Promise.all(
             Array.from({ length: workers }, (_, i) => i).map(() =>
@@ -94,7 +92,6 @@ import { runBenchmark } from "./runner";
       const serie = await runBenchmark({
         id: "BLS verify",
         before: () => {},
-        beforeEach: () => {},
         run: () => {
           for (let i = 0; i < workers; i++) {
             bls.verify(msg, pk, sig);
@@ -106,7 +103,6 @@ import { runBenchmark } from "./runner";
       const parallel = await runBenchmark({
         id: "BLS verify multithread naive",
         before: () => {},
-        beforeEach: () => {},
         run: async () => {
           await Promise.all(
             Array.from({ length: workers }, (_, i) => i).map(() =>

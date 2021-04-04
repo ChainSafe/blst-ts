@@ -178,7 +178,6 @@ const msg = Buffer.from("Mr F was here");
       const sig = sk.sign(msg);
       return { pk, sig };
     },
-    beforeEach: (arg) => arg,
     run: ({ pk, sig }) => {
       verify(msg, pk, sig);
     },
@@ -200,7 +199,6 @@ const msg = Buffer.from("Mr F was here");
         const sig = AggregateSignature.fromSignatures(sigs).toSignature();
         return { pks, sig };
       },
-      beforeEach: (arg) => arg,
       run: ({ pks, sig }) => {
         fastAggregateVerify(msg, pks, sig);
       },
