@@ -1,11 +1,15 @@
 import os from "os";
 import * as bls from "../src/lib";
 import { BlsMultiThreadNaive } from "../test/multithread/naive";
-import { warmUpWorkers } from "../test/multithread/naive/utils";
-import { runBenchmark } from "./runner";
+import { warmUpWorkers, chunkify } from "../test/multithread/naive/utils";
+import { Csv } from "./utils/csv";
+import { BenchmarkRunner } from "./utils/runner";
 
 (async function () {
-  const maxMs = 10000;
+  const runner = new BenchmarkRunner("BLS multi-threaded benchmark", {
+    maxMs: 10000,
+  });
+
   const sigCount = 128;
 
   // Not actual physical CPU core count
@@ -14,11 +18,11 @@ import { runBenchmark } from "./runner";
   // (2) https://www.npmjs.com/package/physical-cpu-count
   const logicalCpuCount = os.cpus().length;
 
-  console.log("Warming up workers...");
+  // Warming up workers...
   const pool = new BlsMultiThreadNaive();
   await warmUpWorkers(pool);
 
-  console.log("Preparing test data...");
+  // Preparing test data
   const sets: bls.SignatureSet[] = [];
   for (let i = 0; i < sigCount; i++) {
     const msg = Buffer.alloc(32, i);
@@ -27,102 +31,74 @@ import { runBenchmark } from "./runner";
   }
 
   // BLS batch verify
+  // Total time to verify sigCount signatures should reduce with,
+  // up to the max num of physical CPU cores
+  // ```
+  // total_time = time_single_cpu / workers
+  // ```
+  // Check the CSV values below to plot this relation
+  // Note: Some CPUs may use hypthreading so the `threads` library may
+  // spawn more workers than CPU core available, deviating the results
 
   {
-    const results: { i: number; serie: number; parallel: number }[] = [];
+    const csv = new Csv<"workers" | "serie" | "parallel" | "ratio">();
+
+    const serie = await runner.run({
+      id: `BLS batch verify ${sigCount} sigs - main thread`,
+      before: () => {},
+      run: () => {
+        bls.verifyMultipleAggregateSignatures(sets);
+      },
+    });
 
     for (let workers = 1; workers <= logicalCpuCount; workers++) {
-      const serie = await runBenchmark({
-        id: "BLS batch verify",
-        before: () => {},
-        run: () => {
-          for (let j = 0; j < workers; j++) {
-            bls.verifyMultipleAggregateSignatures(sets);
-          }
-        },
-        maxMs,
-      });
-
-      const parallel = await runBenchmark({
-        id: "BLS batch verify multithread naive",
+      const parallel = await runner.run({
+        id: `BLS batch verify ${sigCount} sigs - ${workers} worker_threads`,
         before: () => {},
         run: async () => {
           await Promise.all(
-            Array.from({ length: workers }, (_, i) => i).map(() =>
-              pool.verifyMultipleAggregateSignatures(sets)
+            chunkify(sets, workers).map((setsWorker) =>
+              pool.verifyMultipleAggregateSignatures(setsWorker)
             )
           );
         },
-        maxMs,
       });
 
-      results.push({
-        i: workers,
-        serie: serie / workers,
-        parallel: parallel / workers,
+      csv.addRow({
+        workers,
+        serie: serie,
+        parallel: parallel,
+        ratio: serie / parallel,
       });
     }
-
-    console.log(
-      results
-        .map(({ i, serie, parallel }) =>
-          [i, serie, parallel, parallel / serie].join(", ")
-        )
-        .join("\n")
-    );
+    csv.logToConsole();
   }
 
   // BLS verify
+  // Throw many single signature sets to the thread pool queue
+  // In this test the overhead may dominate the results
 
   {
-    const results: { i: number; serie: number; parallel: number }[] = [];
+    await runner.run({
+      id: `BLS verify ${sigCount} sigs - main thread`,
+      before: () => {},
+      run: () => {
+        for (const { msg, pk, sig } of sets) {
+          bls.verify(msg, pk, sig);
+        }
+      },
+    });
 
-    for (let workers = 1; workers <= 8; workers++) {
-      const msg = Buffer.alloc(32, 1);
-      const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, 1));
-      const pk = sk.toPublicKey();
-      const sig = sk.sign(msg);
-
-      const serie = await runBenchmark({
-        id: "BLS verify",
-        before: () => {},
-        run: () => {
-          for (let i = 0; i < workers; i++) {
-            bls.verify(msg, pk, sig);
-          }
-        },
-        maxMs,
-      });
-
-      const parallel = await runBenchmark({
-        id: "BLS verify multithread naive",
-        before: () => {},
-        run: async () => {
-          await Promise.all(
-            Array.from({ length: workers }, (_, i) => i).map(() =>
-              pool.verify(msg, pk, sig)
-            )
-          );
-        },
-        maxMs,
-      });
-
-      results.push({
-        i: workers,
-        serie: serie / workers,
-        parallel: parallel / workers,
-      });
-    }
-
-    console.log(
-      results
-        .map(({ i, serie, parallel }) =>
-          [i, serie, parallel, parallel / serie].join(", ")
-        )
-        .join("\n")
-    );
+    await runner.run({
+      id: `BLS verify ${sigCount} sigs - worker_threads (all)`,
+      before: () => {},
+      run: async () => {
+        await Promise.all(
+          sets.map(({ msg, pk, sig }) => pool.verify(msg, pk, sig))
+        );
+      },
+    });
   }
 
-  console.log("Destroying pool");
   await pool.destroy();
 })();

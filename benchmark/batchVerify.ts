@@ -1,12 +1,14 @@
 import crypto from "crypto";
 import * as bls from "../src/lib";
-import { runBenchmark } from "./runner";
+import { Csv } from "./utils/csv";
+import { BenchmarkRunner } from "./utils/runner";
 
 (async function () {
-  const results: { i: number; serie: number; batch: number }[] = [];
+  const runner = new BenchmarkRunner("Batch verify benchmark");
+  const csv = new Csv<"n" | "serie" | "batch" | "ratio">();
 
   for (let i = 1; i <= 128; i = i * 2) {
-    const serie = await runBenchmark({
+    const serie = await runner.run({
       id: `${i} - BLS verification`,
       before: () => {
         const msg = Buffer.alloc(32, i);
@@ -22,7 +24,7 @@ import { runBenchmark } from "./runner";
       },
     });
 
-    const batch = await runBenchmark({
+    const batch = await runner.run({
       id: `${i} - BLS verification batch`,
       before: () => {
         const msg = Buffer.alloc(32, i);
@@ -36,14 +38,13 @@ import { runBenchmark } from "./runner";
       },
     });
 
-    results.push({ i, serie, batch });
+    csv.addRow({
+      n: i,
+      serie: serie / i,
+      batch: batch / i,
+      ratio: batch / serie,
+    });
   }
 
-  console.log(
-    results
-      .map(({ i, serie, batch }) =>
-        [i, serie / i, batch / i, batch / i / (serie / i)].join(", ")
-      )
-      .join("\n")
-  );
+  csv.logToConsole();
 })();
