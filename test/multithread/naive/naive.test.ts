@@ -4,17 +4,26 @@ import { BlsMultiThreadNaive } from "./index";
 import { warmUpWorkers } from "./utils";
 
 describe("bls pool naive", function () {
+  const nodeJsSemver = process.versions.node;
+  const nodeJsMajorVer = parseInt(nodeJsSemver.split(".")[0]);
+  if (!nodeJsMajorVer) {
+    throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
+  }
+  if (nodeJsMajorVer < 12) {
+    return; // Skip everything
+  }
+
   const n = 16;
   let pool: BlsMultiThreadNaive;
 
-  before(async function () {
+  before("Create pool and warm-up wallets", async function () {
     // Starting all threads may take a while due to ts-node compilation
     this.timeout(20 * 1000);
     pool = new BlsMultiThreadNaive();
     await warmUpWorkers(pool);
   });
 
-  after(async function () {
+  after("Destroy pool", async function () {
     this.timeout(20 * 1000);
     await pool.destroy();
   });
