@@ -22,44 +22,6 @@ const hashOrEncode = true;
 const msg = Buffer.from("Mr F was here");
 
 (async function () {
-  // Benchmark the cost of having pubkeys cached as P1 or P1_Affine
-
-  for (const aggCount of [128, 256]) {
-    const iArr = Array.from({ length: aggCount }, (v, i) => i);
-    const sks = iArr.map((i) => {
-      const sk = new blst.SecretKey();
-      sk.from_bendian(Buffer.alloc(32, i + 1));
-      return sk;
-    });
-
-    await runBenchmark<InstanceType<typeof blst.P1>[]>({
-      id: `BLS aggregate ${aggCount} from P1[] with .add`,
-      before: () => sks.map((sk) => new blst.P1(sk)),
-      run: (pks) => {
-        const agg = new blst.P1();
-        for (const pk of pks) agg.add(pk);
-      },
-    });
-
-    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
-      id: `BLS aggregate ${aggCount} from P1_Aff[] with .add`,
-      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
-      run: (pks) => {
-        const agg = new blst.P1();
-        for (const pk of pks) agg.add(pk);
-      },
-    });
-
-    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
-      id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
-      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
-      run: (pks) => {
-        const agg = new blst.P1();
-        for (const pk of pks) agg.aggregate(pk);
-      },
-    });
-  }
-
   await runBenchmark({
     id: "Scalar multiplication G1 (255-bit, constant-time)",
     before: () => {},
@@ -225,7 +187,51 @@ const msg = Buffer.from("Mr F was here");
         before: () => {},
         run: () => p.is_inf(),
       });
+
+      await runBenchmark({
+        id: `${id} dup`,
+        before: () => {},
+        run: () => p.dup(),
+      });
     }
+  }
+
+  // Benchmark the cost of having pubkeys cached as P1 or P1_Affine
+
+  for (const aggCount of [128, 256]) {
+    const iArr = Array.from({ length: aggCount }, (v, i) => i);
+    const sks = iArr.map((i) => {
+      const sk = new blst.SecretKey();
+      sk.from_bendian(Buffer.alloc(32, i + 1));
+      return sk;
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+      id: `BLS aggregate ${aggCount} from P1[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk)),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.aggregate(pk);
+      },
+    });
   }
 
   // BLS lib
