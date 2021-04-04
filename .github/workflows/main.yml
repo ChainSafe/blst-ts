@@ -110,7 +110,7 @@ jobs:
 
       - name: Benchmark
         run: |
-          node_modules/.bin/ts-node benchmark/index.ts
+          node_modules/.bin/ts-node benchmark/blstOps.ts
           node_modules/.bin/ts-node benchmark/batchVerify.ts
           node_modules/.bin/ts-node benchmark/multithread.ts
           node_modules/.bin/ts-node benchmark/multithreadOverhead.ts

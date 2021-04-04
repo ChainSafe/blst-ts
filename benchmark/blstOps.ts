@@ -14,14 +14,16 @@ import {
   Signature,
   verify,
 } from "../src/lib";
-import { runBenchmark } from "./runner";
+import { BenchmarkRunner } from "./utils/runner";
 
 const dst = "BLS_SIG_BLS12381G2-SHA256-SSWU-RO_POP_";
 const hashOrEncode = true;
 const msg = Buffer.from("Mr F was here");
 
 (async function () {
-  await runBenchmark({
+  const runner = new BenchmarkRunner("BLS opts benchmark");
+
+  await runner.run({
     id: "Scalar multiplication G1 (255-bit, constant-time)",
     before: () => {},
     beforeEach: () => ({
@@ -33,7 +35,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark({
+  await runner.run({
     id: "Scalar multiplication G2 (255-bit, constant-time)",
     before: () => {},
     beforeEach: () => ({
@@ -45,7 +47,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark({
+  await runner.run({
     id: "EC add G1 (constant-time)",
     before: () => {},
     beforeEach: () => {
@@ -57,7 +59,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark({
+  await runner.run({
     id: "EC add G2 (constant-time)",
     before: () => {},
     beforeEach: () => {
@@ -69,7 +71,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark<{ pk: P1_Affine; sig: P2_Affine }, Pairing>({
+  await runner.run<{ pk: P1_Affine; sig: P2_Affine }, Pairing>({
     id: "Pairing (Miller loop + Final Exponentiation)",
     before: () => {
       const sk = new blst.SecretKey();
@@ -99,7 +101,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark({
+  await runner.run({
     id: "Hash to G2 (Draft #9) + affine conversion",
     before: () => {},
     beforeEach: () => new blst.P2(),
@@ -115,42 +117,42 @@ const msg = Buffer.from("Mr F was here");
     { id: "P1", P: blst.P1, p: blst.BLS12_381_G1 },
     { id: "P2", P: blst.P2, p: blst.BLS12_381_G2 },
   ]) {
-    await runBenchmark({
+    await runner.run({
       id: `${id} to_affine`,
       before: () => {},
       beforeEach: () => new P(p),
       run: (p) => p.to_affine(),
     });
 
-    await runBenchmark({
+    await runner.run({
       id: `${id} to_jacobian`,
       before: () => {},
       beforeEach: () => p.dup(),
       run: (p) => p.to_jacobian(),
     });
 
-    await runBenchmark({
+    await runner.run({
       id: `${id} compress`,
       before: () => {},
       beforeEach: () => new P(p),
       run: (p) => p.compress(),
     });
 
-    await runBenchmark({
+    await runner.run({
       id: `${id} serialize`,
       before: () => {},
       beforeEach: () => new P(p),
       run: (p) => p.serialize(),
     });
 
-    await runBenchmark({
+    await runner.run({
       id: `${id} from compress`,
       before: () => {},
       beforeEach: () => new P(p).compress(),
       run: (bytes) => new P(bytes),
     });
 
-    await runBenchmark({
+    await runner.run({
       id: `${id} from serialize`,
       before: () => {},
       beforeEach: () => new P(p).serialize(),
@@ -169,25 +171,25 @@ const msg = Buffer.from("Mr F was here");
       P1_Affine: new blst.P1(sk).to_affine(),
       P2_Affine: new blst.P2(sk).to_affine(),
     })) {
-      await runBenchmark({
+      await runner.run({
         id: `${id} on_curve`,
         before: () => {},
         run: () => p.on_curve(),
       });
 
-      await runBenchmark({
+      await runner.run({
         id: `${id} in_group`,
         before: () => {},
         run: () => p.in_group(),
       });
 
-      await runBenchmark({
+      await runner.run({
         id: `${id} is_inf`,
         before: () => {},
         run: () => p.is_inf(),
       });
 
-      await runBenchmark({
+      await runner.run({
         id: `${id} dup`,
         before: () => {},
         run: () => p.dup(),
@@ -206,7 +208,7 @@ const msg = Buffer.from("Mr F was here");
     });
 
     // Fastest than using .dup()
-    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+    await runner.run<InstanceType<typeof blst.P1>[]>({
       id: `BLS aggregate ${aggCount} from P1[] with .add`,
       before: () => sks.map((sk) => new blst.P1(sk)),
       run: (pks) => {
@@ -215,7 +217,7 @@ const msg = Buffer.from("Mr F was here");
       },
     });
 
-    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+    await runner.run<InstanceType<typeof blst.P1>[]>({
       id: `BLS aggregate ${aggCount} from P1[] with .add add .dup first`,
       before: () => sks.map((sk) => new blst.P1(sk)),
       run: (pks) => {
@@ -224,7 +226,7 @@ const msg = Buffer.from("Mr F was here");
       },
     });
 
-    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+    await runner.run<InstanceType<typeof blst.P1_Affine>[]>({
       id: `BLS aggregate ${aggCount} from P1_Aff[] with .add`,
       before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
       run: (pks) => {
@@ -234,7 +236,7 @@ const msg = Buffer.from("Mr F was here");
     });
 
     // This is way more expensive because .aggregate does a group check on each key
-    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+    await runner.run<InstanceType<typeof blst.P1_Affine>[]>({
       id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
       before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
       run: (pks) => {
@@ -246,7 +248,7 @@ const msg = Buffer.from("Mr F was here");
 
   // BLS lib
 
-  await runBenchmark({
+  await runner.run({
     id: "BLS signature",
     before: () => {},
     beforeEach: () => SecretKey.fromKeygen(crypto.randomBytes(32)),
@@ -255,7 +257,7 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runBenchmark<{ pk: PublicKey; sig: Signature }>({
+  await runner.run<{ pk: PublicKey; sig: Signature }>({
     id: "BLS verification",
     before: () => {
       const sk = SecretKey.fromKeygen(crypto.randomBytes(32));
@@ -268,8 +270,8 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  for (const n of [32, 128, 512]) {
-    await runBenchmark<{ pks: PublicKey[]; sig: Signature }>({
+  for (const n of [32, 128]) {
+    await runner.run<{ pks: PublicKey[]; sig: Signature }>({
       id: `BLS agg verif of 1 msg by ${n} pubkeys`,
       before: () => {
         const pks: PublicKey[] = [];
