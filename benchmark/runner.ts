@@ -60,7 +60,7 @@ function formatRow({
   runsDone: number;
 }): string {
   const precision = 7;
-  const idMaxLen = 64;
+  const idLen = 64;
 
   const opsPerSec = 1e9 / averageNs;
 
@@ -73,8 +73,6 @@ function formatRow({
     `${averageNs.toPrecision(precision).padStart(13)} ns/op`,
     `${String(runsDone).padStart(6)} runs`,
   ].join(" ");
-
-  const idLen = Math.min(process.stdout.columns - row.length - 1, idMaxLen);
 
   return id.slice(0, idLen).padEnd(idLen) + " " + row;
 }
