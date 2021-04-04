@@ -8,7 +8,7 @@ export class BenchmarkRunner {
   opts: BenchmarkOpts;
   constructor(title: string, opts?: BenchmarkOpts) {
     this.opts = opts || {};
-    printTitle(title);
+    console.log(formatTitle(title));
   }
 
   async run<T1, T2 = T1, R = void>({
@@ -93,6 +93,8 @@ function formatRow({
   return id.slice(0, idLen).padEnd(idLen) + " " + row;
 }
 
-export function printTitle(title: string) {
-  console.log(`${title}\n${"=".repeat(64)}`);
+export function formatTitle(title: string): string {
+  return `
+${title}
+${"=".repeat(64)}`;
 }
