@@ -10,7 +10,7 @@ export async function runBenchmark<T1, T2 = T1, R = void>({
   id,
 }: {
   before: () => PromiseOptional<T1>;
-  beforeEach: (arg: T1, i: number) => PromiseOptional<T2>;
+  beforeEach?: (arg: T1, i: number) => PromiseOptional<T2>;
   run: (input: T2) => PromiseOptional<R>;
   check?: (result: R) => boolean;
   runs?: number;
@@ -24,7 +24,9 @@ export async function runBenchmark<T1, T2 = T1, R = void>({
   let start = Date.now();
   let i = 0;
   while (i++ < runs && Date.now() - start < maxMs) {
-    const input = await beforeEach(inputAll, i);
+    const input = beforeEach
+      ? await beforeEach(inputAll, i)
+      : ((inputAll as unknown) as T2);
 
     const start = process.hrtime.bigint();
     const result = await run(input);

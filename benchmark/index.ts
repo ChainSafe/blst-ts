@@ -7,8 +7,7 @@ import {
   Pairing,
 } from "../src/bindings";
 import {
-  AggregatePublicKey,
-  AggregateSignature,
+  aggregateSignatures,
   fastAggregateVerify,
   PublicKey,
   SecretKey,
@@ -159,6 +158,92 @@ const msg = Buffer.from("Mr F was here");
     });
   }
 
+  // Point validation
+  {
+    const sk = new blst.SecretKey();
+    sk.from_bendian(Buffer.alloc(32, 1));
+
+    for (const [id, p] of Object.entries({
+      P1: new blst.P1(sk),
+      P2: new blst.P2(sk),
+      P1_Affine: new blst.P1(sk).to_affine(),
+      P2_Affine: new blst.P2(sk).to_affine(),
+    })) {
+      await runBenchmark({
+        id: `${id} on_curve`,
+        before: () => {},
+        run: () => p.on_curve(),
+      });
+
+      await runBenchmark({
+        id: `${id} in_group`,
+        before: () => {},
+        run: () => p.in_group(),
+      });
+
+      await runBenchmark({
+        id: `${id} is_inf`,
+        before: () => {},
+        run: () => p.is_inf(),
+      });
+
+      await runBenchmark({
+        id: `${id} dup`,
+        before: () => {},
+        run: () => p.dup(),
+      });
+    }
+  }
+
+  // Benchmark the cost of having pubkeys cached as P1 or P1_Affine
+
+  for (const aggCount of [128, 256]) {
+    const iArr = Array.from({ length: aggCount }, (v, i) => i);
+    const sks = iArr.map((i) => {
+      const sk = new blst.SecretKey();
+      sk.from_bendian(Buffer.alloc(32, i + 1));
+      return sk;
+    });
+
+    // Fastest than using .dup()
+    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+      id: `BLS aggregate ${aggCount} from P1[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk)),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+      id: `BLS aggregate ${aggCount} from P1[] with .add add .dup first`,
+      before: () => sks.map((sk) => new blst.P1(sk)),
+      run: (pks) => {
+        const agg = pks[0].dup();
+        for (const pk of pks.slice(1)) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    // This is way more expensive because .aggregate does a group check on each key
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.aggregate(pk);
+      },
+    });
+  }
+
   // BLS lib
 
   await runBenchmark({
@@ -178,29 +263,27 @@ const msg = Buffer.from("Mr F was here");
       const sig = sk.sign(msg);
       return { pk, sig };
     },
-    beforeEach: (arg) => arg,
     run: ({ pk, sig }) => {
       verify(msg, pk, sig);
     },
   });
 
   for (const n of [32, 128, 512]) {
-    await runBenchmark<{ pks: AggregatePublicKey[]; sig: Signature }>({
+    await runBenchmark<{ pks: PublicKey[]; sig: Signature }>({
       id: `BLS agg verif of 1 msg by ${n} pubkeys`,
       before: () => {
-        const pks: AggregatePublicKey[] = [];
+        const pks: PublicKey[] = [];
         const sigs: Signature[] = [];
 
         for (let i = 0; i < n; i++) {
           const sk = SecretKey.fromKeygen(Buffer.alloc(32, i));
-          pks.push(sk.toAggregatePublicKey());
+          pks.push(sk.toPublicKey());
           sigs.push(sk.sign(msg));
         }
 
-        const sig = AggregateSignature.fromSignatures(sigs).toSignature();
+        const sig = aggregateSignatures(sigs);
         return { pks, sig };
       },
-      beforeEach: (arg) => arg,
       run: ({ pks, sig }) => {
         fastAggregateVerify(msg, pks, sig);
       },

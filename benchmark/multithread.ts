@@ -19,17 +19,11 @@ import { runBenchmark } from "./runner";
   await warmUpWorkers(pool);
 
   console.log("Preparing test data...");
-  const msgs: Uint8Array[] = [];
-  const sks: bls.SecretKey[] = [];
-  const pks: bls.PublicKey[] = [];
-  const sigs: bls.Signature[] = [];
+  const sets: bls.SignatureSet[] = [];
   for (let i = 0; i < sigCount; i++) {
     const msg = Buffer.alloc(32, i);
     const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
-    msgs.push(msg);
-    sks.push(sk);
-    pks.push(sk.toPublicKey());
-    sigs.push(sk.sign(msg));
+    sets.push({ msg, pk: sk.toPublicKey(), sig: sk.sign(msg) });
   }
 
   // BLS batch verify
@@ -41,10 +35,9 @@ import { runBenchmark } from "./runner";
       const serie = await runBenchmark({
         id: "BLS batch verify",
         before: () => {},
-        beforeEach: () => {},
         run: () => {
           for (let j = 0; j < workers; j++) {
-            bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+            bls.verifyMultipleAggregateSignatures(sets);
           }
         },
         maxMs,
@@ -53,11 +46,10 @@ import { runBenchmark } from "./runner";
       const parallel = await runBenchmark({
         id: "BLS batch verify multithread naive",
         before: () => {},
-        beforeEach: () => {},
         run: async () => {
           await Promise.all(
             Array.from({ length: workers }, (_, i) => i).map(() =>
-              pool.verifyMultipleAggregateSignatures(msgs, pks, sigs)
+              pool.verifyMultipleAggregateSignatures(sets)
             )
           );
         },
@@ -94,7 +86,6 @@ import { runBenchmark } from "./runner";
       const serie = await runBenchmark({
         id: "BLS verify",
         before: () => {},
-        beforeEach: () => {},
         run: () => {
           for (let i = 0; i < workers; i++) {
             bls.verify(msg, pk, sig);
@@ -106,7 +97,6 @@ import { runBenchmark } from "./runner";
       const parallel = await runBenchmark({
         id: "BLS verify multithread naive",
         before: () => {},
-        beforeEach: () => {},
         run: async () => {
           await Promise.all(
             Array.from({ length: workers }, (_, i) => i).map(() =>
