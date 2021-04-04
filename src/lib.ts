@@ -73,7 +73,7 @@ export class PublicKey {
     this.value = value;
   }
 
-  // Accepts both compressed and serialized
+  /** Accepts both compressed and serialized */
   static fromBytes(pkBytes: Uint8Array): PublicKey {
     return new PublicKey(new PkAffineConstructor(pkBytes));
   }
@@ -104,7 +104,7 @@ export class Signature {
     this.value = value;
   }
 
-  // Accepts both compressed and serialized
+  /** Accepts both compressed and serialized */
   static fromBytes(sigBytes: Uint8Array): Signature {
     return new Signature(new SigAffineConstructor(sigBytes));
   }

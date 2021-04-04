@@ -22,6 +22,44 @@ const hashOrEncode = true;
 const msg = Buffer.from("Mr F was here");
 
 (async function () {
+  // Benchmark the cost of having pubkeys cached as P1 or P1_Affine
+
+  for (const aggCount of [128, 256]) {
+    const iArr = Array.from({ length: aggCount }, (v, i) => i);
+    const sks = iArr.map((i) => {
+      const sk = new blst.SecretKey();
+      sk.from_bendian(Buffer.alloc(32, i + 1));
+      return sk;
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1>[]>({
+      id: `BLS aggregate ${aggCount} from P1[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk)),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .add`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.add(pk);
+      },
+    });
+
+    await runBenchmark<InstanceType<typeof blst.P1_Affine>[]>({
+      id: `BLS aggregate ${aggCount} from P1_Aff[] with .aggregate`,
+      before: () => sks.map((sk) => new blst.P1(sk).to_affine()),
+      run: (pks) => {
+        const agg = new blst.P1();
+        for (const pk of pks) agg.aggregate(pk);
+      },
+    });
+  }
+
   await runBenchmark({
     id: "Scalar multiplication G1 (255-bit, constant-time)",
     before: () => {},
@@ -157,6 +195,37 @@ const msg = Buffer.from("Mr F was here");
       beforeEach: () => new P(p).serialize(),
       run: (bytes) => new P(bytes),
     });
+  }
+
+  // Point validation
+  {
+    const sk = new blst.SecretKey();
+    sk.from_bendian(Buffer.alloc(32, 1));
+
+    for (const [id, p] of Object.entries({
+      P1: new blst.P1(sk),
+      P2: new blst.P2(sk),
+      P1_Affine: new blst.P1(sk).to_affine(),
+      P2_Affine: new blst.P2(sk).to_affine(),
+    })) {
+      await runBenchmark({
+        id: `${id} on_curve`,
+        before: () => {},
+        run: () => p.on_curve(),
+      });
+
+      await runBenchmark({
+        id: `${id} in_group`,
+        before: () => {},
+        run: () => p.in_group(),
+      });
+
+      await runBenchmark({
+        id: `${id} is_inf`,
+        before: () => {},
+        run: () => p.is_inf(),
+      });
+    }
   }
 
   // BLS lib
