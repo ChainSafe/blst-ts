@@ -34,15 +34,15 @@ export class BlsMultiThreadNaive {
   }
 
   async verifyMultipleAggregateSignatures(
-    msgs: Uint8Array[],
-    pks: bls.PublicKey[],
-    sigs: bls.Signature[]
+    sets: bls.SignatureSet[]
   ): Promise<boolean> {
     return this.pool.queue((worker) =>
       worker.verifyMultipleAggregateSignatures(
-        msgs,
-        pks.map((pk) => pk.serialize()),
-        sigs.map((sig) => sig.serialize())
+        sets.map((s) => ({
+          msg: s.msg,
+          pk: s.pk.serialize(),
+          sig: s.sig.serialize(),
+        }))
       )
     );
   }

@@ -23,6 +23,20 @@ type Sig = InstanceType<typeof SigConstructor>;
 type PkAffine = InstanceType<typeof PkAffineConstructor>;
 type SigAffine = InstanceType<typeof SigAffineConstructor>;
 
+/**
+ * Points are represented in two ways in BLST:
+ * - affine coordinates (x,y)
+ * - jacobian coordinates (x,y,z)
+ *
+ * The jacobian coordinates allow to aggregate points more efficiently,
+ * so if P1 points are aggregated often (Eth2.0) you want to keep the point
+ * cached in jacobian coordinates.
+ */
+export enum CoordType {
+  affine,
+  jacobian,
+}
+
 export class SecretKey {
   value: Sk;
 
@@ -46,20 +60,15 @@ export class SecretKey {
     return new SecretKey(sk);
   }
 
-  toAggregatePublicKey(): AggregatePublicKey {
-    const pk = new PkConstructor(this.value);
-    return new AggregatePublicKey(pk);
-  }
-
   toPublicKey(): PublicKey {
     const pk = new PkConstructor(this.value);
-    return new PublicKey(pk.to_affine());
+    return new PublicKey(pk); // Store as jacobian
   }
 
   sign(msg: Uint8Array): Signature {
     const sig = new SigConstructor();
     sig.hash_to(msg, DST).sign_with(this.value);
-    return new Signature(sig.to_affine());
+    return new Signature(sig); // Store as jacobian
   }
 
   toBytes(): Uint8Array {
@@ -67,15 +76,42 @@ export class SecretKey {
   }
 }
 
+/**
+ * Wrapper for P1 points. Internal point may be represented
+ * in affine or jacobian coordinates, @see CoordType
+ * This approach allows to use this wrapper very flexibly while
+ * minimizing the coordinate conversions if used properly.
+ *
+ * To force a instance of PublicKey to permanently switch its coordType
+ * ```ts
+ * const pkAsAffine = new PublicKey(pk.affine)
+ * ```
+ */
 export class PublicKey {
-  value: PkAffine;
-  constructor(value: PkAffine) {
+  readonly value: PkAffine | Pk;
+  constructor(value: PkAffine | Pk) {
     this.value = value;
   }
 
   /** Accepts both compressed and serialized */
-  static fromBytes(pkBytes: Uint8Array): PublicKey {
-    return new PublicKey(new PkAffineConstructor(pkBytes));
+  static fromBytes(pkBytes: Uint8Array, type = CoordType.jacobian): PublicKey {
+    if (type === CoordType.affine) {
+      return new PublicKey(new PkAffineConstructor(pkBytes));
+    } else {
+      return new PublicKey(new PkConstructor(pkBytes));
+    }
+  }
+
+  get affine(): PkAffine {
+    return typeof (this.value as Pk).to_affine === "function"
+      ? (this.value as Pk).to_affine()
+      : (this.value as PkAffine);
+  }
+
+  get jacobian(): Pk {
+    return typeof (this.value as PkAffine).to_jacobian === "function"
+      ? (this.value as PkAffine).to_jacobian()
+      : (this.value as Pk);
   }
 
   compress(): Uint8Array {
@@ -88,6 +124,7 @@ export class PublicKey {
     return this.compress();
   }
 
+  /** Validate pubkey is not infinity and is in group */
   keyValidate(): void {
     if (this.value.is_inf()) {
       throw new ErrorBLST(BLST_ERROR.BLST_PK_IS_INFINITY);
@@ -98,15 +135,34 @@ export class PublicKey {
   }
 }
 
+/**
+ * Wrapper for P2 points. @see PublicKey
+ */
 export class Signature {
-  value: SigAffine;
-  constructor(value: SigAffine) {
+  readonly value: SigAffine | Sig;
+  constructor(value: SigAffine | Sig) {
     this.value = value;
   }
 
   /** Accepts both compressed and serialized */
-  static fromBytes(sigBytes: Uint8Array): Signature {
-    return new Signature(new SigAffineConstructor(sigBytes));
+  static fromBytes(sigBytes: Uint8Array, type = CoordType.affine): Signature {
+    if (type === CoordType.affine) {
+      return new Signature(new SigAffineConstructor(sigBytes));
+    } else {
+      return new Signature(new SigConstructor(sigBytes));
+    }
+  }
+
+  get affine(): SigAffine {
+    return typeof (this.value as Sig).to_affine === "function"
+      ? (this.value as Sig).to_affine()
+      : (this.value as SigAffine);
+  }
+
+  get jacobian(): Sig {
+    return typeof (this.value as SigAffine).to_jacobian === "function"
+      ? (this.value as SigAffine).to_jacobian()
+      : (this.value as Sig);
   }
 
   compress(): Uint8Array {
@@ -118,98 +174,44 @@ export class Signature {
   toBytes(): Uint8Array {
     return this.compress();
   }
-}
 
-export class AggregatePublicKey {
-  value: Pk;
-
-  constructor(value: Pk) {
-    this.value = value;
-  }
-
-  static fromPublicKey(pk: PublicKey): AggregatePublicKey {
-    return new AggregatePublicKey(pk.value.to_jacobian());
-  }
-  static fromPublicKeys(pks: PublicKey[]): AggregatePublicKey {
-    return aggregatePubkeys(
-      pks.map((pk) => AggregatePublicKey.fromPublicKey(pk))
-    );
-  }
-  static fromPublicKeysBytes(pks: Uint8Array[]): AggregatePublicKey {
-    return AggregatePublicKey.fromPublicKeys(pks.map(PublicKey.fromBytes));
-  }
-
-  toPublicKey(): PublicKey {
-    return new PublicKey(this.value.to_affine());
-  }
-  addAggregate(aggPk: AggregatePublicKey) {
-    this.value.add(aggPk.value);
-  }
-  addPublicKey(pk: PublicKey) {
-    this.value.aggregate(pk.value);
+  /** Validate sig is in group */
+  sigValidate() {
+    if (!this.value.in_group()) {
+      throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
+    }
   }
 }
 
-export class AggregateSignature {
-  value: Sig;
-
-  constructor(value: Sig) {
-    this.value = value;
-  }
-
-  static fromSignature(sig: Signature): AggregateSignature {
-    return new AggregateSignature(sig.value.to_jacobian());
-  }
-  static fromSignatures(sigs: Signature[]): AggregateSignature {
-    return aggregateSignatures(
-      sigs.map((sig) => AggregateSignature.fromSignature(sig))
-    );
-  }
-  static fromSignaturesBytes(sigs: Uint8Array[]): AggregateSignature {
-    return AggregateSignature.fromSignatures(sigs.map(Signature.fromBytes));
-  }
-
-  toSignature(): Signature {
-    return new Signature(this.value.to_affine());
-  }
-  addAggregate(aggSig: AggregateSignature): void {
-    this.value.add(aggSig.value);
-  }
-  addSignature(sig: Signature): void {
-    this.value.aggregate(sig.value);
-  }
-}
-
-export function aggregatePubkeys(
-  pks: AggregatePublicKey[]
-): AggregatePublicKey {
+/**
+ * Aggregates all `pks` and returns a PublicKey containing a jacobian point
+ */
+export function aggregatePubkeys(pks: PublicKey[]): PublicKey {
   if (pks.length === 0) {
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
   const agg = new PkConstructor(); // Faster than using .dup()
-  for (const pk of pks) {
-    agg.add(pk.value);
-  }
-
-  return new AggregatePublicKey(agg);
+  for (const pk of pks) agg.add(pk.jacobian);
+  return new PublicKey(agg);
 }
 
-export function aggregateSignatures(
-  sigs: AggregateSignature[]
-): AggregateSignature {
+/**
+ * Aggregates all `sigs` and returns a Signature containing a jacobian point
+ */
+export function aggregateSignatures(sigs: Signature[]): Signature {
   if (sigs.length === 0) {
     throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
   }
 
   const agg = new SigConstructor(); // Faster than using .dup()
-  for (const pk of sigs) {
-    agg.add(pk.value);
-  }
-
-  return new AggregateSignature(agg);
+  for (const pk of sigs) agg.add(pk.jacobian);
+  return new Signature(agg);
 }
 
+/**
+ * Verify a single message from a single pubkey
+ */
 export function verify(
   msg: Uint8Array,
   pk: PublicKey,
@@ -218,16 +220,21 @@ export function verify(
   return aggregateVerify([msg], [pk], sig);
 }
 
+/**
+ * Verify a single message from multiple pubkeys
+ */
 export function fastAggregateVerify(
   msg: Uint8Array,
-  pks: AggregatePublicKey[],
+  pks: PublicKey[],
   sig: Signature
 ): boolean {
   const aggPk = aggregatePubkeys(pks);
-  const pk = aggPk.toPublicKey();
-  return aggregateVerify([msg], [pk], sig);
+  return aggregateVerify([msg], [aggPk], sig);
 }
 
+/**
+ * Verify multiple messages from multiple pubkeys
+ */
 export function aggregateVerify(
   msgs: Uint8Array[],
   pks: PublicKey[],
@@ -238,9 +245,10 @@ export function aggregateVerify(
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
   }
 
+  const sigAff = sig.affine;
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
   for (let i = 0; i < n_elems; i++) {
-    const result = ctx.aggregate(pks[i].value, sig.value, msgs[i]);
+    const result = ctx.aggregate(pks[i].affine, sigAff, msgs[i]);
     if (result !== BLST_ERROR.BLST_SUCCESS) {
       throw new ErrorBLST(result);
     }
@@ -249,30 +257,27 @@ export function aggregateVerify(
   ctx.commit();
 
   // PT constructor calls `blst_aggregated`
-  const gtsig = new blst.PT(sig.value);
+  const gtsig = new blst.PT(sigAff);
   return ctx.finalverify(gtsig);
 }
 
-// https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
-export function verifyMultipleAggregateSignatures(
-  msgs: Uint8Array[],
-  pks: PublicKey[],
-  sigs: Signature[]
-): boolean {
-  const n_elems = pks.length;
-  if (msgs.length !== n_elems || sigs.length !== n_elems) {
-    throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
-  }
+export type SignatureSet = {
+  msg: Uint8Array;
+  pk: PublicKey;
+  sig: Signature;
+};
 
+/**
+ * Batch verify groups of {msg, pk, sig}[]
+ * https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
+ */
+export function verifyMultipleAggregateSignatures(
+  signatureSets: SignatureSet[]
+): boolean {
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
-  for (let i = 0; i < n_elems; i++) {
+  for (const { msg, pk, sig } of signatureSets) {
     const rand = crypto.randomBytes(RAND_BYTES);
-    const result = ctx.mul_n_aggregate(
-      pks[i].value,
-      sigs[i].value,
-      rand,
-      msgs[i]
-    );
+    const result = ctx.mul_n_aggregate(pk.affine, sig.affine, rand, msg);
     if (result !== BLST_ERROR.BLST_SUCCESS) {
       throw new ErrorBLST(result);
     }

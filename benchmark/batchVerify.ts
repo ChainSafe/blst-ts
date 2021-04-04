@@ -2,10 +2,6 @@ import crypto from "crypto";
 import * as bls from "../src/lib";
 import { runBenchmark } from "./runner";
 
-const dst = "BLS_SIG_BLS12381G2-SHA256-SSWU-RO_POP_";
-const hashOrEncode = true;
-const msg = Buffer.from("Mr F was here");
-
 (async function () {
   const results: { i: number; serie: number; batch: number }[] = [];
 
@@ -13,12 +9,13 @@ const msg = Buffer.from("Mr F was here");
     const serie = await runBenchmark({
       id: `${i} - BLS verification`,
       before: () => {
+        const msg = Buffer.alloc(32, i);
         const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
         const pk = sk.toPublicKey();
         const sig = sk.sign(msg);
-        return { pk, sig };
+        return { msg, pk, sig };
       },
-      run: ({ pk, sig }) => {
+      run: ({ msg, pk, sig }) => {
         for (let j = 0; j < i; j++) {
           bls.verify(msg, pk, sig);
         }
@@ -28,17 +25,14 @@ const msg = Buffer.from("Mr F was here");
     const batch = await runBenchmark({
       id: `${i} - BLS verification batch`,
       before: () => {
+        const msg = Buffer.alloc(32, i);
         const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
         const pk = sk.toPublicKey();
         const sig = sk.sign(msg);
-        return {
-          msgs: Array.from({ length: i }, (_, i) => msg),
-          pks: Array.from({ length: i }, (_, i) => pk),
-          sigs: Array.from({ length: i }, (_, i) => sig),
-        };
+        return Array.from({ length: i }, (_, i) => ({ msg, pk, sig }));
       },
-      run: ({ msgs, pks, sigs }) => {
-        bls.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+      run: (sets) => {
+        bls.verifyMultipleAggregateSignatures(sets);
       },
     });
 

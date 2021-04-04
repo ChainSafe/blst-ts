@@ -7,8 +7,7 @@ import {
   Pairing,
 } from "../src/bindings";
 import {
-  AggregatePublicKey,
-  AggregateSignature,
+  aggregateSignatures,
   fastAggregateVerify,
   PublicKey,
   SecretKey,
@@ -270,19 +269,19 @@ const msg = Buffer.from("Mr F was here");
   });
 
   for (const n of [32, 128, 512]) {
-    await runBenchmark<{ pks: AggregatePublicKey[]; sig: Signature }>({
+    await runBenchmark<{ pks: PublicKey[]; sig: Signature }>({
       id: `BLS agg verif of 1 msg by ${n} pubkeys`,
       before: () => {
-        const pks: AggregatePublicKey[] = [];
+        const pks: PublicKey[] = [];
         const sigs: Signature[] = [];
 
         for (let i = 0; i < n; i++) {
           const sk = SecretKey.fromKeygen(Buffer.alloc(32, i));
-          pks.push(sk.toAggregatePublicKey());
+          pks.push(sk.toPublicKey());
           sigs.push(sk.sign(msg));
         }
 
-        const sig = AggregateSignature.fromSignatures(sigs).toSignature();
+        const sig = aggregateSignatures(sigs);
         return { pks, sig };
       },
       run: ({ pks, sig }) => {
