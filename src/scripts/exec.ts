@@ -1,10 +1,6 @@
 import child_process from "child_process";
 
-export async function exec(
-  cmd: string,
-  args: string[],
-  options?: child_process.ExecOptions
-): Promise<string> {
+export async function exec(cmd: string, args: string[], options?: child_process.ExecOptions): Promise<string> {
   return new Promise((resolve, reject): void => {
     const proc = child_process.execFile(
       cmd,

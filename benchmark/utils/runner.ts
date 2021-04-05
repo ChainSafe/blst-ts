@@ -11,14 +11,7 @@ export class BenchmarkRunner {
     console.log(formatTitle(title));
   }
 
-  async run<T1, T2 = T1, R = void>({
-    before,
-    beforeEach,
-    run,
-    check,
-    id,
-    ...opts
-  }: RunOpts<T1, T2, R>): Promise<number> {
+  async run<T1, T2 = T1, R = void>({before, beforeEach, run, check, id, ...opts}: RunOpts<T1, T2, R>): Promise<number> {
     const runs = opts.runs || this.opts.runs || 512;
     const maxMs = opts.maxMs || this.opts.maxMs || 2000;
 
@@ -29,9 +22,7 @@ export class BenchmarkRunner {
     let start = Date.now();
     let i = 0;
     while (i++ < runs && Date.now() - start < maxMs) {
-      const input = beforeEach
-        ? await beforeEach(inputAll, i)
-        : ((inputAll as unknown) as T2);
+      const input = beforeEach ? await beforeEach(inputAll, i) : ((inputAll as unknown) as T2);
 
       const start = process.hrtime.bigint();
       const result = await run(input);
@@ -45,7 +36,7 @@ export class BenchmarkRunner {
     const average = averageBigint(diffsNanoSec);
     const averageNs = Number(average);
     // eslint-disable-next-line no-console
-    console.log(formatRow({ id, averageNs, runsDone: i - 1 })); // ±1.74%
+    console.log(formatRow({id, averageNs, runsDone: i - 1})); // ±1.74%
 
     return averageNs;
   }
@@ -66,15 +57,7 @@ function averageBigint(arr: bigint[]): bigint {
   return total / BigInt(arr.length);
 }
 
-function formatRow({
-  id,
-  averageNs,
-  runsDone,
-}: {
-  id: string;
-  averageNs: number;
-  runsDone: number;
-}): string {
+function formatRow({id, averageNs, runsDone}: {id: string; averageNs: number; runsDone: number}): string {
   const precision = 7;
   const idLen = 64;
 

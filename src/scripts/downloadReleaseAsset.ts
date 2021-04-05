@@ -1,14 +1,10 @@
 import fs from "fs";
 import fetch from "node-fetch";
-import { ensureDirFromFilepath, PACKAGE_JSON_PATH } from "./paths";
+import {ensureDirFromFilepath, PACKAGE_JSON_PATH} from "./paths";
 
-const githubReleasesDownloadUrl =
-  "https://github.com/ChainSafe/blst-ts/releases/download";
+const githubReleasesDownloadUrl = "https://github.com/ChainSafe/blst-ts/releases/download";
 
-export async function downloadReleaseAsset(
-  assetName: string,
-  binaryPath: string
-) {
+export async function downloadReleaseAsset(assetName: string, binaryPath: string) {
   const packageJson = require(PACKAGE_JSON_PATH);
   const version = packageJson.version;
 

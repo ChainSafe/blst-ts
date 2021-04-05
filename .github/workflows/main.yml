@@ -44,6 +44,9 @@ jobs:
           path: prebuild/blst_wrap.cpp
           if-no-files-found: error
 
+      - name: Lint
+        run: yarn lint
+
   build:
     needs: ["build-swig"]
     runs-on: ${{matrix.os}}

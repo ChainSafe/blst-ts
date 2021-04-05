@@ -1,7 +1,7 @@
-import { expect } from "chai";
+import {expect} from "chai";
 import * as bls from "../../../src/lib";
-import { BlsMultiThreadNaive } from "./index";
-import { warmUpWorkers } from "./utils";
+import {BlsMultiThreadNaive} from "./index";
+import {warmUpWorkers} from "./utils";
 
 describe("bls pool naive", function () {
   const nodeJsSemver = process.versions.node;
@@ -54,20 +54,14 @@ describe("bls pool naive", function () {
     }
 
     it("verify", async () => {
-      const validArr = await Promise.all(
-        pks.map((_, i) => pool.verify(msg, pks[i], sigs[i]))
-      );
+      const validArr = await Promise.all(pks.map((_, i) => pool.verify(msg, pks[i], sigs[i])));
       for (const [i, valid] of validArr.entries()) {
         expect(valid).to.equal(true, `Invalid ${i}`);
       }
     });
 
     it("fastAggregateVerify", async () => {
-      const valid = await pool.verify(
-        msg,
-        bls.aggregatePubkeys(pks),
-        bls.aggregateSignatures(sigs)
-      );
+      const valid = await pool.verify(msg, bls.aggregatePubkeys(pks), bls.aggregateSignatures(sigs));
       expect(valid).to.equal(true);
     });
   });
@@ -77,13 +71,11 @@ describe("bls pool naive", function () {
     for (let i = 0; i < n; i++) {
       const msg = Buffer.alloc(32, i);
       const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
-      sets.push({ msg, pk: sk.toPublicKey(), sig: sk.sign(msg) });
+      sets.push({msg, pk: sk.toPublicKey(), sig: sk.sign(msg)});
     }
 
     it("verify", async () => {
-      const validArr = await Promise.all(
-        sets.map((s) => pool.verify(s.msg, s.pk, s.sig))
-      );
+      const validArr = await Promise.all(sets.map((s) => pool.verify(s.msg, s.pk, s.sig)));
       for (const [i, valid] of validArr.entries()) {
         expect(valid).to.equal(true, `Invalid ${i}`);
       }

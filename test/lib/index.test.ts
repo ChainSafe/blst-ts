@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import {expect} from "chai";
 import * as bls from "../../src/lib";
 
 describe("bls lib", () => {
@@ -38,11 +38,7 @@ describe("bls lib", () => {
     });
 
     it("fastAggregateVerify", () => {
-      const valid = bls.fastAggregateVerify(
-        msg,
-        pks,
-        bls.aggregateSignatures(sigs)
-      );
+      const valid = bls.fastAggregateVerify(msg, pks, bls.aggregateSignatures(sigs));
       expect(valid).to.equal(true);
     });
   });
@@ -52,11 +48,11 @@ describe("bls lib", () => {
     for (let i = 0; i < n; i++) {
       const msg = Buffer.alloc(32, i);
       const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
-      sets.push({ msg, pk: sk.toPublicKey(), sig: sk.sign(msg) });
+      sets.push({msg, pk: sk.toPublicKey(), sig: sk.sign(msg)});
     }
 
     it("verify", () => {
-      for (const [i, { msg, pk, sig }] of sets.entries()) {
+      for (const [i, {msg, pk, sig}] of sets.entries()) {
         const valid = bls.verify(msg, pk, sig);
         expect(valid).to.equal(true, `Invalid ${i}`);
       }

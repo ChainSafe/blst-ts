@@ -1,20 +1,7 @@
 import crypto from "crypto";
-import {
-  blst,
-  BLST_ERROR,
-  P1_Affine,
-  P2_Affine,
-  Pairing,
-} from "../src/bindings";
-import {
-  aggregateSignatures,
-  fastAggregateVerify,
-  PublicKey,
-  SecretKey,
-  Signature,
-  verify,
-} from "../src/lib";
-import { BenchmarkRunner } from "./utils/runner";
+import {blst, BLST_ERROR, P1_Affine, P2_Affine, Pairing} from "../src/bindings";
+import {aggregateSignatures, fastAggregateVerify, PublicKey, SecretKey, Signature, verify} from "../src/lib";
+import {BenchmarkRunner} from "./utils/runner";
 
 const dst = "BLS_SIG_BLS12381G2-SHA256-SSWU-RO_POP_";
 const hashOrEncode = true;
@@ -30,7 +17,7 @@ const msg = Buffer.from("Mr F was here");
       scal: crypto.randomBytes(32),
       p: new blst.P1(blst.BLS12_381_G1), // init from generator
     }),
-    run: ({ scal, p }) => {
+    run: ({scal, p}) => {
       p.mult(scal);
     },
   });
@@ -42,7 +29,7 @@ const msg = Buffer.from("Mr F was here");
       scal: crypto.randomBytes(32),
       p: new blst.P2(blst.BLS12_381_G2), // init from generator
     }),
-    run: ({ scal, p }) => {
+    run: ({scal, p}) => {
       p.mult(scal);
     },
   });
@@ -52,9 +39,9 @@ const msg = Buffer.from("Mr F was here");
     before: () => {},
     beforeEach: () => {
       const a = new blst.P1(blst.BLS12_381_G1); // init from G2 generator
-      return { a, b: a };
+      return {a, b: a};
     },
-    run: ({ a, b }) => {
+    run: ({a, b}) => {
       a.add(b);
     },
   });
@@ -64,14 +51,14 @@ const msg = Buffer.from("Mr F was here");
     before: () => {},
     beforeEach: () => {
       const a = new blst.P2(blst.BLS12_381_G2); // init from G2 generator
-      return { a, b: a };
+      return {a, b: a};
     },
-    run: ({ a, b }) => {
+    run: ({a, b}) => {
       a.add(b);
     },
   });
 
-  await runner.run<{ pk: P1_Affine; sig: P2_Affine }, Pairing>({
+  await runner.run<{pk: P1_Affine; sig: P2_Affine}, Pairing>({
     id: "Pairing (Miller loop + Final Exponentiation)",
     before: () => {
       const sk = new blst.SecretKey();
@@ -83,9 +70,9 @@ const msg = Buffer.from("Mr F was here");
       const p2 = new blst.P2();
       const sig = p2.hash_to(msg, dst).sign_with(sk).to_affine();
 
-      return { pk, sig };
+      return {pk, sig};
     },
-    beforeEach: ({ pk, sig }) => {
+    beforeEach: ({pk, sig}) => {
       // Verification
       const pairing = new blst.Pairing(hashOrEncode, dst); // blst_pairing_init
       const aggRes = pairing.aggregate(pk, sig, msg);
@@ -113,9 +100,9 @@ const msg = Buffer.from("Mr F was here");
 
   // Serialization + de-serialization
 
-  for (const { id, P, p } of [
-    { id: "P1", P: blst.P1, p: blst.BLS12_381_G1 },
-    { id: "P2", P: blst.P2, p: blst.BLS12_381_G2 },
+  for (const {id, P, p} of [
+    {id: "P1", P: blst.P1, p: blst.BLS12_381_G1},
+    {id: "P2", P: blst.P2, p: blst.BLS12_381_G2},
   ]) {
     await runner.run({
       id: `${id} to_affine`,
@@ -200,7 +187,7 @@ const msg = Buffer.from("Mr F was here");
   // Benchmark the cost of having pubkeys cached as P1 or P1_Affine
 
   for (const aggCount of [128, 256]) {
-    const iArr = Array.from({ length: aggCount }, (v, i) => i);
+    const iArr = Array.from({length: aggCount}, (v, i) => i);
     const sks = iArr.map((i) => {
       const sk = new blst.SecretKey();
       sk.from_bendian(Buffer.alloc(32, i + 1));
@@ -257,21 +244,21 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runner.run<{ pk: PublicKey; sig: Signature }>({
+  await runner.run<{pk: PublicKey; sig: Signature}>({
     id: "BLS verification",
     before: () => {
       const sk = SecretKey.fromKeygen(crypto.randomBytes(32));
       const pk = sk.toPublicKey();
       const sig = sk.sign(msg);
-      return { pk, sig };
+      return {pk, sig};
     },
-    run: ({ pk, sig }) => {
+    run: ({pk, sig}) => {
       verify(msg, pk, sig);
     },
   });
 
   for (const n of [32, 128]) {
-    await runner.run<{ pks: PublicKey[]; sig: Signature }>({
+    await runner.run<{pks: PublicKey[]; sig: Signature}>({
       id: `BLS agg verif of 1 msg by ${n} pubkeys`,
       before: () => {
         const pks: PublicKey[] = [];
@@ -284,9 +271,9 @@ const msg = Buffer.from("Mr F was here");
         }
 
         const sig = aggregateSignatures(sigs);
-        return { pks, sig };
+        return {pks, sig};
       },
-      run: ({ pks, sig }) => {
+      run: ({pks, sig}) => {
         fastAggregateVerify(msg, pks, sig);
       },
     });

@@ -1,6 +1,6 @@
-import { testBindings } from "./testBindings";
-import { getBinaryName } from "./paths";
-import { downloadReleaseAsset } from "./downloadReleaseAsset";
+import {testBindings} from "./testBindings";
+import {getBinaryName} from "./paths";
+import {downloadReleaseAsset} from "./downloadReleaseAsset";
 
 export async function downloadBindings(binaryPath: string) {
   const binaryName = getBinaryName();

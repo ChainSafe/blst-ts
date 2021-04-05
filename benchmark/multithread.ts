@@ -1,9 +1,9 @@
 import os from "os";
 import * as bls from "../src/lib";
-import { BlsMultiThreadNaive } from "../test/multithread/naive";
-import { warmUpWorkers, chunkify } from "../test/multithread/naive/utils";
-import { Csv } from "./utils/csv";
-import { BenchmarkRunner } from "./utils/runner";
+import {BlsMultiThreadNaive} from "../test/multithread/naive";
+import {warmUpWorkers, chunkify} from "../test/multithread/naive/utils";
+import {Csv} from "./utils/csv";
+import {BenchmarkRunner} from "./utils/runner";
 
 (async function () {
   const runner = new BenchmarkRunner("BLS multi-threaded benchmark", {
@@ -27,7 +27,7 @@ import { BenchmarkRunner } from "./utils/runner";
   for (let i = 0; i < sigCount; i++) {
     const msg = Buffer.alloc(32, i);
     const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
-    sets.push({ msg, pk: sk.toPublicKey(), sig: sk.sign(msg) });
+    sets.push({msg, pk: sk.toPublicKey(), sig: sk.sign(msg)});
   }
 
   // BLS batch verify
@@ -57,9 +57,7 @@ import { BenchmarkRunner } from "./utils/runner";
         before: () => {},
         run: async () => {
           await Promise.all(
-            chunkify(sets, workers).map((setsWorker) =>
-              pool.verifyMultipleAggregateSignatures(setsWorker)
-            )
+            chunkify(sets, workers).map((setsWorker) => pool.verifyMultipleAggregateSignatures(setsWorker))
           );
         },
       });
@@ -83,7 +81,7 @@ import { BenchmarkRunner } from "./utils/runner";
       id: `BLS verify ${sigCount} sigs - main thread`,
       before: () => {},
       run: () => {
-        for (const { msg, pk, sig } of sets) {
+        for (const {msg, pk, sig} of sets) {
           bls.verify(msg, pk, sig);
         }
       },
@@ -93,9 +91,7 @@ import { BenchmarkRunner } from "./utils/runner";
       id: `BLS verify ${sigCount} sigs - worker_threads (all)`,
       before: () => {},
       run: async () => {
-        await Promise.all(
-          sets.map(({ msg, pk, sig }) => pool.verify(msg, pk, sig))
-        );
+        await Promise.all(sets.map(({msg, pk, sig}) => pool.verify(msg, pk, sig)));
       },
     });
   }

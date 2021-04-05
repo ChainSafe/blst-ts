@@ -1,6 +1,6 @@
 import os from "os";
 import * as bls from "../../../src/lib";
-import { BlsMultiThreadNaive } from "./index";
+import {BlsMultiThreadNaive} from "./index";
 
 export async function warmUpWorkers(pool: BlsMultiThreadNaive) {
   const msg = Buffer.alloc(32, 1);
@@ -8,11 +8,7 @@ export async function warmUpWorkers(pool: BlsMultiThreadNaive) {
   const pk = sk.toPublicKey();
   const sig = sk.sign(msg);
 
-  await Promise.all(
-    Array.from({ length: os.cpus().length }, (_, i) => i).map((i) =>
-      pool.verify(msg, pk, sig)
-    )
-  );
+  await Promise.all(Array.from({length: os.cpus().length}, (_, i) => i).map((i) => pool.verify(msg, pk, sig)));
 }
 
 export function chunkify<T>(arr: T[], chunkCount: number): T[][] {

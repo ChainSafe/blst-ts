@@ -1,4 +1,4 @@
-import { getBinaryPath } from "./scripts/paths";
+import {getBinaryPath} from "./scripts/paths";
 export const blst: Blst = require(getBinaryPath());
 
 export interface Blst {
@@ -55,13 +55,7 @@ export interface P1_Affine {
   in_group(): boolean;
   is_inf(): boolean;
   is_equal(p: P1_Affine): boolean;
-  core_verify(
-    pk: P2_Affine,
-    hash_or_encode: boolean,
-    msg: binary_string,
-    DST?: string,
-    aug?: bytes
-  ): BLST_ERROR;
+  core_verify(pk: P2_Affine, hash_or_encode: boolean, msg: binary_string, DST?: string, aug?: bytes): BLST_ERROR;
 }
 
 export interface P1Constructor {
@@ -110,13 +104,7 @@ export interface P2_Affine {
   in_group(): boolean;
   is_inf(): boolean;
   is_equal(p: P2_Affine): boolean;
-  core_verify(
-    pk: P1_Affine,
-    hash_or_encode: boolean,
-    msg: binary_string,
-    DST?: string,
-    aug?: bytes
-  ): BLST_ERROR;
+  core_verify(pk: P1_Affine, hash_or_encode: boolean, msg: binary_string, DST?: string, aug?: bytes): BLST_ERROR;
 }
 
 export interface P2Constructor {
@@ -171,32 +159,10 @@ export interface PairingConstructor {
 }
 
 export interface Pairing {
-  aggregate(
-    pk: P1_Affine,
-    sig: P2_Affine,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
-  aggregate(
-    pk: P2_Affine,
-    sig: P1_Affine,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
-  mul_n_aggregate(
-    pk: P1_Affine,
-    sig: P2_Affine,
-    scalar: scalar,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
-  mul_n_aggregate(
-    pk: P2_Affine,
-    sig: P1_Affine,
-    scalar: scalar,
-    msg: binary_string,
-    aug?: bytes
-  ): BLST_ERROR;
+  aggregate(pk: P1_Affine, sig: P2_Affine, msg: binary_string, aug?: bytes): BLST_ERROR;
+  aggregate(pk: P2_Affine, sig: P1_Affine, msg: binary_string, aug?: bytes): BLST_ERROR;
+  mul_n_aggregate(pk: P1_Affine, sig: P2_Affine, scalar: scalar, msg: binary_string, aug?: bytes): BLST_ERROR;
+  mul_n_aggregate(pk: P2_Affine, sig: P1_Affine, scalar: scalar, msg: binary_string, aug?: bytes): BLST_ERROR;
   commit(): void;
   merge(ctx: Pairing): BLST_ERROR;
   finalverify(sig?: PT): boolean;

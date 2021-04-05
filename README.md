@@ -15,7 +15,7 @@ yarn add @chainsafe/blst
 This library comes with pre-compiled bindings for most platforms. You can check current support in [releases](https://github.com/ChainSafe/blst-ts/releases). If your platform is not supported, bindings will be compiled from source as a best effort with node-gyp.
 
 ```ts
-import { SecretKey, verify } from "@chainsafe/blst";
+import {SecretKey, verify} from "@chainsafe/blst";
 
 const msg = Buffer.from("sample-msg");
 const sk = SecretKey.fromKeygen(Buffer.alloc(32, 1));
@@ -48,6 +48,7 @@ This library has a hardcoded configuration compatible with Eth2.0 spec:
 ## Developing
 
 Note that this repo contains a git submodule. Make sure the git submodule `blst` is populated before attempting to build locally. After cloning run:
+
 ```
 git submodule update --init --recursive
 ```

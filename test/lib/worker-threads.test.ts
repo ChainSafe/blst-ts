@@ -12,7 +12,7 @@ describe("worker_threads test", function () {
       this.skip();
     }
 
-    const { Worker } = await import("worker_threads");
+    const {Worker} = await import("worker_threads");
 
     // Create multiple workers so blst.node is imported twice to trigger the error
     // blst/bindings/node.js$ node worker-threads.js
@@ -33,6 +33,6 @@ describe("worker_threads test", function () {
       });
     }
 
-    await Promise.all(Array.from({ length: 8 }, (_, i) => run(i)));
+    await Promise.all(Array.from({length: 8}, (_, i) => run(i)));
   });
 });

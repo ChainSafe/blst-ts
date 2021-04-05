@@ -1,9 +1,9 @@
 import os from "os";
 import * as bls from "../src/lib";
-import { BlsMultiThreadNaive } from "../test/multithread/naive";
-import { warmUpWorkers } from "../test/multithread/naive/utils";
-import { Csv } from "./utils/csv";
-import { BenchmarkRunner } from "./utils/runner";
+import {BlsMultiThreadNaive} from "../test/multithread/naive";
+import {warmUpWorkers} from "../test/multithread/naive/utils";
+import {Csv} from "./utils/csv";
+import {BenchmarkRunner} from "./utils/runner";
 
 (async function () {
   const runner = new BenchmarkRunner("BLS multi-threaded overhead benchmark");
@@ -33,12 +33,10 @@ import { BenchmarkRunner } from "./utils/runner";
         id: `Send and receive a message from echo worker (${workers} workers)`,
         before: () => {},
         run: async () => {
-          await Promise.all(
-            Array.from({ length: workers }, (_, i) => i).map(() => pool.ping(3))
-          );
+          await Promise.all(Array.from({length: workers}, (_, i) => i).map(() => pool.ping(3)));
         },
       });
-      csv.addRow({ workers, avg });
+      csv.addRow({workers, avg});
     }
     csv.logToConsole();
   }
@@ -63,15 +61,11 @@ import { BenchmarkRunner } from "./utils/runner";
         id: `Serialize + send + deserialize ${n} sig sets to worker`,
         before: () => {},
         run: async () => {
-          await pool.serders(
-            msgs.slice(0, n),
-            pks.slice(0, n),
-            sigs.slice(0, n)
-          );
+          await pool.serders(msgs.slice(0, n), pks.slice(0, n), sigs.slice(0, n));
         },
       });
 
-      csv.addRow({ n, avg });
+      csv.addRow({n, avg});
     }
     csv.logToConsole();
   }

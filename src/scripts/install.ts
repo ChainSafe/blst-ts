@@ -1,8 +1,8 @@
 import fs from "fs";
-import { downloadBindings } from "./downloadBindings";
-import { buildBindings } from "./buildBindings";
-import { getBinaryPath } from "./paths";
-import { testBindings } from "./testBindings";
+import {downloadBindings} from "./downloadBindings";
+import {buildBindings} from "./buildBindings";
+import {getBinaryPath} from "./paths";
+import {testBindings} from "./testBindings";
 
 const libName = "BLST native bindings";
 
