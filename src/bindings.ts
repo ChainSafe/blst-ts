@@ -1,7 +1,12 @@
 import {getBinaryPath} from "./scripts/paths";
+// eslint-disable-next-line
 export const blst: Blst = require(getBinaryPath());
 
 export interface Blst {
+  BLS12_381_G1: P1_Affine;
+  BLS12_381_NEG_G1: P1_Affine;
+  BLS12_381_G2: P2_Affine;
+  BLS12_381_NEG_G2: P2_Affine;
   SecretKey: SecretKeyConstructor;
   P1_Affine: P1_AffineConstructor;
   P2_Affine: P2_AffineConstructor;
@@ -11,11 +16,6 @@ export interface Blst {
   Pairing: PairingConstructor;
   G1(): P1;
   G2(): P2;
-
-  BLS12_381_G1: P1_Affine;
-  BLS12_381_NEG_G1: P1_Affine;
-  BLS12_381_G2: P2_Affine;
-  BLS12_381_NEG_G2: P2_Affine;
 }
 
 // blst.hpp types

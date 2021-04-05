@@ -1,5 +1,3 @@
-const path = require("path");
-
 module.exports = {
   root: true,
   env: {
@@ -16,7 +14,7 @@ module.exports = {
     ecmaVersion: 10,
     project: "./tsconfig.json",
   },
-  plugins: ["@typescript-eslint", "eslint-plugin-import", "prettier"],
+  plugins: ["@typescript-eslint", "eslint-plugin-import", "eslint-plugin-node", "prettier"],
   extends: [
     "eslint:recommended",
     "plugin:import/errors",
@@ -24,12 +22,11 @@ module.exports = {
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
   ],
-  settings: {},
   rules: {
     "prettier/prettier": "error",
     //doesnt work, it reports false errors
     "constructor-super": "off",
-    "@typescript-eslint/class-name-casing": "error",
+    "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/explicit-function-return-type": [
       "error",
       {
@@ -37,8 +34,6 @@ module.exports = {
       },
     ],
     "@typescript-eslint/func-call-spacing": "error",
-    "@typescript-eslint/indent": ["error", 2],
-    "@typescript-eslint/interface-name-prefix": ["error", "always"],
     "@typescript-eslint/member-ordering": "error",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-require-imports": "error",
@@ -48,29 +43,26 @@ module.exports = {
         varsIgnorePattern: "^_",
       },
     ],
-    "@typescript-eslint/ban-ts-ignore": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/semi": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
-    //it doesn't recognize module/lib/something (like mainnet & minimal presets)
-    "import/no-duplicates": "off",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-return": "error",
     "import/no-extraneous-dependencies": [
       "error",
       {
         devDependencies: false,
         optionalDependencies: false,
-        peerDependencies: true,
+        peerDependencies: false,
       },
     ],
     "func-call-spacing": "off",
-    "max-len": [
-      "error",
-      {
-        code: 120,
-      },
-    ],
     //if --fix is run it messes imports like /lib/presets/minimal & /lib/presets/mainnet
     "import/no-duplicates": "off",
+    "node/no-deprecated-api": "error",
     "new-parens": "error",
     "no-caller": "error",
     "no-bitwise": "off",

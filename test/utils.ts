@@ -39,7 +39,7 @@ export type InstanceTestCases<InstanceType extends {[key: string]: any}> = {
 export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
   instanceTestCases: InstanceTestCases<InstanceType>,
   getInstance: () => InstanceType
-) {
+): void {
   for (const [key, testCases] of Object.entries(instanceTestCases)) {
     const methodKey = key as keyof InstanceType;
     for (const testCase of testCases) {
@@ -47,7 +47,7 @@ export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
         // Get a new fresh instance for this test
         const instance = testCase.instance || getInstance();
         if (typeof instance[methodKey] !== "function") throw Error(`Method ${methodKey} does not exist`);
-        const res = (instance[methodKey] as any)(...testCase.args);
+        const res = (instance[methodKey] as (...args: any) => any)(...testCase.args);
         if (!res) {
           // OK
         } else if (res.serialize || res instanceof Uint8Array) {

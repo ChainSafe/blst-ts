@@ -14,7 +14,7 @@ export class BlsMultiThreadNaive {
     this.pool = Pool(() => (spawn(new Worker("./worker")) as any) as Promise<ThreadType>, workerCount);
   }
 
-  async destroy() {
+  async destroy(): Promise<void> {
     await this.pool.terminate(true);
   }
 

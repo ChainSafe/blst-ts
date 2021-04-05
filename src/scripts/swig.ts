@@ -3,7 +3,7 @@ import {exec} from "./exec";
 /**
  * Throw error if SWIG is not installed or version is < 4
  */
-export async function assertSupportedSwigVersion() {
+export async function assertSupportedSwigVersion(): Promise<void> {
   const swigMajorVersion = await getSwigMajorVersion();
   if (swigMajorVersion < 4) {
     throw Error("Unsupported SWIG version, must be >= 4");

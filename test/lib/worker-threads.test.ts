@@ -18,7 +18,7 @@ describe("worker_threads test", function () {
     // blst/bindings/node.js$ node worker-threads.js
     // Error: Module did not self-register: 'blst/bindings/node.js/blst.node'.
 
-    async function run(i: number) {
+    async function run(): Promise<void> {
       await new Promise<void>((resolve, reject) => {
         const worker = new Worker(path.join(__dirname, "threads/runnable.js"));
 
@@ -33,6 +33,6 @@ describe("worker_threads test", function () {
       });
     }
 
-    await Promise.all(Array.from({length: 8}, (_, i) => run(i)));
+    await Promise.all(Array.from({length: 8}, () => run()));
   });
 });

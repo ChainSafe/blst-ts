@@ -4,7 +4,8 @@ import {ensureDirFromFilepath, PACKAGE_JSON_PATH} from "./paths";
 
 const githubReleasesDownloadUrl = "https://github.com/ChainSafe/blst-ts/releases/download";
 
-export async function downloadReleaseAsset(assetName: string, binaryPath: string) {
+export async function downloadReleaseAsset(assetName: string, binaryPath: string): Promise<void> {
+  // eslint-disable-next-line
   const packageJson = require(PACKAGE_JSON_PATH);
   const version = packageJson.version;
 

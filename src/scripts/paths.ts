@@ -16,7 +16,7 @@ export const BLST_WRAP_CPP_PREBUILD = path.resolve(ROOT_DIR, "prebuild", "blst_w
  * Get binary name.
  * name: {platform}-{arch}-{v8 version}.node
  */
-export function getBinaryName() {
+export function getBinaryName(): string {
   const platform = process.platform;
   const arch = process.arch;
   const nodeV8CppApiVersion = process.versions.modules;
@@ -28,17 +28,17 @@ export function getBinaryName() {
   return [platform, arch, nodeV8CppApiVersion, "binding.node"].join("-");
 }
 
-export function getBinaryPath() {
+export function getBinaryPath(): string {
   return path.join(PREBUILD_DIR, getBinaryName());
 }
 
-export function mkdirBinary() {
+export function mkdirBinary(): void {
   if (!fs.existsSync(PREBUILD_DIR)) {
     fs.mkdirSync(PREBUILD_DIR);
   }
 }
 
-export function ensureDirFromFilepath(filepath: string) {
+export function ensureDirFromFilepath(filepath: string): void {
   const dirpath = path.dirname(filepath);
   if (!fs.existsSync(dirpath)) {
     fs.mkdirSync(dirpath, {recursive: true});

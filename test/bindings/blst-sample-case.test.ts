@@ -24,13 +24,13 @@ describe("blst sample case", () => {
     ////////////////////////////////////////////////////////////////////////
     // at this point 'pk_for_wire', 'sig_for_wire' and 'msg' are
     // "sent over network," so now on "receiver" side
-    function userReceiver({pk_for_wire, sig_for_wire}: DataToSend) {
+    function userReceiver({pk_for_wire, sig_for_wire}: DataToSend): void {
       const sig = new blst.P2_Affine(sig_for_wire);
       const pk = new blst.P1_Affine(pk_for_wire);
 
       if (!pk.in_group()) throw "public key not in group"; // vet the public key
 
-      var ctx = new blst.Pairing(true, DST);
+      const ctx = new blst.Pairing(true, DST);
       ctx.aggregate(pk, sig, msg, pk_for_wire);
       ctx.commit();
       if (!ctx.finalverify()) throw "final verify failed";

@@ -1,6 +1,8 @@
 import {exec} from "./exec";
 import {assertSupportedSwigVersion} from "./swig";
 
+/* eslint-disable no-console */
+
 // CLI runner
 runSwig().then(
   () => process.exit(0),
@@ -10,7 +12,7 @@ runSwig().then(
   }
 );
 
-async function runSwig() {
+async function runSwig(): Promise<void> {
   const sourceSwgFile = process.argv[1];
   const targetCppFile = process.argv[2];
 

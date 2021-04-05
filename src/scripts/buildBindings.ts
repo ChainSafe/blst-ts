@@ -5,7 +5,9 @@ import {testBindings} from "./testBindings";
 import {assertSupportedSwigVersion} from "./swig";
 import {ensureDirFromFilepath, findBindingsFile, BINDINGS_DIR, BLST_WRAP_CPP_PREBUILD} from "./paths";
 
-export async function buildBindings(binaryPath: string) {
+/* eslint-disable no-console */
+
+export async function buildBindings(binaryPath: string): Promise<void> {
   if (process.env.BLST_WRAP_CPP_FORCE_BUILD && fs.existsSync(BLST_WRAP_CPP_PREBUILD)) {
     console.log(`BLST_WRAP_CPP_FORCE_BUILD=true, cleaning existing BLST_WRAP_CPP_PREBUILD ${BLST_WRAP_CPP_PREBUILD}`);
     fs.unlinkSync(BLST_WRAP_CPP_PREBUILD);

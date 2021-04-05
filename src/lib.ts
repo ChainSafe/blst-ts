@@ -176,7 +176,7 @@ export class Signature {
   }
 
   /** Validate sig is in group */
-  sigValidate() {
+  sigValidate(): void {
     if (!this.value.in_group()) {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }

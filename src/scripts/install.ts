@@ -4,6 +4,8 @@ import {buildBindings} from "./buildBindings";
 import {getBinaryPath} from "./paths";
 import {testBindings} from "./testBindings";
 
+/* eslint-disable no-console */
+
 const libName = "BLST native bindings";
 
 // CLI runner
@@ -15,7 +17,7 @@ install().then(
   }
 );
 
-async function install() {
+async function install(): Promise<void> {
   const binaryPath = getBinaryPath();
 
   // Check if bindings already downloaded or built
