@@ -74,7 +74,9 @@ jobs:
           path: prebuild/
 
       - name: Install && Build TS + bindings
-        run: yarn bootstrap
+        run: |
+          yarn config set ignore-engines true
+          yarn bootstrap
         env:
           SWIG_SKIP_RUN: true
 
