@@ -1,11 +1,5 @@
-import {
-  blst,
-  BLST_ERROR,
-  P1,
-  P1_Affine,
-  P1Constructor,
-} from "../../src/bindings";
-import { expectHex, fromHex, runInstanceTestCases } from "../utils";
+import {blst, BLST_ERROR, P1, P1_Affine, P1Constructor} from "../../src/bindings";
+import {expectHex, fromHex, runInstanceTestCases} from "../utils";
 
 describe("P1", () => {
   const sample = {
@@ -13,9 +7,7 @@ describe("P1", () => {
     p1: fromHex(
       "0ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f0109301f36856007e1bc875ab1b00dbf47f9ead16c5562d889d8b270002ade81e78d473204fcb51ede8659bce3d95c67903bc"
     ),
-    p1Comp: fromHex(
-      "8ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093"
-    ),
+    p1Comp: fromHex("8ae7e5822ba97ab07877ea318e747499da648b27302414f9d0b9bb7e3646d248be90c9fdaddfdb93485a6e9334f01093"),
   };
 
   const sk = new blst.SecretKey();
@@ -36,14 +28,14 @@ describe("P1", () => {
 
     runInstanceTestCases<P1>(
       {
-        dup: [{ args: [], res: new blst.P1(sk) }],
-        to_affine: [{ args: [], res: p1Affine }],
-        serialize: [{ args: [], res: sample.p1 }],
-        compress: [{ args: [], res: sample.p1Comp }],
-        on_curve: [{ args: [], res: true }],
-        in_group: [{ args: [], res: true }],
-        is_inf: [{ args: [], res: false }],
-        is_equal: [{ args: [new blst.P1(sk)], res: true }],
+        dup: [{args: [], res: new blst.P1(sk)}],
+        to_affine: [{args: [], res: p1Affine}],
+        serialize: [{args: [], res: sample.p1}],
+        compress: [{args: [], res: sample.p1Comp}],
+        on_curve: [{args: [], res: true}],
+        in_group: [{args: [], res: true}],
+        is_inf: [{args: [], res: false}],
+        is_equal: [{args: [new blst.P1(sk)], res: true}],
         // TODO: Skip tests for now
         aggregate: [],
         sign_with: [
@@ -115,14 +107,14 @@ describe("P1", () => {
 
     runInstanceTestCases<P1_Affine>(
       {
-        dup: [{ args: [], res: new blst.P1_Affine(p1) }],
-        to_jacobian: [{ args: [], res: p1 }],
-        serialize: [{ args: [], res: sample.p1 }],
-        compress: [{ args: [], res: sample.p1Comp }],
-        on_curve: [{ args: [], res: true }],
-        in_group: [{ args: [], res: true }],
-        is_inf: [{ args: [], res: false }],
-        is_equal: [{ args: [new blst.P1_Affine(p1)], res: true }],
+        dup: [{args: [], res: new blst.P1_Affine(p1)}],
+        to_jacobian: [{args: [], res: p1}],
+        serialize: [{args: [], res: sample.p1}],
+        compress: [{args: [], res: sample.p1Comp}],
+        on_curve: [{args: [], res: true}],
+        in_group: [{args: [], res: true}],
+        is_inf: [{args: [], res: false}],
+        is_equal: [{args: [new blst.P1_Affine(p1)], res: true}],
         core_verify: [
           {
             args: [p2Affine, true, msg, DST],

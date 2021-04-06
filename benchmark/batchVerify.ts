@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import * as bls from "../src/lib";
-import { Csv } from "./utils/csv";
-import { BenchmarkRunner } from "./utils/runner";
+import {Csv} from "./utils/csv";
+import {BenchmarkRunner} from "./utils/runner";
 
 (async function () {
   const runner = new BenchmarkRunner("Batch verify benchmark");
@@ -15,9 +15,9 @@ import { BenchmarkRunner } from "./utils/runner";
         const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
         const pk = sk.toPublicKey();
         const sig = sk.sign(msg);
-        return { msg, pk, sig };
+        return {msg, pk, sig};
       },
-      run: ({ msg, pk, sig }) => {
+      run: ({msg, pk, sig}) => {
         for (let j = 0; j < i; j++) {
           bls.verify(msg, pk, sig);
         }
@@ -31,7 +31,7 @@ import { BenchmarkRunner } from "./utils/runner";
         const sk = bls.SecretKey.fromKeygen(crypto.randomBytes(32));
         const pk = sk.toPublicKey();
         const sig = sk.sign(msg);
-        return Array.from({ length: i }, (_, i) => ({ msg, pk, sig }));
+        return Array.from({length: i}, (_, i) => ({msg, pk, sig}));
       },
       run: (sets) => {
         bls.verifyMultipleAggregateSignatures(sets);

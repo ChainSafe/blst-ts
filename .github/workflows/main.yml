@@ -44,6 +44,9 @@ jobs:
           path: prebuild/blst_wrap.cpp
           if-no-files-found: error
 
+      - name: Lint
+        run: yarn lint
+
   build:
     needs: ["build-swig"]
     runs-on: ${{matrix.os}}
@@ -71,7 +74,9 @@ jobs:
           path: prebuild/
 
       - name: Install && Build TS + bindings
-        run: yarn bootstrap
+        run: |
+          yarn config set ignore-engines true
+          yarn bootstrap
         env:
           SWIG_SKIP_RUN: true
 

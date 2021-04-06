@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import {expect} from "chai";
 
 interface BaseSerializable {
   serialize(): Uint8Array;
@@ -9,8 +9,7 @@ type Bufferish = string | Uint8Array | Buffer | BaseSerializable;
 function toHex(bytes: Bufferish): string {
   if (typeof bytes === "string") return bytes;
   if (bytes instanceof Uint8Array) return Buffer.from(bytes).toString("hex");
-  if (typeof bytes.serialize === "function")
-    return Buffer.from(bytes.serialize()).toString("hex");
+  if (typeof bytes.serialize === "function") return Buffer.from(bytes.serialize()).toString("hex");
   throw Error("Unknown arg");
 }
 
@@ -25,7 +24,7 @@ export function fromHex(hexString: string): Uint8Array {
 /**
  * Enforce tests for all instance methods
  */
-export type InstanceTestCases<InstanceType extends { [key: string]: any }> = {
+export type InstanceTestCases<InstanceType extends {[key: string]: any}> = {
   [P in keyof Omit<InstanceType, "type">]: {
     id?: string;
     instance?: InstanceType;
@@ -37,21 +36,18 @@ export type InstanceTestCases<InstanceType extends { [key: string]: any }> = {
 /**
  * Enforce tests for all instance methods and run them
  */
-export function runInstanceTestCases<
-  InstanceType extends { [key: string]: any }
->(
+export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
   instanceTestCases: InstanceTestCases<InstanceType>,
   getInstance: () => InstanceType
-) {
+): void {
   for (const [key, testCases] of Object.entries(instanceTestCases)) {
     const methodKey = key as keyof InstanceType;
     for (const testCase of testCases) {
       it(`${methodKey}: ${testCase.id || ""}`, () => {
         // Get a new fresh instance for this test
         const instance = testCase.instance || getInstance();
-        if (typeof instance[methodKey] !== "function")
-          throw Error(`Method ${methodKey} does not exist`);
-        const res = (instance[methodKey] as any)(...testCase.args);
+        if (typeof instance[methodKey] !== "function") throw Error(`Method ${methodKey} does not exist`);
+        const res = (instance[methodKey] as (...args: any) => any)(...testCase.args);
         if (!res) {
           // OK
         } else if (res.serialize || res instanceof Uint8Array) {

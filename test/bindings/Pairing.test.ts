@@ -1,5 +1,5 @@
-import { blst, Pairing } from "../../src/bindings";
-import { fromHex, runInstanceTestCases } from "../utils";
+import {blst, Pairing} from "../../src/bindings";
+import {fromHex, runInstanceTestCases} from "../utils";
 
 describe("Pairing", () => {
   const sample = {
@@ -24,22 +24,16 @@ describe("Pairing", () => {
 
   runInstanceTestCases<Pairing>(
     {
-      aggregate: [{ args: [p2Affine, p1Affine, msg], res: 0 }],
+      aggregate: [{args: [p2Affine, p1Affine, msg], res: 0}],
       mul_n_aggregate: [
         {
-          args: [
-            p2Affine,
-            p1Affine,
-            Buffer.alloc(32, 0),
-            Buffer.alloc(32, 0),
-            p1.serialize(),
-          ],
+          args: [p2Affine, p1Affine, Buffer.alloc(32, 0), Buffer.alloc(32, 0), p1.serialize()],
           res: 0,
         },
       ],
       commit: [],
-      merge: [{ args: [new blst.Pairing(true, DST)], res: 0 }],
-      finalverify: [{ args: [], res: false }],
+      merge: [{args: [new blst.Pairing(true, DST)], res: 0}],
+      finalverify: [{args: [], res: false}],
     },
     function getPairing() {
       return new blst.Pairing(true, DST);

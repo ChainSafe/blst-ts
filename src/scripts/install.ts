@@ -1,8 +1,10 @@
 import fs from "fs";
-import { downloadBindings } from "./downloadBindings";
-import { buildBindings } from "./buildBindings";
-import { getBinaryPath } from "./paths";
-import { testBindings } from "./testBindings";
+import {downloadBindings} from "./downloadBindings";
+import {buildBindings} from "./buildBindings";
+import {getBinaryPath} from "./paths";
+import {testBindings} from "./testBindings";
+
+/* eslint-disable no-console */
 
 const libName = "BLST native bindings";
 
@@ -15,7 +17,7 @@ install().then(
   }
 );
 
-async function install() {
+async function install(): Promise<void> {
   const binaryPath = getBinaryPath();
 
   // Check if bindings already downloaded or built

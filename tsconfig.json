@@ -1,16 +1,25 @@
 {
-  "include": ["src"],
+  "include": ["src", "test"],
   "compilerOptions": {
     "outDir": "dist",
     "target": "esnext",
     "module": "commonjs",
     "pretty": true,
     "lib": ["esnext.bigint"],
+
+    "strict": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+
     "declaration": true,
     "sourceMap": true,
     "declarationMap": true,
-    "strict": true,
-    "strictNullChecks": true,
     "esModuleInterop": true
   }
 }

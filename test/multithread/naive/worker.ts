@@ -1,23 +1,17 @@
-import { expose } from "threads/worker";
+import {expose} from "threads/worker";
 import * as bls from "../../../src/lib";
 
 export type WorkerApi = typeof workerApi;
 
 const workerApi = {
-  verify(msg: Uint8Array, pk: Uint8Array, sig: Uint8Array) {
+  verify(msg: Uint8Array, pk: Uint8Array, sig: Uint8Array): boolean {
     return bls.verify(
       msg,
       bls.PublicKey.fromBytes(pk, bls.CoordType.affine),
       bls.Signature.fromBytes(sig, bls.CoordType.affine)
     );
   },
-  verifyMultipleAggregateSignatures(
-    sets: {
-      msg: Uint8Array;
-      pk: Uint8Array;
-      sig: Uint8Array;
-    }[]
-  ) {
+  verifyMultipleAggregateSignatures(sets: {msg: Uint8Array; pk: Uint8Array; sig: Uint8Array}[]): boolean {
     return bls.verifyMultipleAggregateSignatures(
       sets.map((s) => ({
         msg: s.msg,
@@ -31,7 +25,11 @@ const workerApi = {
   ping(n: number) {
     return n;
   },
-  receive(msgs: Uint8Array[], pks: Uint8Array[], sigs: Uint8Array[]) {},
+  receive(msgs: Uint8Array[], pks: Uint8Array[], sigs: Uint8Array[]) {
+    msgs;
+    pks;
+    sigs;
+  },
   serders(msgs: Uint8Array[], pks: Uint8Array[], sigs: Uint8Array[]) {
     msgs;
     pks.map(bls.PublicKey.fromBytes);

@@ -1,11 +1,11 @@
 import crypto from "crypto";
-import { blst, BLST_ERROR } from "./bindings";
+import {blst, BLST_ERROR} from "./bindings";
 
 const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const RAND_BYTES = 8;
 
-export { BLST_ERROR };
+export {BLST_ERROR};
 export class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
     super(BLST_ERROR[blstError]);
@@ -176,7 +176,7 @@ export class Signature {
   }
 
   /** Validate sig is in group */
-  sigValidate() {
+  sigValidate(): void {
     if (!this.value.in_group()) {
       throw new ErrorBLST(BLST_ERROR.BLST_POINT_NOT_IN_GROUP);
     }
@@ -212,22 +212,14 @@ export function aggregateSignatures(sigs: Signature[]): Signature {
 /**
  * Verify a single message from a single pubkey
  */
-export function verify(
-  msg: Uint8Array,
-  pk: PublicKey,
-  sig: Signature
-): boolean {
+export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature): boolean {
   return aggregateVerify([msg], [pk], sig);
 }
 
 /**
  * Verify a single message from multiple pubkeys
  */
-export function fastAggregateVerify(
-  msg: Uint8Array,
-  pks: PublicKey[],
-  sig: Signature
-): boolean {
+export function fastAggregateVerify(msg: Uint8Array, pks: PublicKey[], sig: Signature): boolean {
   const aggPk = aggregatePubkeys(pks);
   return aggregateVerify([msg], [aggPk], sig);
 }
@@ -235,11 +227,7 @@ export function fastAggregateVerify(
 /**
  * Verify multiple messages from multiple pubkeys
  */
-export function aggregateVerify(
-  msgs: Uint8Array[],
-  pks: PublicKey[],
-  sig: Signature
-): boolean {
+export function aggregateVerify(msgs: Uint8Array[], pks: PublicKey[], sig: Signature): boolean {
   const n_elems = pks.length;
   if (msgs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
@@ -271,11 +259,9 @@ export type SignatureSet = {
  * Batch verify groups of {msg, pk, sig}[]
  * https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
  */
-export function verifyMultipleAggregateSignatures(
-  signatureSets: SignatureSet[]
-): boolean {
+export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean {
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
-  for (const { msg, pk, sig } of signatureSets) {
+  for (const {msg, pk, sig} of signatureSets) {
     const rand = crypto.randomBytes(RAND_BYTES);
     const result = ctx.mul_n_aggregate(pk.affine, sig.affine, rand, msg);
     if (result !== BLST_ERROR.BLST_SUCCESS) {

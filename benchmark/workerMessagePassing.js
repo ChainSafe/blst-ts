@@ -1,12 +1,12 @@
 const path = require("path");
-const { Worker } = require("worker_threads");
+const {Worker} = require("worker_threads");
 const worker = new Worker(
   `
 const { parentPort } = require("worker_threads");
 parentPort.on("message", (time) => {
   parentPort.postMessage([time, process.hrtime()]);
 });`,
-  { eval: true }
+  {eval: true}
 );
 
 const getDiff = (a, b) => (b[0] - a[0]) * 1e9 + b[1] - a[1];

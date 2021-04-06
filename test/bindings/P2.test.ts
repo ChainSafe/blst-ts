@@ -1,11 +1,5 @@
-import {
-  blst,
-  BLST_ERROR,
-  P2,
-  P2_Affine,
-  P2Constructor,
-} from "../../src/bindings";
-import { fromHex, runInstanceTestCases } from "../utils";
+import {blst, BLST_ERROR, P2, P2_Affine, P2Constructor} from "../../src/bindings";
+import {fromHex, runInstanceTestCases} from "../utils";
 
 describe("P2", () => {
   const sample = {
@@ -29,14 +23,14 @@ describe("P2", () => {
   describe("P2", () => {
     runInstanceTestCases<P2>(
       {
-        dup: [{ args: [], res: new blst.P2(sk) }],
-        to_affine: [{ args: [], res: p2Affine }],
-        serialize: [{ args: [], res: sample.p2 }],
-        compress: [{ args: [], res: sample.p2Comp }],
-        on_curve: [{ args: [], res: true }],
-        in_group: [{ args: [], res: true }],
-        is_inf: [{ args: [], res: false }],
-        is_equal: [{ args: [new blst.P2(sk)], res: true }],
+        dup: [{args: [], res: new blst.P2(sk)}],
+        to_affine: [{args: [], res: p2Affine}],
+        serialize: [{args: [], res: sample.p2}],
+        compress: [{args: [], res: sample.p2Comp}],
+        on_curve: [{args: [], res: true}],
+        in_group: [{args: [], res: true}],
+        is_inf: [{args: [], res: false}],
+        is_equal: [{args: [new blst.P2(sk)], res: true}],
         // TODO: Skip tests for now
         aggregate: [],
         sign_with: [
@@ -100,14 +94,14 @@ describe("P2", () => {
 
     runInstanceTestCases<P2_Affine>(
       {
-        dup: [{ args: [], res: new blst.P2_Affine(p2) }],
-        to_jacobian: [{ args: [], res: p2 }],
-        serialize: [{ args: [], res: sample.p2 }],
-        compress: [{ args: [], res: sample.p2Comp }],
-        on_curve: [{ args: [], res: true }],
-        in_group: [{ args: [], res: true }],
-        is_inf: [{ args: [], res: false }],
-        is_equal: [{ args: [new blst.P2_Affine(p2)], res: true }],
+        dup: [{args: [], res: new blst.P2_Affine(p2)}],
+        to_jacobian: [{args: [], res: p2}],
+        serialize: [{args: [], res: sample.p2}],
+        compress: [{args: [], res: sample.p2Comp}],
+        on_curve: [{args: [], res: true}],
+        in_group: [{args: [], res: true}],
+        is_inf: [{args: [], res: false}],
+        is_equal: [{args: [new blst.P2_Affine(p2)], res: true}],
         core_verify: [
           {
             args: [p1Affine, true, msg, DST],
