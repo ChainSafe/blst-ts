@@ -232,6 +232,10 @@ export function aggregateVerify(msgs: Uint8Array[], pks: PublicKey[], sig: Signa
   if (msgs.length !== n_elems) {
     throw new ErrorBLST(BLST_ERROR.BLST_VERIFY_FAIL);
   }
+  
+  if (n_elems.length === 0) {
+    throw new ErrorBLST(BLST_ERROR.EMPTY_AGGREGATE_ARRAY);
+  }
 
   const sigAff = sig.affine;
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
