@@ -267,6 +267,9 @@ export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[])
   const ctx = new blst.Pairing(HASH_OR_ENCODE, DST);
   for (const {msg, pk, sig} of signatureSets) {
     const rand = crypto.randomBytes(RAND_BYTES);
+    // `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
+    // See https://github.com/ChainSafe/blst-ts/issues/45
+    if (rand[0] === 0) rand[0] = 1;
     const result = ctx.mul_n_aggregate(pk.affine, sig.affine, rand, msg);
     if (result !== BLST_ERROR.BLST_SUCCESS) {
       throw new ErrorBLST(result);
