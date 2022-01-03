@@ -55,6 +55,10 @@ export class SecretKey {
   }
 
   static fromBytes(skBytes: Uint8Array): SecretKey {
+    /** Secret is 32 bytes */
+    if (skBytes.length !== 32) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     const sk = new SkConstructor();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);
@@ -95,6 +99,10 @@ export class PublicKey {
 
   /** Accepts both compressed and serialized */
   static fromBytes(pkBytes: Uint8Array, type = CoordType.jacobian): PublicKey {
+    /** P1 compressed is 48 bytes else 96 bytes */
+    if (pkBytes.length !== 48 && pkBytes.length !== 96) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     if (type === CoordType.affine) {
       return new PublicKey(new PkAffineConstructor(pkBytes));
     } else {
@@ -146,6 +154,10 @@ export class Signature {
 
   /** Accepts both compressed and serialized */
   static fromBytes(sigBytes: Uint8Array, type = CoordType.affine): Signature {
+    /** P2 compressed is 96 bytes else 192 bytes */
+    if (sigBytes.length !== 96 && sigBytes.length !== 192) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     if (type === CoordType.affine) {
       return new Signature(new SigAffineConstructor(sigBytes));
     } else {

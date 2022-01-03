@@ -178,6 +178,7 @@ export enum BLST_ERROR {
   BLST_AGGR_TYPE_MISMATCH = 4,
   BLST_VERIFY_FAIL = 5,
   BLST_PK_IS_INFINITY = 6,
+  BLST_INVALID_SIZE = 7,
   // Extra errors not in native bindings
   EMPTY_AGGREGATE_ARRAY = "EMPTY_AGGREGATE_ARRAY",
 }
