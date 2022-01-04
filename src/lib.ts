@@ -1,9 +1,13 @@
 import crypto from "crypto";
 import {blst, BLST_ERROR} from "./bindings";
-
-const HASH_OR_ENCODE = true;
-const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
-const RAND_BYTES = 8;
+import {HASH_OR_ENCODE, DST, RAND_BYTES} from "./constants";
+import {
+  SECRET_KEY_LENGTH,
+  PUBLIC_KEY_LENGTH_COMPRESSED,
+  PUBLIC_KEY_LENGTH_UNCOMPRESSED,
+  SIGNATURE_LENGTH_COMPRESSED,
+  SIGNATURE_LENGTH_UNCOMPRESSED,
+} from "./constants";
 
 export {BLST_ERROR};
 export class ErrorBLST extends Error {
@@ -46,7 +50,7 @@ export class SecretKey {
 
   /// Deterministically generate a secret key from input key material
   static fromKeygen(ikm: Uint8Array): SecretKey {
-    if (ikm.length < 32) {
+    if (ikm.length < SECRET_KEY_LENGTH) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
     const sk = new SkConstructor();
@@ -55,8 +59,7 @@ export class SecretKey {
   }
 
   static fromBytes(skBytes: Uint8Array): SecretKey {
-    /** Secret is 32 bytes */
-    if (skBytes.length !== 32) {
+    if (skBytes.length !== SECRET_KEY_LENGTH) {
       throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
     }
     const sk = new SkConstructor();
@@ -99,8 +102,7 @@ export class PublicKey {
 
   /** Accepts both compressed and serialized */
   static fromBytes(pkBytes: Uint8Array, type = CoordType.jacobian): PublicKey {
-    /** P1 compressed is 48 bytes else 96 bytes */
-    if (pkBytes.length !== 48 && pkBytes.length !== 96) {
+    if (pkBytes.length !== PUBLIC_KEY_LENGTH_COMPRESSED && pkBytes.length !== PUBLIC_KEY_LENGTH_UNCOMPRESSED) {
       throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
     }
     if (type === CoordType.affine) {
@@ -155,7 +157,7 @@ export class Signature {
   /** Accepts both compressed and serialized */
   static fromBytes(sigBytes: Uint8Array, type = CoordType.affine): Signature {
     /** P2 compressed is 96 bytes else 192 bytes */
-    if (sigBytes.length !== 96 && sigBytes.length !== 192) {
+    if (sigBytes.length !== SIGNATURE_LENGTH_COMPRESSED && sigBytes.length !== SIGNATURE_LENGTH_UNCOMPRESSED) {
       throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
     }
     if (type === CoordType.affine) {

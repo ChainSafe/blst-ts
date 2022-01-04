@@ -1,0 +1,9 @@
+export const HASH_OR_ENCODE = true;
+export const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+export const RAND_BYTES = 8;
+
+export const SECRET_KEY_LENGTH = 32;
+export const PUBLIC_KEY_LENGTH_COMPRESSED = 48;
+export const PUBLIC_KEY_LENGTH_UNCOMPRESSED = 48 * 2;
+export const SIGNATURE_LENGTH_COMPRESSED = 96;
+export const SIGNATURE_LENGTH_UNCOMPRESSED = 96 * 2;
