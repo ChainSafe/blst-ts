@@ -1,13 +1,15 @@
 import crypto from "crypto";
 import {blst, BLST_ERROR} from "./bindings";
-import {HASH_OR_ENCODE, DST, RAND_BYTES} from "./constants";
-import {
-  SECRET_KEY_LENGTH,
-  PUBLIC_KEY_LENGTH_COMPRESSED,
-  PUBLIC_KEY_LENGTH_UNCOMPRESSED,
-  SIGNATURE_LENGTH_COMPRESSED,
-  SIGNATURE_LENGTH_UNCOMPRESSED,
-} from "./constants";
+
+const HASH_OR_ENCODE = true;
+const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+const RAND_BYTES = 8;
+
+const SECRET_KEY_LENGTH = 32;
+const PUBLIC_KEY_LENGTH_COMPRESSED = 48;
+const PUBLIC_KEY_LENGTH_UNCOMPRESSED = 48 * 2;
+const SIGNATURE_LENGTH_COMPRESSED = 96;
+const SIGNATURE_LENGTH_UNCOMPRESSED = 96 * 2;
 
 export {BLST_ERROR};
 export class ErrorBLST extends Error {
