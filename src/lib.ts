@@ -5,6 +5,12 @@ const HASH_OR_ENCODE = true;
 const DST = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const RAND_BYTES = 8;
 
+const SECRET_KEY_LENGTH = 32;
+const PUBLIC_KEY_LENGTH_COMPRESSED = 48;
+const PUBLIC_KEY_LENGTH_UNCOMPRESSED = 48 * 2;
+const SIGNATURE_LENGTH_COMPRESSED = 96;
+const SIGNATURE_LENGTH_UNCOMPRESSED = 96 * 2;
+
 export {BLST_ERROR};
 export class ErrorBLST extends Error {
   constructor(blstError: BLST_ERROR) {
@@ -46,7 +52,7 @@ export class SecretKey {
 
   /// Deterministically generate a secret key from input key material
   static fromKeygen(ikm: Uint8Array): SecretKey {
-    if (ikm.length < 32) {
+    if (ikm.length < SECRET_KEY_LENGTH) {
       throw new ErrorBLST(BLST_ERROR.BLST_BAD_ENCODING);
     }
     const sk = new SkConstructor();
@@ -55,6 +61,9 @@ export class SecretKey {
   }
 
   static fromBytes(skBytes: Uint8Array): SecretKey {
+    if (skBytes.length !== SECRET_KEY_LENGTH) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     const sk = new SkConstructor();
     sk.from_bendian(skBytes);
     return new SecretKey(sk);
@@ -95,6 +104,9 @@ export class PublicKey {
 
   /** Accepts both compressed and serialized */
   static fromBytes(pkBytes: Uint8Array, type = CoordType.jacobian): PublicKey {
+    if (pkBytes.length !== PUBLIC_KEY_LENGTH_COMPRESSED && pkBytes.length !== PUBLIC_KEY_LENGTH_UNCOMPRESSED) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     if (type === CoordType.affine) {
       return new PublicKey(new PkAffineConstructor(pkBytes));
     } else {
@@ -146,6 +158,10 @@ export class Signature {
 
   /** Accepts both compressed and serialized */
   static fromBytes(sigBytes: Uint8Array, type = CoordType.affine): Signature {
+    /** P2 compressed is 96 bytes else 192 bytes */
+    if (sigBytes.length !== SIGNATURE_LENGTH_COMPRESSED && sigBytes.length !== SIGNATURE_LENGTH_UNCOMPRESSED) {
+      throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
+    }
     if (type === CoordType.affine) {
       return new Signature(new SigAffineConstructor(sigBytes));
     } else {
