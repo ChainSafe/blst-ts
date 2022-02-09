@@ -117,10 +117,8 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Build test arm binding
-        run: docker buildx build --platform linux/arm64 -t armbuild:latest --progress=plain .
-
-      - name: Copy binding out of container
         run: |
+          docker buildx build --platform linux/arm64 -t armbuild:latest --progress=plain .
           docker create --name armbuild armbuild:latest
           docker cp armbuild:/prebuild .
 
