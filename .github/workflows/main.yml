@@ -117,7 +117,12 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Build test arm binding
-        run: docker buildx build --platform linux/arm64 -t test/demo:latest --progress=plain .
+        run: docker buildx build --platform linux/arm64 -t armbuild:latest --progress=plain .
+
+      - name: Copy binding out of container
+        run: |
+          docker create --name armbuild armbuild:latest
+          docker cp armbuild:/prebuild .
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
@@ -157,7 +162,7 @@ jobs:
           node_modules/.bin/ts-node benchmark/multithreadOverhead.ts
 
   publish:
-    needs: ["build-swig", "build"]
+    needs: ["build-swig", "build", "build-arm"]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
