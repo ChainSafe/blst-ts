@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
       - name: Setup SWIG
         run: |
           git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
@@ -100,7 +100,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 16
 
       - name: Get SWIG pre-built
         uses: actions/download-artifact@v2
