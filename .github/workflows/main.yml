@@ -118,7 +118,7 @@ jobs:
 
       - name: Build test arm binding
         run: |
-          docker buildx build --platform linux/arm64 -t armbuild:latest --progress=plain .
+          docker buildx build --platform linux/arm64 -t armbuild:latest --load --progress=plain .
           docker create --name armbuild armbuild:latest
           docker cp armbuild:/prebuild .
 
