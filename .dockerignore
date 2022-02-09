@@ -1,0 +1,22 @@
+.github/
+benchmark/
+# blst - need to build from source
+build/
+# dist/ - need for build scripts
+# node_modules/ - need for node-gyp
+# prebuild - need to get prebuild/blst_wrap.cpp
+src/
+test/
+.dockerignore
+.eslintrc.js
+.gitignore
+.gitmodules
+.mocharc.yaml
+.prettierrc.yml
+Dockerfile
+LICENSE
+# package.json - need for build scripts
+README.md
+tsconfig.build.json
+tsconfig.json
+yarn.lock
