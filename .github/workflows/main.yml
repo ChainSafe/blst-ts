@@ -89,6 +89,7 @@ jobs:
           key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
       - name: Download spec tests
         run: yarn download-spec-tests
+        if: matrix.os != 'windows-latest'
 
       - name: Test unit
         run: yarn test:unit
