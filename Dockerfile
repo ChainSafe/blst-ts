@@ -7,4 +7,5 @@ RUN apt install -y python3 g++ make
 # && ln -sf python3 /usr/bin/python
 COPY . .
 
+RUN yarn config set ignore-engines true
 RUN yarn bootstrap
