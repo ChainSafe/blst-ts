@@ -7,3 +7,6 @@ prebuild/*.node
 
 npm-debug.log
 yarn-error.log
+
+# Eth2.0 spec tests data
+test/spec-tests

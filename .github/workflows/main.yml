@@ -81,8 +81,19 @@ jobs:
         env:
           SWIG_SKIP_RUN: true
 
-      - name: Test
-        run: yarn test
+      # Download spec tests with cache
+      - name: Restore spec tests cache
+        uses: actions/cache@master
+        with:
+          path: spec-tests
+          key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
+      - name: Download spec tests
+        run: yarn download-spec-tests
+
+      - name: Test unit
+        run: yarn test:unit
+      - name: Test spec
+        run: yarn test:spec
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
