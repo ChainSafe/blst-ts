@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [10, 11, 12, 13, 14, 15, 16, 17]
+        node: [10, 11, 12, 13, 14, 15, 16]
     defaults:
       run:
         shell: bash
