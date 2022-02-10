@@ -181,4 +181,5 @@ export enum BLST_ERROR {
   // Extra errors not in native bindings
   EMPTY_AGGREGATE_ARRAY = "EMPTY_AGGREGATE_ARRAY",
   BLST_INVALID_SIZE = "BLST_INVALID_SIZE",
+  ZERO_SECRET_KEY = "ZERO_SECRET_KEY",
 }

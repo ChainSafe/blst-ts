@@ -9,6 +9,11 @@ import {fromHex, toHex} from "../utils";
 // Example full path
 // blst-ts/spec-tests/tests/general/altair/bls/eth_aggregate_pubkeys/small/eth_aggregate_pubkeys_empty_list
 
+const G2_POINT_AT_INFINITY =
+  "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+const G1_POINT_AT_INFINITY =
+  "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 const testRootDirByFork = path.join(SPEC_TEST_LOCATION, "tests/general");
 for (const fork of fs.readdirSync(testRootDirByFork)) {
   // fork = "phase0" | "altair"
@@ -17,7 +22,16 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
   for (const testType of fs.readdirSync(testRootDirFork)) {
     // testType = "eth_aggregate_pubkeys" | "fast_aggregate_verify" | ...
     const testTypeDir = path.join(testRootDirFork, testType);
-    describe(testRootDirFork, () => {
+    describe(path.join(fork, testType), () => {
+      const testFnByType: Record<string, (data: any) => any> = {
+        aggregate,
+        aggregate_verify,
+        eth_aggregate_pubkeys,
+        eth_fast_aggregate_verify,
+        fast_aggregate_verify,
+        sign,
+        verify,
+      };
       const testFn = testFnByType[testType];
 
       before("Known testFn", () => {
@@ -62,6 +76,11 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
               output: unknown;
             };
 
+            if (process.env.DEBUG) {
+              // eslint-disable-next-line no-console
+              console.log(testData);
+            }
+
             expect(testFn(testData.input)).to.deep.equal(testData.output);
           });
         }
@@ -70,28 +89,19 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
   }
 }
 
-const testFnByType: Record<string, (data: any) => any> = {
-  aggregate,
-  aggregate_verify,
-  eth_aggregate_pubkeys,
-  eth_fast_aggregate_verify,
-  sign,
-  verify,
-};
-
 /**
  * ```
  * input: List[BLS Signature] -- list of input BLS signatures
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-function aggregate(input: string[]): string {
+function aggregate(input: string[]): string | null {
   try {
     const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
     return toHex(agg.toBytes());
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return null;
+    if (isBlstError(e)) return null;
     throw e;
   }
 }
@@ -115,7 +125,7 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
     );
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return false;
+    if (isBlstError(e)) return false;
     throw e;
   }
 }
@@ -126,13 +136,18 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-function eth_aggregate_pubkeys(input: string[]): string {
+function eth_aggregate_pubkeys(input: string[]): string | null {
+  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
+  for (const pk of input) {
+    if (pk === G1_POINT_AT_INFINITY) return null;
+  }
+
   try {
-    const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
+    const agg = blst.aggregatePubkeys(input.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))));
     return toHex(agg.toBytes());
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return null;
+    if (isBlstError(e)) return null;
     throw e;
   }
 }
@@ -146,13 +161,57 @@ function eth_aggregate_pubkeys(input: string[]): string {
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-function eth_fast_aggregate_verify(input: string[]): string {
+function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
+  const {pubkeys, message, signature} = input;
+
+  if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
+    return true;
+  }
+
+  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
+  for (const pk of pubkeys) {
+    if (pk === G1_POINT_AT_INFINITY) return false;
+  }
+
   try {
-    const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
-    return toHex(agg.toBytes());
+    return blst.fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
+      blst.Signature.fromBytes(fromHex(signature))
+    );
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return null;
+    if (isBlstError(e)) return false;
+    throw e;
+  }
+}
+
+/**
+ * ```
+ * input:
+ *   pubkeys: List[BLS Pubkey] -- list of input BLS pubkeys
+ *   message: bytes32 -- the message
+ *   signature: BLS Signature -- the signature to verify against pubkeys and message
+ * output: bool  --  true (VALID) or false (INVALID)
+ * ```
+ */
+function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
+  const {pubkeys, message, signature} = input;
+
+  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
+  for (const pk of pubkeys) {
+    if (pk === G1_POINT_AT_INFINITY) return false;
+  }
+
+  try {
+    return blst.fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
+      blst.Signature.fromBytes(fromHex(signature))
+    );
+  } catch (e) {
+    // spec test expect a boolean even for invalid inputs
+    if (isBlstError(e)) return false;
     throw e;
   }
 }
@@ -163,7 +222,7 @@ function eth_fast_aggregate_verify(input: string[]): string {
  *   message: bytes32 -- input message to sign (a hash)
  * output: BLS Signature -- expected output, single BLS signature or empty.
  */
-function sign(input: {privkey: string; message: string}): string {
+function sign(input: {privkey: string; message: string}): string | null {
   try {
     const {privkey, message} = input;
     const sk = blst.SecretKey.fromBytes(fromHex(privkey));
@@ -171,7 +230,7 @@ function sign(input: {privkey: string; message: string}): string {
     return toHex(signature.toBytes());
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return null;
+    if (isBlstError(e)) return null;
     throw e;
   }
 }
@@ -193,7 +252,11 @@ function verify(input: {pubkey: string; message: string; signature: string}): bo
     );
   } catch (e) {
     // spec test expect a boolean even for invalid inputs
-    if ((e as Error).message.includes("BLST_ERROR")) return false;
+    if (isBlstError(e)) return false;
     throw e;
   }
+}
+
+function isBlstError(e: unknown): boolean {
+  return (e as Error).message.includes("BLST_ERROR") || e instanceof blst.ErrorBLST;
 }
