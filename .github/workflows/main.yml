@@ -95,6 +95,10 @@ jobs:
   build-arm:
     needs: ["build-swig"]
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [10, 11, 12, 13, 14, 15, 16]
     defaults:
       run:
         shell: bash
@@ -118,7 +122,7 @@ jobs:
 
       - name: Build test arm binding
         run: |
-          docker buildx build --platform linux/arm64 -t armbuild:latest --load --progress=plain .
+          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t armbuild:latest --load --progress=plain .
           docker create --name armbuild armbuild:latest
           docker cp armbuild:/prebuild .
 
