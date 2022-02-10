@@ -81,7 +81,14 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
               console.log(testData);
             }
 
-            expect(testFn(testData.input)).to.deep.equal(testData.output);
+            try {
+              expect(testFn(testData.input)).to.deep.equal(testData.output);
+            } catch (e) {
+              // spec test expect a boolean even for invalid inputs
+              if (!isBlstError(e)) throw e;
+
+              expect(false).to.deep.equal(Boolean(testData.output));
+            }
           });
         }
       }
@@ -96,14 +103,8 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  try {
-    const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
-    return toHex(agg.toBytes());
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return null;
-    throw e;
-  }
+  const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
+  return toHex(agg.toBytes());
 }
 
 /**
@@ -116,18 +117,12 @@ function aggregate(input: string[]): string | null {
  * ```
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
-  try {
-    const {pubkeys, messages, signature} = input;
-    return blst.aggregateVerify(
-      messages.map(fromHex),
-      pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-      blst.Signature.fromBytes(fromHex(signature))
-    );
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return false;
-    throw e;
-  }
+  const {pubkeys, messages, signature} = input;
+  return blst.aggregateVerify(
+    messages.map(fromHex),
+    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
+    blst.Signature.fromBytes(fromHex(signature))
+  );
 }
 
 /**
@@ -142,14 +137,8 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
     if (pk === G1_POINT_AT_INFINITY) return null;
   }
 
-  try {
-    const agg = blst.aggregatePubkeys(input.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))));
-    return toHex(agg.toBytes());
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return null;
-    throw e;
-  }
+  const agg = blst.aggregatePubkeys(input.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))));
+  return toHex(agg.toBytes());
 }
 
 /**
@@ -173,17 +162,11 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     if (pk === G1_POINT_AT_INFINITY) return false;
   }
 
-  try {
-    return blst.fastAggregateVerify(
-      fromHex(message),
-      pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-      blst.Signature.fromBytes(fromHex(signature))
-    );
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return false;
-    throw e;
-  }
+  return blst.fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
+    blst.Signature.fromBytes(fromHex(signature))
+  );
 }
 
 /**
@@ -203,17 +186,11 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
     if (pk === G1_POINT_AT_INFINITY) return false;
   }
 
-  try {
-    return blst.fastAggregateVerify(
-      fromHex(message),
-      pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-      blst.Signature.fromBytes(fromHex(signature))
-    );
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return false;
-    throw e;
-  }
+  return blst.fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
+    blst.Signature.fromBytes(fromHex(signature))
+  );
 }
 
 /**
@@ -223,16 +200,10 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  * output: BLS Signature -- expected output, single BLS signature or empty.
  */
 function sign(input: {privkey: string; message: string}): string | null {
-  try {
-    const {privkey, message} = input;
-    const sk = blst.SecretKey.fromBytes(fromHex(privkey));
-    const signature = sk.sign(fromHex(message));
-    return toHex(signature.toBytes());
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return null;
-    throw e;
-  }
+  const {privkey, message} = input;
+  const sk = blst.SecretKey.fromBytes(fromHex(privkey));
+  const signature = sk.sign(fromHex(message));
+  return toHex(signature.toBytes());
 }
 
 /**
@@ -243,18 +214,12 @@ function sign(input: {privkey: string; message: string}): string | null {
  * output: bool  -- VALID or INVALID
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
-  try {
-    const {pubkey, message, signature} = input;
-    return blst.verify(
-      fromHex(message),
-      blst.PublicKey.fromBytes(fromHex(pubkey)),
-      blst.Signature.fromBytes(fromHex(signature))
-    );
-  } catch (e) {
-    // spec test expect a boolean even for invalid inputs
-    if (isBlstError(e)) return false;
-    throw e;
-  }
+  const {pubkey, message, signature} = input;
+  return blst.verify(
+    fromHex(message),
+    blst.PublicKey.fromBytes(fromHex(pubkey)),
+    blst.Signature.fromBytes(fromHex(signature))
+  );
 }
 
 function isBlstError(e: unknown): boolean {
