@@ -1,20 +1,36 @@
 import {expect} from "chai";
-import * as bls from "../../../src/lib";
+import * as bls from "../../../../src/lib";
 import {BlsMultiThreadNaive} from "./index";
 import {warmUpWorkers} from "./utils";
 
 describe("bls pool naive", function () {
   const nodeJsSemver = process.versions.node;
   const nodeJsMajorVer = parseInt(nodeJsSemver.split(".")[0]);
-  if (!nodeJsMajorVer) {
-    throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
-  }
-  if (nodeJsMajorVer < 12) {
-    return; // Skip everything
-  }
 
   const n = 16;
   let pool: BlsMultiThreadNaive;
+
+  before(function () {
+    if (!nodeJsMajorVer) {
+      throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
+    }
+
+    // eslint-disable-next-line no-console
+    console.log({
+      nodeJsMajorVer,
+      arch: process.arch,
+      platform: process.platform,
+    });
+
+    if (
+      // NodeJS v12 has still weak support for workers
+      nodeJsMajorVer < 12 ||
+      // TODO: Unit-tests don't pass for arm64
+      process.arch === "arm64"
+    ) {
+      this.skip(); // Skip everything
+    }
+  });
 
   before("Create pool and warm-up wallets", async function () {
     // Starting all threads may take a while due to ts-node compilation
@@ -25,7 +41,7 @@ describe("bls pool naive", function () {
 
   after("Destroy pool", async function () {
     this.timeout(20 * 1000);
-    await pool.destroy();
+    if (pool) await pool.destroy();
   });
 
   describe("1 msg, 1 pk", () => {

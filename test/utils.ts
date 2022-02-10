@@ -6,7 +6,13 @@ interface BaseSerializable {
 
 type Bufferish = string | Uint8Array | Buffer | BaseSerializable;
 
-function toHex(bytes: Bufferish): string {
+export function toHex(bytes: Bufferish): string {
+  const hex = toHexNoPrefix(bytes);
+  if (hex.startsWith("0x")) return hex;
+  else return "0x" + hex;
+}
+
+function toHexNoPrefix(bytes: Bufferish): string {
   if (typeof bytes === "string") return bytes;
   if (bytes instanceof Uint8Array) return Buffer.from(bytes).toString("hex");
   if (typeof bytes.serialize === "function") return Buffer.from(bytes.serialize()).toString("hex");
@@ -14,10 +20,11 @@ function toHex(bytes: Bufferish): string {
 }
 
 export function expectHex(value: Bufferish, expected: Bufferish): void {
-  expect(toHex(value)).to.equal(toHex(expected));
+  expect(toHexNoPrefix(value)).to.equal(toHexNoPrefix(expected));
 }
 
 export function fromHex(hexString: string): Uint8Array {
+  if (hexString.startsWith("0x")) hexString = hexString.slice(2);
   return Buffer.from(hexString, "hex");
 }
 
