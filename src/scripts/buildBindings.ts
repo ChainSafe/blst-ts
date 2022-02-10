@@ -38,6 +38,7 @@ export async function buildBindings(binaryPath: string): Promise<void> {
 
   await exec(nodeJsExec, [nodeGypExec, "rebuild"], {
     cwd: BINDINGS_DIR,
+    timeout: 10 * 60 * 1000,
     env: {...process.env, BLST_WRAP_CPP_PREBUILD},
   });
 

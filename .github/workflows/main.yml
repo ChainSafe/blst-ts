@@ -62,16 +62,17 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Setup Node.js ${{matrix.node}}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{matrix.node}}
 
       - name: Get SWIG pre-built
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
           path: prebuild/
+
+      - name: Setup Node.js ${{matrix.node}}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{matrix.node}}
 
       - name: Install && Build TS + bindings
         run: |
@@ -82,6 +83,48 @@ jobs:
 
       - name: Test
         run: yarn test
+
+      - name: Upload binding.node
+        uses: actions/upload-artifact@v2
+        if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
+        with:
+          name: binding.node
+          path: prebuild/*.node
+          if-no-files-found: error
+
+  build-arm:
+    needs: ["build-swig"]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [10, 11, 12, 13, 14, 15, 16]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Get SWIG pre-built
+        uses: actions/download-artifact@v2
+        with:
+          name: blst_wrap.cpp
+          path: prebuild/
+
+      # https://github.com/docker/setup-qemu-action
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # https://github.com/docker/setup-buildx-action
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build test arm binding
+        run: |
+          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t armbuild:latest --load --progress=plain .
+          docker create --name armbuild armbuild:latest
+          docker cp armbuild:/prebuild .
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
@@ -121,7 +164,7 @@ jobs:
           node_modules/.bin/ts-node benchmark/multithreadOverhead.ts
 
   publish:
-    needs: ["build-swig", "build"]
+    needs: ["build-swig", "build", "build-arm"]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
