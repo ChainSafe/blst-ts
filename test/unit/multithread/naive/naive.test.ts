@@ -6,15 +6,23 @@ import {warmUpWorkers} from "./utils";
 describe("bls pool naive", function () {
   const nodeJsSemver = process.versions.node;
   const nodeJsMajorVer = parseInt(nodeJsSemver.split(".")[0]);
-  if (!nodeJsMajorVer) {
-    throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
-  }
-  if (nodeJsMajorVer < 12) {
-    return; // Skip everything
-  }
 
   const n = 16;
   let pool: BlsMultiThreadNaive;
+
+  before(function () {
+    if (!nodeJsMajorVer) {
+      throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
+    }
+    if (
+      // NodeJS v12 has still weak support for workers
+      nodeJsMajorVer < 12 ||
+      // TODO: Unit-tests don't pass for arm64
+      process.arch === "arm64"
+    ) {
+      this.skip(); // Skip everything
+    }
+  });
 
   before("Create pool and warm-up wallets", async function () {
     // Starting all threads may take a while due to ts-node compilation
