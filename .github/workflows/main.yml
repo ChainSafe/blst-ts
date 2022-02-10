@@ -124,6 +124,13 @@ jobs:
           name: blst_wrap.cpp
           path: prebuild/
 
+      # Download spec tests with cache
+      - name: Restore spec tests cache
+        uses: actions/cache@master
+        with:
+          path: spec-tests
+          key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
+
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
