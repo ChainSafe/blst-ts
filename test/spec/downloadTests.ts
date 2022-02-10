@@ -10,13 +10,13 @@ const outputDir = SPEC_TEST_LOCATION;
 const specTestsRepoUrl = SPEC_TEST_REPO_URL;
 
 const versionFile = path.join(outputDir, "version.txt");
-const existingVersion = fs.existsSync(versionFile) && fs.readFileSync(versionFile, "utf8").trim();
+const existingVersion = fs.existsSync(versionFile) ? fs.readFileSync(versionFile, "utf8").trim() : "none";
 
 if (existingVersion === specVersion) {
   console.log(`version ${specVersion} already downloaded`);
   process.exit(0);
 } else {
-  console.log(`Downloading new version ${specVersion}`);
+  console.log(`Downloading new version: ${specVersion} existingVersion: ${existingVersion}`);
 }
 
 if (fs.existsSync(outputDir)) {
