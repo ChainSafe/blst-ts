@@ -41,7 +41,7 @@ describe("bls pool naive", function () {
 
   after("Destroy pool", async function () {
     this.timeout(20 * 1000);
-    await pool.destroy();
+    if (pool) await pool.destroy();
   });
 
   describe("1 msg, 1 pk", () => {
