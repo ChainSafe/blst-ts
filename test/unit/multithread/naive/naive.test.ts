@@ -14,6 +14,14 @@ describe("bls pool naive", function () {
     if (!nodeJsMajorVer) {
       throw Error(`Error parsing NodeJS version: ${nodeJsSemver}`);
     }
+
+    // eslint-disable-next-line no-console
+    console.log({
+      nodeJsMajorVer,
+      arch: process.arch,
+      platform: process.platform,
+    });
+
     if (
       // NodeJS v12 has still weak support for workers
       nodeJsMajorVer < 12 ||
