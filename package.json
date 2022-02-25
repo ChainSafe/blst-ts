@@ -53,6 +53,6 @@
   },
   "dependencies": {
     "node-fetch": "^2.6.1",
-    "node-gyp": "^7.1.2"
+    "node-gyp": "^8.4.0"
   }
 }
