@@ -4,7 +4,7 @@ ARG NODE_VERSION
 FROM node:${NODE_VERSION}
 
 # Install 'add-apt-repository'
-RUN apt-get update && apt-get install software-properties-common
+RUN apt-get update && apt-get install -y software-properties-common
 
 # node-gyp v8.4.0 requires python >= 3.6.0
 # 'ppa:deadsnakes/ppa' is repository to install newer versions
