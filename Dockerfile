@@ -3,7 +3,7 @@
 ARG NODE_VERSION
 FROM node:${NODE_VERSION}
 
-RUN apt install -y python3 g++ make
+RUN apt update && apt install -y python3 g++ make && apt-get clean
 # && ln -sf python3 /usr/bin/python
 COPY . .
 
