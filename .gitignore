@@ -3,7 +3,7 @@ coverage
 build
 dist
 node_modules
-prebuild/*.node
+prebuild/swig/*.node
 
 npm-debug.log
 yarn-error.log

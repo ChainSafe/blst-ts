@@ -14,7 +14,7 @@
     "lint": "eslint --color --ext .ts src/ test/",
     "build": "tsc --project tsconfig.build.json",
     "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
-    "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp",
+    "clean": "rm -rf prebuild/emscripten/blst.{wasm,wasm.js,js} prebuild/swig/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp",
     "test": "yarn test:unit && yarn test:spec",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "test:spec": "mocha 'test/spec/**/*.test.ts'",
