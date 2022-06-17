@@ -3,7 +3,8 @@ import path from "path";
 import {exec} from "./exec";
 import {testBindings} from "./testBindings";
 import {assertSupportedSwigVersion} from "./swig";
-import {ensureDirFromFilepath, findBindingsFile, BINDINGS_DIR, BLST_WRAP_CPP_PREBUILD} from "./paths";
+import {BINDINGS_DIR, BLST_WRAP_CPP_PREBUILD} from "./paths";
+import {ensureDirFromFilepath, findBindingsFile} from "./paths_node";
 
 /* eslint-disable no-console */
 

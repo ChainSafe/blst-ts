@@ -1,8 +1,8 @@
 import fs from "fs";
 import {downloadBindings} from "./downloadBindings";
 import {buildBindings} from "./buildBindings";
-import {getBinaryPath} from "./paths";
 import {testBindings} from "./testBindings";
+import {getBinaryPath} from "./paths_node";
 
 /* eslint-disable no-console */
 
