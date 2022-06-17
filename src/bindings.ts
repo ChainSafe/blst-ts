@@ -1,8 +1,26 @@
-import {getBinaryPath} from "./scripts/paths";
-// eslint-disable-next-line
-export const blst: Blst = require(getBinaryPath());
+export let blst: Blst;
 
-export interface Blst {
+// Thanks https://github.com/iliakan/detect-node/blob/master/index.esm.js
+const isNode = Object.prototype.toString.call(typeof process !== "undefined" ? process : 0) === "[object process]";
+
+// Import & assign the respective binding module.
+if (!isNode || process.env.BINDING === "emscripten") {
+  // TODO: factor out path
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  blst = require("../prebuild/emscripten/blst");
+} else {
+  // eslint-disable-next-line no-case-declarations,@typescript-eslint/no-require-imports,@typescript-eslint/no-var-requires
+  const {getBinaryPath} = require("./scripts/paths_node");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports,@typescript-eslint/no-unsafe-call
+  blst = require(getBinaryPath());
+}
+
+interface MaybeAsyncModule {
+  initialized: Promise<void>;
+  onInitialized: (callback: () => void) => void;
+}
+
+export interface Blst extends Partial<MaybeAsyncModule> {
   BLS12_381_G1: P1_Affine;
   BLS12_381_NEG_G1: P1_Affine;
   BLS12_381_G2: P2_Affine;
