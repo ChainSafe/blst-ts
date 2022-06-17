@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild/blst_wrap.cpp
+          path: prebuild/swig/blst_wrap.cpp
           if-no-files-found: error
 
       - name: Lint
@@ -67,7 +67,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild/
+          path: prebuild/swig/
 
       - name: Setup Node.js ${{matrix.node}}
         uses: actions/setup-node@v1
@@ -102,7 +102,7 @@ jobs:
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding.node
-          path: prebuild/*.node
+          path: prebuild/swig/*.node
           if-no-files-found: error
 
   build-arm:
@@ -124,7 +124,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild/
+          path: prebuild/swig
 
       # Download spec tests with cache
       - name: Restore spec tests cache
@@ -144,14 +144,14 @@ jobs:
         run: |
           docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t armbuild:latest --load --progress=plain .
           docker create --name armbuild armbuild:latest
-          docker cp armbuild:/prebuild .
+          docker cp armbuild:/prebuild/swig .
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v2
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding.node
-          path: prebuild/*.node
+          path: prebuild/swig/*.node
           if-no-files-found: error
 
   benchmark:
@@ -169,7 +169,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild/
+          path: prebuild/swig/
 
       - name: Install && Build TS + bindings
         run: yarn bootstrap
@@ -200,12 +200,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: blst_wrap.cpp
-          path: prebuild/
+          path: prebuild/swig/
       - name: Get binding.node pre-builts
         uses: actions/download-artifact@v2
         with:
           name: binding.node
-          path: prebuild/
+          path: prebuild/swig/
 
       - name: Build .ts source for release
         run: yarn bootstrap
@@ -213,7 +213,7 @@ jobs:
       - name: Create Github release with prebuilds
         uses: softprops/action-gh-release@v1
         with:
-          files: prebuild/*
+          files: prebuild/swig/*
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

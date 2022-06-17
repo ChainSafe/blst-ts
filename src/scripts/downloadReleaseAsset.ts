@@ -1,6 +1,7 @@
 import fs from "fs";
 import fetch from "node-fetch";
-import {ensureDirFromFilepath, PACKAGE_JSON_PATH} from "./paths";
+import {PACKAGE_JSON_PATH} from "./paths";
+import {ensureDirFromFilepath} from "./paths_node";
 
 const githubReleasesDownloadUrl = "https://github.com/ChainSafe/blst-ts/releases/download";
 
