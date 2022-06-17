@@ -21,10 +21,11 @@ interface MaybeAsyncModule {
 }
 
 export interface Blst extends Partial<MaybeAsyncModule> {
-  BLS12_381_G1: P1_Affine;
-  BLS12_381_NEG_G1: P1_Affine;
-  BLS12_381_G2: P2_Affine;
-  BLS12_381_NEG_G2: P2_Affine;
+  // TODO: how to map to constants.
+  // BLS12_381_G1: P1_Affine;
+  // BLS12_381_NEG_G1: P1_Affine;
+  // BLS12_381_G2: P2_Affine;
+  // BLS12_381_NEG_G2: P2_Affine;
   SecretKey: SecretKeyConstructor;
   P1_Affine: P1_AffineConstructor;
   P2_Affine: P2_AffineConstructor;
