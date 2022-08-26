@@ -12,6 +12,9 @@ RUN wget https://www.python.org/ftp/python/3.10.0/Python-3.10.0.tgz
 RUN tar -xf Python-3.10.0.tgz
 RUN cd Python-3.10.0 && ./configure
 RUN cd Python-3.10.0 && make install
+# From https://askubuntu.com/questions/1296790/python-is-python3-package-in-ubuntu-20-04-what-is-it-and-what-does-it-actually
+# Unified way to create reliable symlink across distros
+RUN apt install python-is-python3
 
 WORKDIR .
 COPY . .
