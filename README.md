@@ -6,6 +6,16 @@
 
 Typescript wrapper for [supranational/blst](https://github.com/supranational/blst) native bindings, a highly performant BLS12-381 signature library.
 
+## Supported Environments
+
+| OS / Arch     | Node                               |
+| ------------- | ---------------------------------- |
+| Linux / x64   | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
+| Linux / arm64 | 10, 11, 12, 13, 14, 15, 16, 18     |
+| Windows / x64 | 12, 14, 16, 17                     |
+| OSX / x64     | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
+| OSX / M1      | none                               |
+
 ## Usage
 
 ```bash
