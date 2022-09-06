@@ -33,10 +33,10 @@ async function install(): Promise<void> {
 
   // Fetch pre-built bindings from remote repo
   try {
-    console.log(`Retrieving ${libName}...`);
+    console.log(`Retrieving ${libName} ${binaryPath} ...`);
     await downloadBindings(binaryPath);
     await testBindings(binaryPath);
-    console.log(`Successfully retrieved ${libName}`);
+    console.log(`Successfully retrieved ${libName} ${binaryPath}`);
     return;
   } catch (e) {
     if (e.statusCode === 404) {
@@ -49,7 +49,7 @@ async function install(): Promise<void> {
 
   // Build bindings locally from source
   try {
-    console.log(`Building ${libName} from source...`);
+    console.log(`Building ${libName} ${binaryPath} from source...`);
     await buildBindings(binaryPath);
     await testBindings(binaryPath);
     console.log(`Successfully built ${libName} from source`);
@@ -60,5 +60,5 @@ async function install(): Promise<void> {
   }
 
   // Fallback?
-  throw Error(`Error downloading and building ${libName}. No fallback`);
+  throw Error(`Error downloading and building ${libName} ${binaryPath}. No fallback`);
 }
