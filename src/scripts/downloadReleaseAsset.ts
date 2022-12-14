@@ -1,4 +1,6 @@
 import fs from "fs";
+import {pipeline} from "stream";
+import {promisify} from "util";
 import fetch from "node-fetch";
 import {ensureDirFromFilepath, PACKAGE_JSON_PATH} from "./paths";
 
@@ -19,6 +21,5 @@ export async function downloadReleaseAsset(assetName: string, binaryPath: string
     throw Error(`${res.status} ${res.statusText}`);
   }
 
-  const dest = fs.createWriteStream(binaryPath);
-  res.body.pipe(dest);
+  await promisify(pipeline)(res.body, fs.createWriteStream(binaryPath));
 }
