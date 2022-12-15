@@ -30,7 +30,7 @@ jobs:
 
       - name: Install && Build TS + bindings
         run: |
-          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/4.1.0
+          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/$(grep -r AC_INIT ~/work/blst-ts/blst-ts/swig/configure.ac | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
           yarn bootstrap
           ls -ltrh .
         working-directory: blst/bindings/node.js
