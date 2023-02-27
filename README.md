@@ -55,7 +55,7 @@ This library has a hardcoded configuration compatible with Eth2.0 spec:
 
 > [spec](https://github.com/ethereum/eth2.0-specs/blob/v0.11.1/specs/phase0/beacon-chain.md#bls-signatures)
 
-> [test vectors](https://github.com/ethereum/eth2.0-spec-tests/tree/master/tests/bls)
+> [test vectors](https://github.com/ethereum/consensus-spec-tests/tree/master/tests/general)
 
 ## Developing
 
