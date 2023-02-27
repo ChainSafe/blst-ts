@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
+import tar from "tar";
+import fetch from "node-fetch";
+
 import {execSync} from "child_process";
+import {createWriteStream} from "fs";
+
 import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
 
 /* eslint-disable no-console */
@@ -26,16 +31,54 @@ if (fs.existsSync(outputDir)) {
 
 fs.mkdirSync(outputDir, {recursive: true});
 
-for (const test of SPEC_TEST_TO_DOWNLOAD) {
-  const url = `${specTestsRepoUrl}/releases/download/${specVersion}/${test}.tar.gz`;
-  console.log(`Downloading ${url} to ${outputDir}`);
-  shell(`wget -c ${url} -O - | tar -xz --directory ${outputDir}`);
-  console.log(`Downloaded ${url} to ${outputDir}`);
-}
+const urls = SPEC_TEST_TO_DOWNLOAD.map((test) => `${specTestsRepoUrl}/releases/download/${specVersion}/${test}.tar.gz`);
 
-// If successful
-fs.writeFileSync(versionFile, specVersion);
+downloadAndExtract(urls, outputDir)
+  .then(() => {
+    console.log("Downloads and extractions complete.");
+    fs.writeFileSync(versionFile, specVersion);
+  })
+  .catch((error) => {
+    console.error(`Error downloading test files: ${error}`);
+    process.exit(1);
+  });
 
 function shell(cmd: string): string {
-  return execSync(cmd, {encoding: "utf8"}).trim();
+  try {
+    return execSync(cmd, {encoding: "utf8"}).trim();
+  } catch (error) {
+    console.error(`Error executing shell command: ${cmd}`);
+    throw error;
+  }
+}
+
+async function downloadAndExtract(urls: string[], outputDir: string): Promise<void> {
+  for (const url of urls) {
+    const fileName = url.split("/").pop();
+    const filePath = path.resolve(outputDir, String(fileName));
+
+    const fileStream = createWriteStream(filePath);
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to download ${url}`);
+    }
+
+    await new Promise((resolve, reject) => {
+      response.body.pipe(fileStream);
+
+      response.body.on("error", (err: any) => {
+        reject(err);
+      });
+
+      fileStream.on("finish", () => {
+        resolve(0);
+      });
+    });
+
+    await tar.x({
+      file: filePath,
+      cwd: outputDir,
+    });
+  }
 }
