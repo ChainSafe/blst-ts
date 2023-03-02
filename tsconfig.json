@@ -5,7 +5,7 @@
     "target": "esnext",
     "module": "commonjs",
     "pretty": true,
-    "lib": ["esnext.bigint"],
+    "lib": ["esnext.bigint", "DOM"],
 
     "strict": true,
     "alwaysStrict": true,
