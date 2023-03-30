@@ -21,6 +21,69 @@ We are going to look at async work as an example and analyze how the two pieces 
 ## Full Async Implementations
 
 ```c++
+/**
+ * #include "uv.h"
+ */
+struct uv_loop_t {
+  /* User data - use this for whatever. */
+  void* data;
+  /* Loop reference counting. */
+  unsigned int active_handles;
+  void* handle_queue[2];
+  union {
+    void* unused;
+    unsigned int count;
+  } active_reqs;
+  /* Internal storage for future extensions. */
+  void* internal_fields;
+  /* Internal flag to signal loop stop. */
+  unsigned int stop_flag;
+  UV_LOOP_PRIVATE_FIELDS
+};
+
+typedef void (*uv_work_cb)(uv_work_t* req);
+
+typedef void (*uv_after_work_cb)(uv_work_t* req, int status);
+
+struct uv_work_t {
+  UV_REQ_FIELDS
+  uv_loop_t* loop;
+  uv_work_cb work_cb;
+  uv_after_work_cb after_work_cb;
+  UV_WORK_PRIVATE_FIELDS
+};
+
+/**
+ * #include "node_internals.h"
+ */
+class ThreadPoolWork
+{
+public:
+    explicit inline ThreadPoolWork(Environment *env, const char *type)
+        : env_(env), type_(type)
+    {
+        CHECK_NOT_NULL(env);
+    }
+    inline virtual ~ThreadPoolWork() = default;
+
+    inline void ScheduleWork();
+    inline int CancelWork();
+
+    virtual void DoThreadPoolWork() = 0;
+    virtual void AfterThreadPoolWork(int status) = 0;
+
+    Environment *env() const { return env_; }
+
+private:
+    Environment *env_;
+    uv_work_t work_req_;
+    const char *type_;
+};
+
+/**
+ * #include "node_api.h"
+ * and implementation in "node_api.cc"
+ */
 namespace uvimpl
 {
 
@@ -39,7 +102,6 @@ namespace uvimpl
         }
     }
 
-    // Wrapper around uv_work_t which calls user-provided callbacks.
     class Work : public node::AsyncResource, public node::ThreadPoolWork
     {
     private:
