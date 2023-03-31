@@ -10,7 +10,9 @@ Start from a basis that using native threads by themselves is not a great soluti
 
 ## Mixed Multi-Threading
 
-In the first pass of building the `@chainsafe/blst-ts` library this is the approach that was attempted.
+In the first pass of building the `@chainsafe/blst-ts` library this is the approach that was attempted.  Use the method below to create an AsyncWorker and while on the worker thread spawn a native `C` thread pool and re-parallelize the library calls.  It was shockingly fast.  I have 10 cores so if a call with the SWIG bindings took 10 second, a call to the new bindings would take 1.  Drop the mic.
+
+This is not as good as it seems though.  While it looks great on paper, under real server load the library thread pool would compete for time with the node thread pool and there would be an unnecessary amount of context switching.  It is probably better to treat the batch process as a unit of work and run it on a separate thread.  Aggregated across the whole server load, the work will be managed much better. The heart of what JS does well is managing thread work, just let the engine do what it does best.
 
 ## `node.js` Multi-Threading
 
