@@ -102,29 +102,23 @@ class Value {
 
   napi_valuetype Type() const;  ///< Gets the type of the value.
 
-  bool IsUndefined()
-      const;            ///< Tests if a value is an undefined JavaScript value.
-  bool IsNull() const;  ///< Tests if a value is a null JavaScript value.
-  bool IsBoolean() const;  ///< Tests if a value is a JavaScript boolean.
-  bool IsNumber() const;   ///< Tests if a value is a JavaScript number.
-#if NAPI_VERSION > 5
-  bool IsBigInt() const;  ///< Tests if a value is a JavaScript bigint.
-#endif                    // NAPI_VERSION > 5
-#if (NAPI_VERSION > 4)
-  bool IsDate() const;  ///< Tests if a value is a JavaScript date.
-#endif
-  bool IsString() const;  ///< Tests if a value is a JavaScript string.
-  bool IsSymbol() const;  ///< Tests if a value is a JavaScript symbol.
-  bool IsArray() const;   ///< Tests if a value is a JavaScript array.
-  bool IsArrayBuffer()
-      const;  ///< Tests if a value is a JavaScript array buffer.
+  bool IsUndefined() const;   ///< Tests if a value is an undefined JavaScript value.
+  bool IsNull() const;        ///< Tests if a value is a null JavaScript value.
+  bool IsBoolean() const;     ///< Tests if a value is a JavaScript boolean.
+  bool IsNumber() const;      ///< Tests if a value is a JavaScript number.
+  bool IsBigInt() const;      ///< Tests if a value is a JavaScript bigint.
+  bool IsDate() const;        ///< Tests if a value is a JavaScript date.
+  bool IsString() const;      ///< Tests if a value is a JavaScript string.
+  bool IsSymbol() const;      ///< Tests if a value is a JavaScript symbol.
+  bool IsArray() const;       ///< Tests if a value is a JavaScript array.
+  bool IsArrayBuffer() const; ///< Tests if a value is a JavaScript array buffer.
   bool IsTypedArray() const;  ///< Tests if a value is a JavaScript typed array.
   bool IsObject() const;      ///< Tests if a value is a JavaScript object.
   bool IsFunction() const;    ///< Tests if a value is a JavaScript function.
   bool IsPromise() const;     ///< Tests if a value is a JavaScript promise.
   bool IsDataView() const;    ///< Tests if a value is a JavaScript data view.
   bool IsBuffer() const;      ///< Tests if a value is a Node buffer.
-  bool IsExternal() const;  ///< Tests if a value is a pointer to external data.
+  bool IsExternal() const;    ///< Tests if a value is a pointer to external data.
 
   /// Casts to another type of `Napi::Value`, when the actual type is known or
   /// assumed.
@@ -134,14 +128,10 @@ class Value {
   template <typename T>
   T As() const;
 
-  MaybeOrValue<Boolean> ToBoolean()
-      const;  ///< Coerces a value to a JavaScript boolean.
-  MaybeOrValue<Number> ToNumber()
-      const;  ///< Coerces a value to a JavaScript number.
-  MaybeOrValue<String> ToString()
-      const;  ///< Coerces a value to a JavaScript string.
-  MaybeOrValue<Object> ToObject()
-      const;  ///< Coerces a value to a JavaScript object.
+  MaybeOrValue<Boolean> ToBoolean() const;  ///< Coerces a value to a JavaScript boolean.
+  MaybeOrValue<Number> ToNumber() const;  ///< Coerces a value to a JavaScript number.
+  MaybeOrValue<String> ToString() const;  ///< Coerces a value to a JavaScript string.
+  MaybeOrValue<Object> ToObject() const;  ///< Coerces a value to a JavaScript object.
 
  protected:
   napi_env _env;
@@ -149,9 +139,17 @@ class Value {
 };
 ```
 
+So back to the part about requesting values. In order to use JavaScript values one has to be on the JS thread and this is a very sticky wicket for addon developers.  One of the most important reasons for writing node addons is to circumvent the limitations of strictly staying on thread.  When working with the JS data off thread there are provisions that need to be made so that the data is accessible.
+
+There are a few ways to do this with the simplest being copy it.  A quick `memcpy` or assignment to another variable, while on the thread, will allow that data to be used after leaving that context.  One simply asks `v8` for the value, saves it to a class member somewhere and off we go.  That is totally valid for some cases but in most its SLOW...
+
+We have this awesome tracking and cleaning system at our disposal.  Its a luxury that most system level programmers do not share. It is also the reason why most system level programmers shy away from writing node bindings.  The API is huge.... like YUUGE!!!  It's that bad.
+
+This is the reason I started this section with the paradigm shift.  `Node-API` is cleverly named with a bad marketing job.
+
 ## The Reference System
 
- The second inherited tree for the Reference system
+ The second inherited tree is for the Reference system.
 
 ```c++
 /// Holds a counted reference to a value; initially a weak reference unless
