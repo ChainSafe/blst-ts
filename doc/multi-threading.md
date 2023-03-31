@@ -133,12 +133,11 @@ private:
     bool _suppress_destruct;
 };
 
-
 /**
  * 
- * Node-API
+ * #include "node_api.h"
  * 
- * napi_*_async_work
+ * and implementation in "node_api.cc"
  * 
  */
 napi_status NAPI_CDECL napi_create_async_work(napi_env env,
@@ -198,13 +197,6 @@ napi_status NAPI_CDECL napi_queue_async_work(napi_env env, napi_async_work work)
     return napi_clear_last_error(env);
 }
 
-/**
- * 
- * #include "node_api.h"
- * 
- * and implementation in "node_api.cc"
- * 
- */
 namespace uvimpl
 {
     static napi_status ConvertUVErrorCode(int code)
@@ -283,7 +275,6 @@ namespace uvimpl
         napi_async_execute_callback _execute;
         napi_async_complete_callback _complete;
     };
-
 }
 
 /**
