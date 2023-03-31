@@ -6,3 +6,4 @@ During the development of this library, a few paths were gone done to arrive at 
 
 
 
+ I would definitely recommend that you read the [docs]() for `node-addon-api` but do so after reading the code segment below.
