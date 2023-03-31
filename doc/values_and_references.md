@@ -1,7 +1,5 @@
 # JavaScript Values and The Reference System
 
-Seeing as we are building bindings, this guide would be incomplete with a discussion on binding data from `C` for JS usage and vice versa.  There is a lot of good resource about this out there so no need to reinvent the wheel.  Follow the doc links below for more info on each.
-
 There are a few things that should prepend the discussion before dive deeper.  There is a paradigm shift that one must undergo to really grok how JavaScript values exist and how we can access them.  The JS runtime is a running application that we have API access to and it is responsible for getting us access to JS values.  Most values exist on the heap.  I know that JS says stuff is passed by value but the ACTUAL values are mostly stored in the heap.  When we are passing around `napi_value`s we are copying (or not if we are smart about stuff) pointers to the heap data.
 
 That heap data is managed by the JS engine, which means that the data is also MOVED by the engine without notice. It is also actively cleaned up by the almighty garbage collector.  This is a process that can be fraught for native code developers as native code runs outside of the JS context and therein lies the reason for the rest of the content below.  
