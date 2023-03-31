@@ -12,7 +12,9 @@ We will also cover how to access values in the JS runtime.  How values work when
 
 ## JavaScript Values
 
-The base type that all other types extend is the `napi_value` or `Napi::Value`.  Almost the entire library extends from `Napi::Value`.  There is also the idea of `Napi::Maybe` floating above that, but that topic is out of scope for this discussion.
+The base type that all other types extend is the `napi_value` or `Napi::Value`.  There is also the idea of `Napi::Maybe` floating above that, but that topic is out of scope for this discussion.  For all intensive purposes, when you ask the engine for some data, it will return a value.  It is then the job of the implementer to suss out what type of value it is and then to convert it to the underlying, and actually useful, data that system level code can interpret.
+
+This is the inheritance hierarchy for `Napi::Value`:
 
 ```c++
 class Boolean : public Value {}
@@ -20,6 +22,7 @@ class Number : public Value {}
 class Number : public Value {}
 class BigInt : public Value {}
 class Date : public Value {}
+// This one surprised me.  I always thought date was an Object...
 
 class Name : public Value {}
 class String : public Name {}
@@ -30,10 +33,10 @@ class External : public TypeTaggable {}
 class Object : public TypeTaggable {}
 
 class Array : public Object {}
-class ArrayBuffer : public Object {}
-class DataView : public Object {}
 class Function : public Object {}
 class Promise : public Object {}
+class DataView : public Object {}
+class ArrayBuffer : public Object {}
 class TypedArray : public Object {}
 
 template <typename T>
@@ -150,7 +153,7 @@ class Value {
 
 ## The Reference System
 
- The other inheritted tree in there is for the Reference system
+ The second inherited tree for the Reference system
 
 ```c++
 /// Holds a counted reference to a value; initially a weak reference unless
