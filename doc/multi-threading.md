@@ -14,7 +14,7 @@ In the first pass of building the `@chainsafe/blst-ts` library this is the appro
 
 This is not as good as it seems though.  While it looks great on paper, under real server load the library thread pool would compete for time with the node thread pool and there would be an unnecessary amount of context switching.  It is probably better to treat the batch process as a unit of work and run it on a separate thread.  Aggregated across the whole server load, the work will be managed much better. The heart of what JS does well is managing thread work, just let the engine do what it does best.
 
-## `node.js` Multi-Threading
+## `libuv` Multi-Threading
 
 The most predictable way to handle multi-threading is to use the build-in thread pool that ships with `node`.  It is the magic behind "single-threaded execution" that makes `node` so easy to reason about.  This method was ultimately implemented.
 
@@ -51,14 +51,7 @@ public:
         NAPI_THROW_IF_FAILED_VOID(_env, status);
     }
 
-    virtual void OnExecute(Napi::Env env);
-    virtual void OnWorkComplete(Napi::Env env, napi_status status);
-
 protected:
-    explicit AsyncWorker(Napi::Env env)
-        : AsyncWorker(env, "generic") {}
-    explicit AsyncWorker(Napi::Env env, const char *resource_name)
-        : AsyncWorker(env, resource_name, Napi::Object::New(env)) {}
     explicit AsyncWorker(Napi::Env env, const char *resource_name, const Napi::Object &resource)
         : _env(env),
           _receiver(),
@@ -78,55 +71,7 @@ protected:
         NAPI_THROW_IF_FAILED_VOID(_env, status);
     }
     
-    virtual void Execute() = 0;
-    virtual void OnOK() {
-        if (!_callback.IsEmpty()) {
-            _callback.Call(_receiver.Value(), GetResult(_callback.Env()));
-        }
-    }
-    virtual void OnError(const Napi::Error &e) {
-        if (!_callback.IsEmpty())
-        {
-            _callback.Call(_receiver.Value(), std::initializer_list<napi_value>{e.Value()});
-        }
-    }
-    virtual void Destroy() {
-        delete this;
-    };
-    virtual std::vector<napi_value> GetResult(Napi::Env env) {
-        return {};
-    }
-
-    void SetError(const std::string &error) {
-        _error = error;
-    }
-
 private:
-    void AsyncWorker::OnExecute(Napi::Env /*DO_NOT_USE*/) {
-        try {
-            Execute();
-        }
-        catch (const std::exception &e) {
-            SetError(e.what());
-        }
-    }
-    inline void AsyncWorker::OnWorkComplete(Napi::Env /*env*/, napi_status status) {
-        if (status != napi_cancelled) {
-            Napi::HandleScope scope(_env);
-            Napi::details::WrapCallback([&]() {
-                if (_error.size() == 0) {
-                    OnOK();
-                } else {
-                    OnError(Napi::Error::New(_env, _error));
-                }
-                return nullptr;
-            });
-        }
-        if (!_suppress_destruct) {
-            Destroy();
-        }
-    }
-
     napi_env _env;
     napi_async_work _work;
     Napi::ObjectReference _receiver;
