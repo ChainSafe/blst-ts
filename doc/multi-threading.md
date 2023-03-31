@@ -37,13 +37,13 @@ I originally wrote the sync and async versions of the functions separately.  Tha
 On top of that, the code for the first and third phases were identical regardless of the second phase running on the main thread or if the work was submitted as `node::ThreadPoolWork`.  This revelation removed a huge amount of code and centralized some critical sections that are prone to hard to debug errors.  It also helped to solidify the "Worker Pattern" that is utilized throughout the library.
 
 ```c++
-
 class BlstAsyncWorker : public Napi::AsyncWorker {
 public:
     // all that is necessary to create the Worker is the incoming function context
     BlstAsyncWorker(const Napi::CallbackInfo &info);
 
-    // execute work on main thread or on libuv worker thread
+    // execute work on main thread or on libuv worker thread. these are
+    // both Phase 2
     Napi::Value RunSync();
     Napi::Value Run();
 
@@ -53,7 +53,10 @@ protected:
     Napi::Env _env;
 
     // pure virtual functions that must be implemented by the function worker
+    //
+    // Setup is responsible for Phase 1
     virtual void Setup() = 0;
+    // GetReturnValue is responsible for Phase 3
     virtual Napi::Value GetReturnValue() = 0;
 };
 ```
