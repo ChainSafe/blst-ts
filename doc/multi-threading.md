@@ -146,21 +146,6 @@ napi_status NAPI_CDECL napi_queue_async_work(napi_env env, napi_async_work work)
 
 namespace uvimpl
 {
-    static napi_status ConvertUVErrorCode(int code)
-    {
-        switch (code)
-        {
-        case 0:
-            return napi_ok;
-        case UV_EINVAL:
-            return napi_invalid_arg;
-        case UV_ECANCELED:
-            return napi_cancelled;
-        default:
-            return napi_generic_failure;
-        }
-    }
-
     class Work : public node::AsyncResource, public node::ThreadPoolWork
     {
     private:
@@ -180,26 +165,10 @@ namespace uvimpl
               _execute(execute),
               _complete(complete) {}
 
-        ~Work() override = default;
-
     public:
-        static Work *New(node_napi_env env,
-                         v8::Local<v8::Object> async_resource,
-                         v8::Local<v8::String> async_resource_name,
-                         napi_async_execute_callback execute,
-                         napi_async_complete_callback complete,
-                         void *data)
-        {
-            return new Work(
-                env, async_resource, async_resource_name, execute, complete, data);
-        }
-
-        static void Delete(Work *work) { delete work; }
-
         void DoThreadPoolWork() override { _execute(_env, _data); }
 
-        void AfterThreadPoolWork(int status) override
-        {
+        void AfterThreadPoolWork(int status) override {
             if (_complete == nullptr)
                 return;
 
