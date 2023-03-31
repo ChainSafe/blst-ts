@@ -149,7 +149,7 @@ This is the reason I started this section with the paradigm shift.  `Node-API` i
 
 ## The Reference System
 
- The second inherited tree is for the Reference system.
+ The second inheritance tree is for the Reference system.
 
 ```c++
 /// Holds a counted reference to a value; initially a weak reference unless
@@ -169,12 +169,17 @@ class TypeError : public Error {}
 class RangeError : public Error {}
 ```
 
-## Passing data to Native Code
+## Dead References, Dead Node
 
-We will reference a few sections from the `node-addon-examples`:
+```c++
+Napi::Function constructor = DeclareClass(...);
+Napi::Value instance = constructor.New({...});
+Napi::Value instance2 = constructor.New({...}); // segfault;
+```
 
-- [Passing base data types to C]()
+I know... extreme title.  Segfaults are scary yo!  But you may also be asking how is that possible.  How is it possible that two stack allocated instances, that are generated from the same constructor function that was also stack allocated segfault.  While this is an extreme example, and probably unlikely to occur frequently, it will occur given enough runtime.
 
-## Returning Data from Native Code
+If there is no `HandleScope` to account for values in the function there is no guarantee that the GC will not delete an object during its execution.  And while the `C` function context is preserved between the lines, the JS context may not have been. Between calls to `New` the GC could have run.  If there was a JS function that called another JS function in that constructor, there would be a break in JS stack execution to reset the environment.  During that break the engine could have triggered GC.
 
-## Referencing Data
+## HandleScope
+
