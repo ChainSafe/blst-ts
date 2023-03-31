@@ -28,7 +28,7 @@ There were a couple of design decisions that evolved over a couple of iterations
 
 While building the POC version of this library a lot of code was non-DRY.  When I first started coding some of the paradigms that are written about in this documentation had not yet evolved and one of the big things I sought to do for the second iteration was to DRY up places that could be consolidated.  In particular argument parsing/validation and function setup.
 
-I originally wrote the sync and async versions of the functions separately.  That highlighted a pattern that bindings code goes through specific phases of execution and they are very clearly delineated.  As a note these will be the "phases" that are referred to in the rest of this document.
+I originally wrote the sync and async versions of the functions separately.  That highlighted a pattern. Bindings code goes through specific phases of execution and they are very clearly delineated.  As a note these will be the "phases" that are referred to in the rest of this document.
 
 1. Argument parsing, validation and conversion to native format
 2. Execution of native library code
