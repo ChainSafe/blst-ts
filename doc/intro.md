@@ -4,6 +4,8 @@ This document is an attempt to provide a more approachable introduction to `@cha
 
 My goal is to share some resources that were helpful, decisions that were made, to give an overview of native addons, nuances of working with the dependencies, and most importantly how that all fits together at runtime.
 
+With hopes this guide will help inform the team for a thorough review process and onboard new contributors for maintenance. I also want to lower the barrier for using native code at ChainSafe so if there is a potential opportunity through native module, it will be an easier decision-making and development process.
+
 ## Table of Contents
 
 1. [Introduction](./intro.md)
@@ -72,15 +74,3 @@ In `C` the implementation of bindings code takes the member functions off of the
 The ultimate decision came down to using `node-addon-api` is easier.  The class structure makes a lot of well informed choices that are difficult to implement independently.  A big thing is async is very tricky in `C`. There are a lot of phases that need to be handled explicitly and the classes [implement](./reference.md#node-addon-api) lines of code that would need to be written by hand just to make the `C` api "work".
 
 While writing the bindings for EIP-4844 I was [requested](https://github.com/ethereum/c-kzg-4844/pull/177#discussion_r1127851634) to use the `C` API for a section of code so it is definitely possible. That was synchronous boilerplate code that had an easy-to-follow [example](https://nodejs.github.io/node-addon-examples/special-topics/context-awareness/#bindingc). For complex situations like TS union types and multi-stage execution, `C` can be very difficult to implement.
-
-
-## Dumping Ground
-
-At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written.  I'll probably come back and finish the intro last...
-
-There are a lot of good resource on the web and there is a curated list of resources so there is no need to reinvent the wheel.
-
-Seeing as we are building bindings, this guide would be incomplete without a discussion on binding data from `C` for JS usage and vice versa.
-
-What does this mean...
-["// Allow placement new."](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/handles/handles.h#L211)

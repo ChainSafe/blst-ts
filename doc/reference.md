@@ -1,5 +1,17 @@
 # Reference
 
+
+## Dumping Ground
+At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written. 
+
+There are a lot of good resource on the web and there is a curated list of resources so there is no need to reinvent the wheel.
+
+Seeing as we are building bindings, this guide would be incomplete without a discussion on binding data from `C` for JS usage and vice versa.
+
+What does this mean...
+["// Allow placement new."](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/handles/handles.h#L211)
+
+
 ## Full Async Implementations
 
 ### `node-addon-api`
