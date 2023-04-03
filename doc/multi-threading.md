@@ -61,21 +61,17 @@ protected:
 };
 ```
 
-Each function has a Worker that extends `BlstAsyncWorker`.  In this context it helps to simplify the setup and return conversions and simplifies the overall structure of the library.  As a note, in the future, if telemetry tells the team that the sync version of a function is not viable it will be  trivial exercise to have the function work extend `Napi::AsyncWorker` directly and the sync version of the function call can be deleted.
-
-The Worker Pattern started because of the way a JS Promise is constructed.  There are is the JS side and the native side through use of `Napi::Promise::Deferred`.  A handle to the `_deferred` needs to be maintained to resolve/reject the `Promise` so it was stored as a member of the extension of `Napi::AsyncWorker`.  It was done that way for clean-up as the `AsyncWorker` is designed to self-destruct after returning its value.
+Each function has a Worker that extends `BlstAsyncWorker`. In this context it helps to simplify the setup/return conversions and simplifies the library structure. The Worker Pattern started because of the way a JS Promise is constructed.  There is the JS side we are familiar with, and the native side is `Napi::Promise::Deferred`.  A handle to `_deferred` needs to be maintained to resolve/reject the `Promise` so it is stored as a member of the extended `Napi::AsyncWorker`.  It was done that way for clean-up as the `AsyncWorker` is designed to self-destruct after returning its value.
 
 ## Returning Promises from Native Code
 
 There are some distinct challenges to structuring asynchronous code.  The invocation will begin with context provided by the incoming `Napi::CallbackInfo` and that context will cease once the calling function returns.  The actual work will happen at some point in the future, as will returning a value to the calling context.
 
-The `Napi::Promise::Deferred` will help us bridge the cap between the calling context and returning to that context but holding handles for the async part when the work happens is up to the implementer.  The section about [values and references](./values_and_references.md) will provide background on the topic but the tl/dr; is one needs to create some references and then some handles to the native-compatible underlying data.
+The `Napi::Promise::Deferred` will help us bridge the gap between the calling context and returning context. Holding handles to and from Phase 2, where the work happens, is up to the implementer.  The section about [values and references](./values_and_references.md) will provide background on the topic.  tl/dr; one needs to create some `References` and then some handles to the native-compatible underlying data.
 
-TODO: the next two paragraphs may want to go in the intro
+Most of the parsing MUST happen on thread as there are calls in the underlying code to `napi_env`.  This is the critical no-no of native JS code.  There can be zero interaction with the JS runtime unless the function is actively running on-thread.  As an example a `Napi::String` will be what is delivered to native code but in order to get access to the `std::string` or `char *` one will need to get that on thread.  Just having a `napi_value` handle does not necessarily mean you have access to the actual data. That needs to be done before returning from the original calling context (function coming in from JS).
 
-In `C++` the best way keep track of allocations like that is RAII through implementation of a class that can cleanup everything.  In `C` the implementation just takes those member functions off the class and one creates a `struct` with associated free functions.  To CRUD the struct, the struct is generally passed as the first argument to the associated functions. For large `C` code bases it is debated whether an implied receiver is "better" than passing as an argument.
-
-The ultimate decision came down to the `node-addon-api` being easier to work with.  The class structure makes a lot of well informed choices that are difficult to implement independently.  Async is very tricky because there are a lot of phases that need to be handled explicitly and the classes implement lines of code that would need to be hand written to make the `C` api "work".
+The same applies for return values that go back from worker-thread context to JS.  As an example the value that returns from `*Verify` functions.  The actual `bool` derived from the native function would be stored on the Worker and then in the `GetReturnValue` it would be converted via `Napi::Boolean::New`.  All functions that run on-thread will take `napi_env` as the first argument and creating `New` values is no exception.
 
 This is a stripped-down version of the `BlstAsyncWorker` to show what members it holds. `_deferred` is the handle spoken about above.  It holds the methods `_deferred.Resolve` and `_deferred.Reject` that are used to return values to JS.
 
