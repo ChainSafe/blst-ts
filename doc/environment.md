@@ -1,6 +1,8 @@
 # Environment
 
-The first argument of every `napi` function is an `napi_env` object. This object represents the environment in which a function was called. `Napi::Env` is the `C++` wrapper around `napi_env`, which more specifically is an [opaque structure](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_types.h#L24) whose [implementation](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_v8.h#L52) instructs how the underlying constructs all relate to each other.
+The first argument of every `napi` function is an `napi_env` object. This object represents the environment in which a function was called. `Napi::Env` is the `C++` wrapper around `napi_env`, which more specifically is an [opaque structure](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_types.h#L24) whose [implementation](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_v8.h#L52) instructs how the underlying constructs all relate to each other.  It is a abi-stable simplification of the full [node::Environment](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L533)
+
+The `node::Environment` is where the [`v8::Isolate`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1001) meets, [`libuv`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1003-L1009) and the [process meta](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1039-L1050).
 
 ## Definitions
 
@@ -11,8 +13,6 @@ The `v8::Isolate` is the representation of a complete JavaScript execution envir
 A `v8:Context` is a sand-boxed execution environment that allows separate, unrelated, JavaScript code to run in a single instance of the JavaScript engine. The JavaScript virtual machine implements the [Command Pattern](https://en.wikipedia.org/wiki/Command_pattern), and each message in the callback que is a request for invocation in an explicit evaluation context.  The context does a few things but most importantly is setting up the lexical environment associated with the function.  The `v8::Context` is linked to the context of the other functions in the call stack, all the way back to the global context.That is what is used to resolve identifiers.
 
 ## Bringing it all together
-
-The `Environment` is where the [`v8::Isolate`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1003) meets, [`libuv`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1005-L1010) and the [process meta](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1050).
 
 While `v8` does manage "all thing JavaScript", the event loop is not actually part of the JavaScript spec.  [Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops) are included as part of the html spec and are implemented by the browser, not the engine. `libuv` provides the event loop and the asynchronous callback (and I/O) abstraction.  The `Environment` is the glue that binds the JavaScript engine to the event loop.
 
