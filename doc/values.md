@@ -8,7 +8,7 @@ We will need to pay attention to what handles are announced to the GC to make su
 
 We will also cover how to access values in the JS runtime.  How values work when native code is actively running on thread.  How context in `C` affects context in JS and vice versa.  Just because a function has not returned DOES NOT mean that the stack-allocated value in `C` is still alive.  Yes, really...
 
-## JavaScript Values
+## Napi Values
 
 The base type that all other types extend is the `napi_value` or `Napi::Value`.  There is also the idea of `Napi::Maybe` floating above that, but that topic is out of scope for this discussion.  For all intensive purposes, when you ask the engine for some data, it will return a value.  It is then the job of the implementer to suss out what type of value it is and then to convert it to the underlying, and actually useful, data that system level code can interpret.
 
@@ -177,9 +177,13 @@ Napi::Value instance = constructor.New({...});
 Napi::Value instance2 = constructor.New({...}); // segfault;
 ```
 
-I know... extreme title.  Segfaults are scary yo!  But you may also be asking how is that possible.  How is it possible that two stack allocated instances, that are generated from the same constructor function that was also stack allocated segfault.  While this is an extreme example, and probably unlikely to occur frequently, it will occur given enough runtime.
+I know... extreme title.  Segfaults are scary!  But you may also be asking how is that possible.  How is it possible that two stack allocated instances, that are generated from the same constructor function that was also stack allocated segfault.  While this is an extreme example, and probably unlikely to occur frequently, it will occur given enough runtime.
 
-If there is no `HandleScope` to account for values in the function there is no guarantee that the GC will not delete an object during its execution.  And while the `C` function context is preserved between the lines, the JS context may not have been. Between calls to `New` the GC could have run.  If there was a JS function that called another JS function in that constructor, there would be a break in JS stack execution to reset the environment.  During that break the engine could have triggered GC.
+If there is no `HandleScope` to account for values in the function there is no guarantee that the GC will not delete an object during its execution.  And while the `C` function context is preserved between the lines, the JS context may not have been. Between calls to `New` the GC could have run.  If there was a JS function that called another JS function in that constructor, there would be a break in JS stack execution to reset the context.  During that break the engine could have triggered GC.
 
 ## HandleScope
+
+`v8::HandleScope`s are created to associate values and represent a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap.  There is only ever one active HandleScope at a time and the active scope is tracked in [`Isolate->handle_scope_data_`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212).
+
+In order to restore the previous scope the HandleScope saves the `prev_next_` and `prev_limit_` pointers.
 

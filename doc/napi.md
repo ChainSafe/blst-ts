@@ -8,12 +8,15 @@ Que `Node-API`
 
 Node is a `C++` application so one would think that exporting a `C++` api would be the thing to do.  But for portability the team create a `C` API and this design decision has opened up node to every language that is compatible with a `C` abi.  That is most btw.  It is technically possible to write node addons in C, C++, Rust, Go, Java, C#, etc...
 
-## Overview of `Node-API` and `node-addon-api`
+## `Node-API`
+
+
+## `node-addon-api`
 
 While its possible to write native addons in most languages, the two that are officially supported are `C` and `C++`, hence `Node-API` and `node-addon-api`. &nbsp;&nbsp;`Node-API` is built and compiled in with node so those tokens are available at runtime to any dynamically linked library.  All that is necessary to use it is the header file `node_api.h` which can be found [here](https://github.com/nodejs/node/blob/main/src/node_api.h). `node-addon-api` is a header-only `C++` library that is published and installed via [npm](https://www.npmjs.com/package/node-addon-api).  It is broken into two files [napi.h](https://github.com/nodejs/node-addon-api/blob/main/napi.h), which has all of the class definitions, and [napi-inl.h](https://github.com/nodejs/node-addon-api/blob/main/napi-inl.h) that contains the function implementations.
 
 We are going to look at async work as an example and analyze how the two pieces fit together, how "`c`" code patterns and "`C++`" patterns interact, how best-practice `C++` code is structured and how the napi code actually interacts with `v8` and `libuv`.
 
-## AsyncWorker Class
+## Similarities and Differences
 
-## `napi_*_async_work` Function Implementations
+## Which to Use

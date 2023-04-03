@@ -14,9 +14,11 @@ The `chainsafe/blst-ts` library was specifically built to focus on the multi-thr
 
 The most important code in `supranational/blst`, referred to as just `blst` for the rest of this readme, is in the `bindings` folder.  While `src` is where the implementation happens, `bindings` is where you will find the exported interfaces.  There are two you will want to focus on are `blst.h` and `blst.hpp`.  They are the `c` and `c++` api you will be working with.
 
-## Existing `node.js` bindings
+## Existing `node` Bindings
 
 The existing `node.js` bindings are [`Swig`](https://www.swig.org/index.html) generated.  All of the functions run synchronously on the main JS thread which is not ideal for server situations.  Despite this, the `blst` library has other functionality that is quite useful.  The scope of `blst-ts` focuses on public key infrastructure so we are only using a small fraction of what the full `blst` library is capable of.
+
+## Adding the Library as a Dependency
 
 ## Initialization of `blst::Pairing`
 
