@@ -1,0 +1,19 @@
+# Environment
+
+The first argument of every `napi` function is an `napi_env` object. This object represents the environment in which a function was called. `Napi::Env` is the `C++` wrapper around `napi_env`, which more specifically is an [opaque structure](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_types.h#L24) whose [implementation](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_v8.h#L52) instructs how the underlying constructs all relate to each other.
+
+## Definitions
+
+The `v8::Isolate` is the representation of a complete JavaScript execution environment.  It manages execution flow, the stack and the garbage collector.  It is also the place where all the JavaScript "values" live. As an example this is how a new [`Number`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L8498) is created and what is returned from the isolate is a handle.
+
+`Napi::HandleScope` is the abi-stable representation of the [HandleScopeWrapper](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/js_native_api_v8.cc#L113) around a [`v8::HandleScope`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L77). A `HandleScope` is designed to be stack allocated and all `Value`s that are created within that scope are associated. When the scope goes out of function scope it is deleted and the ref count for any tracked values will be reduced by one.  If the ref count goes to zero the value will be eligible for garbage collection.
+
+A `v8:Context` is a sand-boxed execution environment that allows separate, unrelated, JavaScript code to run in a single instance of the JavaScript engine. The JavaScript virtual machine implements the [Command Pattern](https://en.wikipedia.org/wiki/Command_pattern), and each message in the callback que is a request for invocation in an explicit evaluation context.  The context does a few things but most importantly is setting up the lexical environment associated with the function.  The `v8::Context` is linked to the context of the other functions in the call stack, all the way back to the global context.That is what is used to resolve identifiers.
+
+## Bringing it all together
+
+The `Environment` is where the [`v8::Isolate`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1003) meets, [`libuv`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1005-L1010) and the [process meta](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L1050).
+
+While `v8` does manage "all thing JavaScript", the event loop is not actually part of the JavaScript spec.  [Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops) are included as part of the html spec and are implemented by the browser, not the engine. `libuv` provides the event loop and the asynchronous callback (and I/O) abstraction.  The `Environment` is the glue that binds the JavaScript engine to the event loop.
+
+"[Environment](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/env.h#L533) is a per-isolate data structure that represents an execution environment. Each environment has a principal realm. An environment can create multiple subsidiary synthetic realms." `node::Realm` is a container for a set of JavaScript objects and functions that associated with a particular global environment. An [ECMAScript realm](https://tc39.es/ecma262/#sec-code-realms)representing a global environment in which script is run. Each ECMAScript realm comes with a global object and a set of intrinsic objects.
