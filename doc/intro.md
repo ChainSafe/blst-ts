@@ -4,7 +4,6 @@
     - [Overview](./intro.md#overview)
     - [Motivations & Goals](./intro.md#motivation-and-goals)
     - [What JS Developers Take For Granted](./intro.md#what-js-developers-take-for-granted)
-    - [A JS Developer's Perspective on `C/C++`](./intro.md#a-js-developers-perspective-on-cc)
 2. [`blst-ts`](./repo.md)
     - [Repository Structure](./repo.md#organization)
     - [Scripts](./repo.md#scripts)
@@ -41,23 +40,25 @@
     - [Complex Data Types](./structuring-addons.md#complex-data-types)
     - [Context-Awareness](./structuring-addons.md#context-awareness)
 9. [Debugging](./debugging.md)
-    - [Setting-Up the Debugger](./debugging.md#setting-up-the-debugger)
-    - [Debugging with VSCode and `lldb`](./debugging.md#debugging-with-vscode-and-lldb)
-    - [Debugging by Example](./debugging.md#debugging-by-example)
+    - [Setting-Up the Debugger in VSCode](./debugging.md#setting-up-the-debugger-in-vscode)
+    - [Setting-Up `Valgrind`](./debugging.md#setting-up-valgrind)
+    - [Compiler-Generated Functions in C++](./debugging.md#compiler-generated-functions-in-c)
 10. [Building Addons](./building.md)
     - [Building `C/C++` Code](./building.md#building-c-c-code)
     - [Build Tools](./building.md#build-tools)
     - [`node-gyp`](./building.md#node-gyp)
     - [`binding.gyp`](./building.md#bindinggyp)
-
+11. [A JS Developer's Perspective on `C/C++`](js-perspective-on-c.md)
+    - [Memory Management](./js-perspective-on-c.md#memory-management)
+    - [Compiler-Generated Functions](./js-perspective-on-c.md#compiler-generated-functions)
+    - [Passing To and Returning From Functions](./js-perspective-on-c.md#passing-to-and-returning-from-functions)
+    - [Closing Thoughts](./js-perspective-on-c.md#closing-thoughts)
 
 ## Overview
 
 ## Motivation and Goals
 
 ## What JS Developers Take For Granted
-
-## A JS Developer's Perspective on `C/C++`
 
 
 ## Dumping Ground
