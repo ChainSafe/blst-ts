@@ -1,6 +1,6 @@
 # Intro
 
-This document is an attempt to provide a more approachable introduction to `@chainsafe/blst-ts` for JavaScript developers.  The docs for `Node-API` and the other dependencies are terse, long and geared towards `C/C++` developers. On top of that, this library is critical to runtime efficiency for [Lodestar](https://github.com/ChainSafe/lodestar) and more than one viewpoint will benefit both projects and the community.
+This document is an attempt to provide a more approachable introduction to `@chainsafe/blst-ts` for JavaScript developers.  The docs for `Node-API` and the other dependencies are terse, long and geared towards `C/C++` developers. On top of that, this library is critical to runtime efficiency for [Lodestar](https://github.com/ChainSafe/lodestar) so more than one viewpoint will benefit both projects and the community.
 
 My goal is to share some resources that were helpful, decisions that were made, to give an overview of native addons, nuances of working with the dependencies, and most importantly how that all fits together at runtime.
 
