@@ -1,7 +1,13 @@
 # Intro
 
+The docs for `Node-API` are terse, long and geared towards `C/C++` developers.  This document is an attempt to provide a more approachable introduction to `@chainsafe/blst-ts` for JavaScript developers.  This library is critical to runtime efficiency and more than one viewpoint will benefit the project and the community.
+
+My goal is to share some resources that were helpful, decisions that were made, to give an overview of native addons, nuances of working with the dependencies, and most importantly how that all fits together at runtime.
+
+## Table of Contents
+
 1. [Introduction](./intro.md)
-    - [Overview](./intro.md#overview)
+    - [The Big Decisions](./intro.md#the-big-decision)
     - [Motivations & Goals](./intro.md#motivation-and-goals)
     - [What JS Developers Take For Granted](./intro.md#what-js-developers-take-for-granted)
 2. [`blst-ts`](./repo.md)
@@ -54,24 +60,31 @@
     - [Passing To and Returning From Functions](./js-perspective-on-c.md#passing-to-and-returning-from-functions)
     - [Closing Thoughts](./js-perspective-on-c.md#closing-thoughts)
 
-## Overview
+## The Big Decisions
 
-## Motivation and Goals
+### `C` vs `C++`
+
+Most of the docs and blogs are written for `C++` and while I was researching things I found it rare to see examples using the raw `Node-API`. After working with both it has become very clear to me why that is. In `C++` the best way keep track of allocations is RAII, through implementation of OOP, where classes cleanup themselves.
+
+In `C` the implementation of bindings code takes the member functions off of the classes. One creates a `struct` with a set of associated free functions. The functions CRUD the `struct` appropriately and it is generally passed as the first argument to the associated functions.
+
+The ultimate decision came down to using `node-addon-api` is easier.  The class structure makes a lot of well informed choices that are difficult to implement independently.  A big thing is async is very tricky in `C`. There are a lot of phases that need to be handled explicitly and the classes [implement](./reference.md#node-addon-api) lines of code that would need to be written by hand just to make the `C` api "work".
+
+While writing the bindings for EIP-4844 I was [requested](https://github.com/ethereum/c-kzg-4844/pull/177#discussion_r1127851634) to use the `C` API for a section of code so it is definitely possible. That was synchronous boilerplate code that had an easy-to-follow [example](https://nodejs.github.io/node-addon-examples/special-topics/context-awareness/#bindingc). For complex situations like TS union types and multi-stage execution, `C` can be very difficult to implement.
 
 ## What JS Developers Take For Granted
 
+JS has some serious luxuries. The runtime is forgiving because it is a single threaded, event driven, garbage collected language. The language is forgiving because it is dynamically typed and interpreted. All of that is a function of lines of code in `node`, `v8`, `libuv` and a host of other factors including good design and decent language semantics.
+
+When building naitve code those things will need to be done manually. Memory will need to be managed.  Threading context will need to be understood. This is not to say that it is impossible to write good code in `C/C++` but it is a lot more to think about than writing JS.
 
 ## Dumping Ground
 
 At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written.  I'll probably come back and finish the intro last...
 
-During the development of this library, a few paths were gone done to arrive at the "best fit" solution.  Some of the critical decisions are highlighted below, provided with a bit of background for each.
+There are a lot of good resource on the web and there is a curated list of resources so there is no need to reinvent the wheel.
 
-Seeing as we are building bindings, this guide would be incomplete without a discussion on binding data from `C` for JS usage and vice versa.  There is a lot of good resource about this out there so no need to reinvent the wheel.  Follow the doc links below for more info on each.
-
-In `C++` the best way keep track of allocations like that is RAII through implementation of a class that can cleanup everything.  In `C` the implementation just takes those member functions off the class and one creates a `struct` with associated free functions.  To CRUD the struct, the struct is generally passed as the first argument to the associated functions. For large `C` code bases it is debated whether an implied receiver is "better" than passing as an argument.
-
-The ultimate decision came down to the `node-addon-api` being easier to work with.  The class structure makes a lot of well informed choices that are difficult to implement independently.  Async is very tricky because there are a lot of phases that need to be handled explicitly and the classes implement lines of code that would need to be hand written to make the `C` api "work".
+Seeing as we are building bindings, this guide would be incomplete without a discussion on binding data from `C` for JS usage and vice versa.
 
 What does this mean...
 ["// Allow placement new."](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/handles/handles.h#L211)
