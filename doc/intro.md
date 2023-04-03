@@ -7,6 +7,7 @@ My goal is to share some resources that were helpful, decisions that were made, 
 ## Table of Contents
 
 1. [Introduction](./intro.md)
+    - [Table of Contents](./intro.md#table-of-contents)
     - [The Big Decisions](./intro.md#the-big-decision)
     - [Motivations & Goals](./intro.md#motivation-and-goals)
     - [What JS Developers Take For Granted](./intro.md#what-js-developers-take-for-granted)
@@ -72,11 +73,6 @@ The ultimate decision came down to using `node-addon-api` is easier.  The class 
 
 While writing the bindings for EIP-4844 I was [requested](https://github.com/ethereum/c-kzg-4844/pull/177#discussion_r1127851634) to use the `C` API for a section of code so it is definitely possible. That was synchronous boilerplate code that had an easy-to-follow [example](https://nodejs.github.io/node-addon-examples/special-topics/context-awareness/#bindingc). For complex situations like TS union types and multi-stage execution, `C` can be very difficult to implement.
 
-## What JS Developers Take For Granted
-
-JS has some serious luxuries. The runtime is forgiving because it is a single threaded, event driven, garbage collected language. The language is forgiving because it is dynamically typed and interpreted. All of that is a function of lines of code in `node`, `v8`, `libuv` and a host of other factors including good design and decent language semantics.
-
-When building naitve code those things will need to be done manually. Memory will need to be managed.  Threading context will need to be understood. This is not to say that it is impossible to write good code in `C/C++` but it is a lot more to think about than writing JS.
 
 ## Dumping Ground
 
