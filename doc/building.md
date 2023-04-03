@@ -21,3 +21,6 @@ The complexity of `node-gyp` is not in its simple commands but its poorly docume
 Things to note are the keys 
 
 - talk about `!` after prop names
+
+
+## Adding a Library as a Dependency

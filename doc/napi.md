@@ -19,4 +19,3 @@ We are going to look at async work as an example and analyze how the two pieces 
 
 ## Similarities and Differences
 
-## Which to Use

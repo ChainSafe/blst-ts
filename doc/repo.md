@@ -45,3 +45,6 @@ The only one that needs to be explicitly handled is `blst` which is installed as
 ```sh
 git submodule update --init
 ```
+
+## Style Guide
+

@@ -18,8 +18,6 @@ The most important code in `supranational/blst`, referred to as just `blst` for 
 
 The existing `node.js` bindings are [`Swig`](https://www.swig.org/index.html) generated.  All of the functions run synchronously on the main JS thread which is not ideal for server situations.  Despite this, the `blst` library has other functionality that is quite useful.  The scope of `blst-ts` focuses on public key infrastructure so we are only using a small fraction of what the full `blst` library is capable of.
 
-## Adding the Library as a Dependency
-
 ## Initialization of `blst::Pairing`
 
 When implementing the `supranational/blst` library, it is important to note that the `blst::Paring` is a 0 byte opaque struct.  In `c` use `blst::blst_pairing_sizeof()` to `malloc` the correct amount of space.  For `c++`, the library overrides the [new operator](https://github.com/supranational/blst/blob/a7fd1f584d26b0ae6cdc427976ea1d8980f7e15d/bindings/blst.hpp#L889), so you can invoke that, or use a smart pointer as one would normally.
