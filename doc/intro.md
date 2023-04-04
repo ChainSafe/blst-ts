@@ -9,8 +9,8 @@ With hopes this guide will help inform the team for a thorough review process an
 ## Table of Contents
 
 1. [Introduction](./intro.md)
-    - [Table of Contents](./intro.md#table-of-contents)
-    - [The Big Decisions](./intro.md#the-big-decision)
+    - [Table of Contents](#table-of-contents)
+    - [The Big Decisions](#the-big-decisions)
 2. [`@chainsafe/blst-ts`](./repo.md)
     - [Organization](./repo.md#organization)
     - [Scripts](./repo.md#scripts)
