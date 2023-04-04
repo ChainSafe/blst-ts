@@ -4,8 +4,6 @@ Special thanks to [@a7ul](https://github.com/a7ul/) for writing [this](https://m
 
 [This](https://github.com/nodejs/node/issues/26667) issue in `nodejs/node` also gave a lot of insight and a [comment](https://github.com/nodejs/node/issues/26667#issuecomment-475329557) provided a good combination of `valgrind` flags to successfully highlight a memory leak using `Docker` on my mac.
 
-## Setting-Up the Debugger in VSCode
-
 ## Setting-Up `Valgrind`
 
 ## Debugging by Example

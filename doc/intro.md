@@ -38,10 +38,11 @@ With hopes this guide will help inform the team for a thorough review process an
     - [`node-gyp`](./building.md#node-gyp)
     - [`binding.gyp`](./building.md#bindinggyp)
     - [Adding a Library as a Dependency](./building.md#adding-a-library-as-a-dependency)
-7. [Debugging Addons](./debugging.md) **_(still working)_**
-    - [Setting-Up the Debugger in VSCode](./debugging.md#setting-up-the-debugger-in-vscode)
-    - [Setting-Up `Valgrind`](./debugging.md#setting-up-valgrind)
-    - [Compiler-Generated Functions in C++](./debugging.md#compiler-generated-functions-in-c)
+7. [Debugging Addons](./debugging.md)
+    - [Setting-Up `Valgrind`](./debugging.md#setting-up-valgrind) **_(still working)_**
+    - [Debugging by Example](./debugging.md#compiler-generated-functions-in-c)
+        - [The "bug"](./debugging.md#the-bug)
+        - [Finding and Fixing "the bug"](./debugging.md#finding-and-fixing-the-bug)
 8. [The `Environment`](./environment.md)
     - [Definitions](./environment.md#definitions)
     - [Bringing It All Together](./environment.md#bringing-it-all-together)
