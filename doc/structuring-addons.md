@@ -4,7 +4,7 @@
 
 There were a couple of design decisions that evolved over a couple of iterations of this library.  The part about re-parallelization was covered in [Mixed Multi-Threading](./multi-threading.md#mixed-multi-threading).  Another was providing both a sync and async implementation for analysis and post-MVP decision making.
 
-While building the POC version of this library a lot of code was non-DRY.  When I first started coding some of the paradigms that are written about in this documentation had not yet evolved and one of the big things I sought to do for the second iteration was to DRY up places that could be consolidated.  In particular argument parsing/validation and function setup.
+While building the POC version a lot of code was non-DRY.  When I first started, some of the paradigms that are written about in this documentation had not yet evolved. One of the big things I sought to do for the second iteration was to DRY up places that could be consolidated.  In particular argument parsing, validation and function setup.
 
 I originally wrote the sync and async versions of the functions separately.  That highlighted a pattern. Bindings code goes through specific phases of execution and they are very clearly delineated.  As a note these will be the "phases" that are referred to in the rest of this document.
 
@@ -39,9 +39,11 @@ protected:
 };
 ```
 
-Each function has a Worker that extends `BlstAsyncWorker`. In this context it helps to simplify the setup/return conversions and simplifies the library structure. The Worker Pattern started because of the way a JS Promise is constructed.  There is the JS side we are familiar with, and the native side is `Napi::Promise::Deferred`.  A handle to `_deferred` needs to be maintained to resolve/reject the `Promise` so it is stored as a member of the extended `Napi::AsyncWorker`.  It was done that way for clean-up as the `AsyncWorker` is designed to self-destruct after returning its value.
+Each function has a Worker that extends `BlstAsyncWorker`. In this context it helps to simplify the setup/return conversions and simplifies the library structure. The Worker Pattern started because of the way a JS Promise is constructed.  There is the JS side we are familiar with, and the native side is `Napi::Promise::Deferred`.  A handle to `_deferred` needs to be maintained to resolve/reject the `Promise`. RAII manages it as a member of the extended `Napi::AsyncWorker`.  It was done that way for clean-up as the `AsyncWorker` is designed to self-destruct after returning its value.
 
 ## Complex Data Types
+
+Because of the section above, structuring arguments becomes a lot easier.  There are some considerations to take though.
 
 ## Context-Awareness
 
@@ -53,4 +55,8 @@ To ensure that addons can function under any circumstance it is best to follow a
 
 - Do not use static or globally scoped variables
 - Do not use static class members (there are stored similarly)
-- Use `napi_set_instance_data` and `napi_get_instance_data` to manage data that is specific to an `Environment`
+- Current best practice is to use `napi_set_instance_data` and `napi_get_instance_data` to manage `Environment` specific data
+
+More info can be found [here](https://nodejs.github.io/node-addon-examples/special-topics/context-awareness/)
+
+While it is not necessary to set "globals" as "instance data", one should at a minimum make sure to use a [cleanup function](https://nodejs.org/dist/latest-v18.x/docs/api/n-api.html#cleanup-on-exit-of-the-current-nodejs-instance) instead of trying to manually manage the memory.
