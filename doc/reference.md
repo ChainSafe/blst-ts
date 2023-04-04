@@ -11,6 +11,8 @@ Seeing as we are building bindings, this guide would be incomplete without a dis
 What does this mean...
 ["// Allow placement new."](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/handles/handles.h#L211)
 
+, how best-practice `C++` code is structured and how the napi code actually interacts with `v8` and `libuv`.
+
 
 ## Full Async Implementations
 
