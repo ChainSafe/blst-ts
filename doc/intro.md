@@ -38,20 +38,20 @@ With hopes this guide will help inform the team for a thorough review process an
     - [`node-gyp`](./building.md#node-gyp)
     - [`binding.gyp`](./building.md#bindinggyp)
     - [Adding a Library as a Dependency](./building.md#adding-a-library-as-a-dependency)
-7. [Debugging Addons](./debugging.md)
+7. [Debugging Addons](./debugging.md) **_(still working)_**
     - [Setting-Up the Debugger in VSCode](./debugging.md#setting-up-the-debugger-in-vscode)
     - [Setting-Up `Valgrind`](./debugging.md#setting-up-valgrind)
     - [Compiler-Generated Functions in C++](./debugging.md#compiler-generated-functions-in-c)
 8. [The `Environment`](./environment.md)
     - [Definitions](./environment.md#definitions)
     - [Bringing It All Together](./environment.md#bringing-it-all-together)
-9. [JavaScript Values Under-the-Hood](./values.md)
+9. [JavaScript Values Under-the-Hood](./values.md) **_(still working)_**
     - [Allocation and De-Allocation](./values.md#allocation-and-de-allocation)
     - [`v8::Value` and `Napi::Value`](./values.md#v8value-and-napivalue)
     - [`v8::HandleScope` and `Napi::HandleScope`](./values.md#v8handlescope-and-napihandlescope)
     - [Lexical Context](./values.md#lexical-context)
     - [The Reference System](./values.md#the-reference-system)
-10. [JS Classes](./classes.md)
+10. [JS Classes](./classes.md) **_(still working)_**
 11. [Multi-Threading](./multi-threading.md)
     - [`std::thread` Multi-Threading](./multi-threading.md#stdthread-multi-threading)
     - ["Mixed" Multi-Threading](./multi-threading.md#mixed-multi-threading)

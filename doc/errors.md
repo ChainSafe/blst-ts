@@ -4,17 +4,17 @@ It is [possible](https://github.com/nodejs/node-addon-api/blob/main/doc/setup.md
 
 ## `C` Errors
 
-There is no `throw` keyword in `C`. See [Passing and Returning from Functions](./js-perspective-on-c.md#passing-to-and-returning-from-functions) for more information. Make sure to check all `napi_status` return values.
+There is no `throw` keyword in `C`. See [Passing and Returning from Functions](./js-perspective-on-c.md#passing-to-and-returning-from-functions) for more information. Make sure to check all `napi_status` return values. How errors are queued on the `napi_env` is beyond the scope of this document.
 
 ## `C++` Errors
 
-It's possible to `throw` when building as `C++` and errors that get `throw`n will percolate up to the JS context.
+It's possible to `throw` when building as `C++`. Errors that get `throw`n percolate up to the JS context.
 
 ```c++
 throw Napi::Error::New(env, "The answer is NOT 42!!!");
 ```
 
-My understanding is that stack unwinding is more "violent" at the native level so it is also possible to hail errors in JS but not in `C++`.
+My understanding is stack unwinds are more "violent" at the native level, so it is also possible to hail errors in JS but execution to run smoothly in `C++`.
 
 ```c++
 if (answer != 42) {
