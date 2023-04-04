@@ -111,9 +111,15 @@ Any key/value pair can be overridden by a condition.  This is useful for platfor
 
 There are a few ways to add a dependency using `node-gyp`.  The easiest way, by far is to add the dependencies directly to the published bundle and add the pertinent files to `sources`. This will make sure that everything is built on the targe system (at install time) and with a single build tool to promote compatibility.
 
-The second, and slightly less desirable way is to build the dependency separately and then link it to the project.  This is a bit more complicated and requires a bit more knowledge of the build tool.  It is also more likely to break as dependencies may be built incompatibly. Using this approach has two flavors.
+The second, and much less desirable way, is to build the dependency separately and then link it to the project.  This is a bit more complicated and requires a bit more knowledge of the full build toolchain.  It is much more likely to break, as dependencies may be built incompatibly. Using this approach has two flavors.
 
-The more complex is adding build
+### Linking a Static Library
+
+It is possible to write a script that is used as an entrance to run `node-gyp`.  One would build the dependency and then run `node-gyp` to build the bindings.  To make sure the entry script runs, execute it as the "install" in `package.json`.
+
+### Separate Build Actions
+
+The more complex is adding build actions to a build target.
 
 ```json
 "actions": [

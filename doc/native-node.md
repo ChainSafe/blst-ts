@@ -6,6 +6,8 @@ There were lots of internal API changes that were breaking and addon code needed
 
 Que `Node-API`
 
+tl/dr? Skip to the end of [`napi-rs`](#napi-rs) for a surprise.
+
 ## `Node-API`
 
 Node is a `C++` application so one would think that exporting a `C++` api would be the thing to do.  But for portability the team create a `C` API and this design decision has opened up node to every language that is compatible with a `C` abi.  That is most btw.  It is technically possible to write node addons in C, C++, Rust, Go, Java, C#, etc...
@@ -77,4 +79,10 @@ While its possible to write native addons in most languages, the only two that a
 
 You can find the docs [here](https://napi.rs/).
 
-I considered using the `Rust` bindings in `blst` and wrapping them in `napi-rs` as it already has the functions we need and we could wrap the bindings to massage the API into correct form. Unfortunately, the bindings are multithreaded and will [mix multi-threading methodologies](./multi-threading.md#mixed-multi-threading)
+### The `napi-rs` Kicker
+
+I considered using the [blst `Rust` bindings](https://github.com/supranational/blst/tree/master/bindings/rust) and wrapping them in `napi-rs` as it mostly has the functions we need. We could wrap the bindings in a thin wrapper to massage the it into our PKI api.
+
+Unfortunately, the bindings are already multi-threaded and will suffer the same issues as the [mixed multi-threading approach](./multi-threading.md#mixed-multi-threading). It would also be a new language to learn. It also feels a bit silly going from `C` to `Rust` to `C` to `C++`.  I am also not sure if there will be a performance hit for the extra layer of abstraction. Lots of "also's" there.
+
+Given the feature sets and learning curves of `C++` and `Rust` I would consider doing a performance analysis to see what turns up.  My guess is that there will be negligible difference and the memory safety more than makes up.

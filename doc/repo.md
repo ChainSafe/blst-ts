@@ -42,12 +42,17 @@ yarn install
 
 The only one that needs to be explicitly handled is `blst` which is installed as a submodule
 
-TODO: Need to do more research about dll linking to verify we do not need to specifically build openssl as a submodule.
 
 ```sh
 git submodule update --init
 ```
 
+`Openssl` is not currently a dependency of this library. `node.js` builds `openssl` from source, and uses `RAND_bytes` so that symbol should be available via dynamic linking at runtime.
+
+TODO: Need to do more research about dll linking to verify we do not need to specifically build `openssl`.  This is what I am finding empirically and also how I understand it but I honestly don't know for certain and would like 100% surety.  It is easy enough to add to `deps` and [build](./building.md#adding-a-library-as-a-dependency) if needed.
+
+**_note_**: There is no road map for `node.js` to move away from `openssl` but if it does this library will need to build `RAND_bytes` or replace it with another random number generator.
+
 ## Style Guide
 
-An attempt was made to use the Google style guide for C++.  It's possible that the implementation does not fully comply.  While the code looks "readable" it may be work going through the guide again and updating for compliance. The style guide can be found [here](https://google.github.io/styleguide/cppguide.html).
+An attempt was made to use the Google style guide for C++.  It's possible that the implementation does not fully comply.  While the code looks "readable" it may be worth going through the guide again and updating for compliance. The style guide can be found [here](https://google.github.io/styleguide/cppguide.html).

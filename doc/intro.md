@@ -12,6 +12,7 @@ With hopes this guide will help inform the team for a thorough review process an
     - [Table of Contents](#table-of-contents)
     - [The Big Decisions](#the-big-decisions)
         - [`C` vs `C++`](#c-vs-c)
+        - [Callbacks vs. Promises](#callbacks-vs-promises)
 2. [`@chainsafe/blst-ts`](./repo.md)
     - [Organization](./repo.md#organization)
     - [Scripts](./repo.md#scripts)
@@ -28,7 +29,7 @@ With hopes this guide will help inform the team for a thorough review process an
     - [Similarities and Differences](./native-node.md#similarites-and-differences)
     - [`napi-rs`](./native-node.md#napi-rs)
 5. [Structuring Addons](./structuring-addons.md)
-    - [Parsing Arguments](./structuring-addons.md#parsing-arguments)
+    - [Phases of Execution](./structuring-addons.md#phases-of-execution)
     - [Complex Data Types](./structuring-addons.md#complex-data-types)
     - [Context-Awareness](./structuring-addons.md#context-awareness)
 6. [Building Addons](./building.md)
@@ -71,6 +72,10 @@ Most of the docs and blogs are written for `C++` and while I was researching thi
 
 In `C` the implementation of bindings code takes the member functions off of the classes. One creates a `struct` with a set of associated free functions. The functions CRUD the `struct` appropriately and it is generally passed as the first argument to the associated functions.
 
-The ultimate decision came down to using `node-addon-api` is easier.  The class structure makes a lot of well informed choices that are difficult to implement independently.  A big thing is async is very tricky in `C`. There are a lot of phases that need to be handled explicitly and the classes [implement](./reference.md#node-addon-api) lines of code that would need to be written by hand just to make the `C` api "work".
+The ultimate deciding factor was using `node-addon-api` is easier.  The class structure makes a lot of well informed choices that are difficult to implement independently.  A big thing is doing async is very tricky in `C`. There are a lot of phases that need to be handled explicitly and the classes [implement](./reference.md#node-addon-api) lines of code that would need to be written by hand just to make the `C` api "work".
 
 While writing the bindings for EIP-4844 I was [requested](https://github.com/ethereum/c-kzg-4844/pull/177#discussion_r1127851634) to use the `C` API for a section of code so it is definitely possible. That was synchronous boilerplate code that had an easy-to-follow [example](https://nodejs.github.io/node-addon-examples/special-topics/context-awareness/#bindingc). For complex situations like TS union types and multi-stage execution, `C` can be very difficult to implement.
+
+### Callbacks vs Promises
+
+Callbacks feel antiquated and native-level support for promises exists. This was a pretty easy choice.
