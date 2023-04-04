@@ -32,7 +32,6 @@ With hopes this guide will help inform the team for a thorough review process an
     - [Complex Data Types](./structuring-addons.md#complex-data-types)
     - [Context-Awareness](./structuring-addons.md#context-awareness)
 6. [Building Addons](./building.md)
-    - [Building `C/C++` Code](./building.md#building-c-c-code)
     - [Build Tools](./building.md#build-tools)
     - [`node-gyp`](./building.md#node-gyp)
     - [`binding.gyp`](./building.md#bindinggyp)

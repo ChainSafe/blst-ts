@@ -1,4 +1,4 @@
-# Building Addon Code
+# Building Addons
 
 ## Build tools
 
@@ -18,9 +18,146 @@ Before building one must first run `node-gyp configure` to setup the `build` fol
 
 The complexity of `node-gyp` is not in its simple commands but its poorly documented configuration file named `binding.gyp`.  [This](https://github.com/nodejs/node-gyp#the-bindinggyp-file) is the example of the file in the docs which is of little use.  Under the [Further reading](https://github.com/nodejs/node-gyp#further-reading) heading there is a link to ["`binding.gyp` files out in the wild wiki page"](https://github.com/nodejs/node-gyp/blob/main/docs/binding.gyp-files-in-the-wild.md) and this is where one is expected to figure it out.  Another helpful resource was going through the list of packages that depend on `node-addon-api` and looking through those projects' `binding.gyp`.
 
-Things to note are the keys 
+### `binding.gyp` Keys
 
-- talk about `!` after prop names
+There is not a great resource for what each of the properties of the "object" that is in the `binding.gyp` file does.  Hopefully the information below will make it a less confusing tool.
 
+#### `target_name`
+
+There are some nuances that will prevent the project from building or the `bindings` package from working correctly.  In particular paying attention to the name of the `class` that implements `Napi::Addon` as that will get passed through and override the `target_name` field. There is also potentially a bug during linking if the `target_name` and entry filename don't match.
+
+#### `sources`
+
+This is a array of implementation files to compile. Generally this is a list of `.c`, `.cc`, or `.cpp` files (can be any c-compatible extension).
+
+#### `dependencies`
+
+It is possible to use properly formatted `node_modules` as dependencies. Check out how `node-addon-api` is structured for an example of this.
+
+#### `include_dirs`
+
+This is the equivalent to `include` directories in `make` or `CMake`.  It is a list of directories that will be searched for header files.  Anything placed here will be available in source files without a relative path.
+
+```c
+#include "napi.h"
+```
+
+#### `defines`
+
+Preprocessor definitions that will be available at compile time.  It is possible to pass with or "without" a value.
+
+```json
+"defines": [
+  "NAPI_EXPERIMENTAL",
+  "NAPI_DISABLE_CPP_EXCEPTIONS",
+  "LIB_FANCY_SOME_ENV_VAR=<!(echo ${LIB_FANCY_SOME_ENV_VAR:-4096})"
+]
+```
+
+#### `cflags`
+
+Flags passed to the compiler when building C files.
+
+#### `cflags_cc`
+
+Flags passed to the compiler when building C++ files.
+
+#### Inverse Flags
+
+It is possible to inverse the flags passed to the compiler.  For example, if you want to remove a default flag you can do so by adding the a `!` after the type of flag to reverse.
+
+```json
+"cflags!": ["-fno-exceptions"],
+```
+
+#### `conditions`
+
+Any key/value pair can be overridden by a condition.  This is useful for platform specific flags.
+
+```json
+"conditions": [
+    ["OS!='win'", {
+        "sources": ["deps/blst/build/assembly.S"],
+        "defines": [
+            "FIELD_ELEMENTS_PER_BLOB=<!(echo ${FIELD_ELEMENTS_PER_BLOB:-4096})"
+        ],
+        "cflags_cc": [
+            "-std=c++17",
+            "-fPIC"
+        ]
+    }],
+    ["OS=='win'", {
+        "sources": ["deps/blst/build/win64/*-x86_64.asm"],
+        "defines": [
+            "_CRT_SECURE_NO_WARNINGS",
+            "FIELD_ELEMENTS_PER_BLOB=<!(powershell -Command \"if ($env:FIELD_ELEMENTS_PER_BLOB) { $env:FIELD_ELEMENTS_PER_BLOB } else { 4096 }\")"
+        ],
+        "msbuild_settings": {
+            "ClCompile": {
+                "AdditionalOptions": ["/std:c++17"]
+            }
+        }
+    }],
+    ["OS=='mac'", {
+        "xcode_settings": {
+        "CLANG_CXX_LIBRARY": "libc++",
+        "MACOSX_DEPLOYMENT_TARGET": "13.0"
+        }
+    }]
+]
+```
 
 ## Adding a Library as a Dependency
+
+There are a few ways to add a dependency using `node-gyp`.  The easiest way, by far is to add the dependencies directly to the published bundle and add the pertinent files to `sources`. This will make sure that everything is built on the targe system (at install time) and with a single build tool to promote compatibility.
+
+The second, and slightly less desirable way is to build the dependency separately and then link it to the project.  This is a bit more complicated and requires a bit more knowledge of the build tool.  It is also more likely to break as dependencies may be built incompatibly. Using this approach has two flavors.
+
+The more complex is adding build
+
+```json
+"actions": [
+    {
+        "action_name": "build_blst",
+        "inputs": ["<(module_root_dir)/dist/deps/blst/build.sh"],
+        "outputs": ["<(module_root_dir)/libblst.a"],
+        "action": ["<(module_root_dir)/dist/deps/blst/build.sh"]
+    },
+    {
+        "action_name": "build_ckzg",
+        "inputs": [
+            "<(module_root_dir)/dist/deps/c-kzg/c_kzg_4844.c",
+            "<(module_root_dir)/libblst.a"
+        ],
+        "outputs": ["<(module_root_dir)/c_kzg_4844.o"],
+        "action": [
+            "cc",
+            "-I<(module_root_dir)/dist/deps/blst/bindings",
+            "-DFIELD_ELEMENTS_PER_BLOB=<!(echo ${FIELD_ELEMENTS_PER_BLOB:-4096})",
+            "-O2",
+            "-c",
+            "<(module_root_dir)/dist/deps/c-kzg/c_kzg_4844.c"
+        ]
+    }
+]
+```
+
+### Other `node-gyp` Targets
+
+```json
+{
+    "target_name": "action_after_build",
+    "type": "none",
+    "dependencies": ["kzg"],
+    "copies": [
+        {
+            "files": ["./build/Release/kzg.node"],
+            "destination": "./dist"
+        },
+        {
+            "files": ["./build/Release/kzg.node"],
+            "destination": "./"
+        }
+    ]
+}
+```

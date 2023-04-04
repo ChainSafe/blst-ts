@@ -19,6 +19,11 @@ Node is a `C++` application so one would think that exporting a `C++` api would 
 We are going to look at async work as an example and analyze how the two pieces fit together and how the `C` code patterns and `C++` patterns interact.
 
 ```c++
+/**
+ *
+ * `node-addon-api`
+ *
+ */
 class AsyncWorker
 {
 public:
@@ -26,6 +31,9 @@ public:
         napi_status status = napi_queue_async_work(_env, _work);
         NAPI_THROW_IF_FAILED_VOID(_env, status);
     }
+private:
+    napi_env _env;
+    napi_async_work _work;
 }
 /**
  *
@@ -61,7 +69,7 @@ The `C` and `C++` apis' are nearly identical.  The 2 exceptions are:
 - New features arrive in `C` first.  It generally takes a few months for the `C++` api to catch up
 - Not all features get implemented in `node-addon-api` but its a small list
 
-See the [`C/C++` big decision](./intro.md#c-vs-c) for more details.
+See the [`C/C++` big decision](./intro.md#c-vs-c) for more differences.
 
 ## `napi-rs`
 
