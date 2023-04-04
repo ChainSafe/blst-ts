@@ -31,7 +31,7 @@ With hopes this guide will help inform the team for a thorough review process an
     - [`napi-rs`](./native-node.md#napi-rs)
 5. [Structuring Addons](./structuring-addons.md)
     - [Phases of Execution](./structuring-addons.md#phases-of-execution)
-    - [Complex Data Types](./structuring-addons.md#complex-data-types)
+    - [Complex Data Types](./structuring-addons.md#complex-data-types)  **_(still working)_**
     - [Context-Awareness](./structuring-addons.md#context-awareness)
 6. [Building Addons](./building.md)
     - [Build Tools](./building.md#build-tools)
