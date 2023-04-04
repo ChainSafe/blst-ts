@@ -42,9 +42,12 @@ yarn install
 
 The only one that needs to be explicitly handled is `blst` which is installed as a submodule
 
+TODO: Need to do more research about dll linking to verify we do not need to specifically build openssl as a submodule.
+
 ```sh
 git submodule update --init
 ```
 
 ## Style Guide
 
+An attempt was made to use the Google style guide for C++.  It's possible that the implementation does not fully comply.  While the code looks "readable" it may be work going through the guide again and updating for compliance. The style guide can be found [here](https://google.github.io/styleguide/cppguide.html).
