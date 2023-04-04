@@ -34,6 +34,17 @@ This is a array of implementation files to compile. Generally this is a list of 
 
 It is possible to use properly formatted `node_modules` as dependencies. Check out how `node-addon-api` is structured for an example of this.
 
+#### `libraries`
+
+Use this to statically link to libraries
+
+```json
+"libraries": [
+    "-lsodium",
+    "<(module_root_dir)/deps/libblst.a",
+],
+```
+
 #### `include_dirs`
 
 This is the equivalent to `include` directories in `make` or `CMake`.  It is a list of directories that will be searched for header files.  Anything placed here will be available in source files without a relative path.
@@ -116,6 +127,12 @@ The second, and much less desirable way, is to build the dependency separately a
 ### Linking a Static Library
 
 It is possible to write a script that is used as an entrance to run `node-gyp`.  One would build the dependency and then run `node-gyp` to build the bindings.  To make sure the entry script runs, execute it as the "install" in `package.json`.
+
+To add a static library use the `libraries` key like:
+
+```json
+"libraries": ["<(module_root_dir)/libblst.a"]
+```
 
 ### Separate Build Actions
 
