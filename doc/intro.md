@@ -13,6 +13,7 @@ With hopes this guide will help inform the team for a thorough review process an
     - [The Big Decisions](#the-big-decisions)
         - [`C` vs `C++`](#c-vs-c)
         - [Callbacks vs. Promises](#callbacks-vs-promises)
+        - [Error Handling](#error-handling)
 2. [`@chainsafe/blst-ts`](./repo.md)
     - [Organization](./repo.md#organization)
     - [Scripts](./repo.md#scripts)
@@ -57,7 +58,11 @@ With hopes this guide will help inform the team for a thorough review process an
     - [`libuv` Multi-Threading](./multi-threading.md#libuv-multi-threading)
     - [`blst-ts` Multi-Threading Implementation](./multi-threading.md#blst-ts-multi-threading-implementation)
     - [Returning Promises from Native Code](./multi-threading.md#returning-promises-from-native-code)
-12. [A JS Developer's Perspective on `C/C++`](./js-perspective-on-c.md)
+12. [Errors] (./errors.md)
+    - [`C` Errors](./errors.md#c-errors)
+    - [`C++` Errors](./errors.md#js-errors)
+    - [Turning `C++` Exceptions Off](./errors.md#turning-c-exceptions-off)
+13. [A JS Developer's Perspective on `C/C++`](./js-perspective-on-c.md)
     - [What JS Developers Take For Granted](./js-perspective-on-c.md#what-js-developers-take-for-granted)
     - [Memory Management](./js-perspective-on-c.md#memory-management)
     - [Compiler-Generated Functions](./js-perspective-on-c.md#compiler-generated-functions)
@@ -79,3 +84,5 @@ While writing the bindings for EIP-4844 I was [requested](https://github.com/eth
 ### Callbacks vs Promises
 
 Callbacks feel antiquated and native-level support for promises exists. This was a pretty easy choice.
+
+### Error Handling
