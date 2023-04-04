@@ -86,3 +86,5 @@ While writing the bindings for EIP-4844 I was [requested](https://github.com/eth
 Callbacks feel antiquated and native-level support for promises exists. This was a pretty easy choice.
 
 ### Error Handling
+
+Turning errors off adds a lot of complexity with little benefit.  See [Setup](https://github.com/nodejs/node-addon-api/blob/main/doc/setup.md) and [error handling](https://github.com/nodejs/node-addon-api/blob/main/doc/error_handling.md) in the `node-addon-api` docs for more info.
