@@ -56,7 +56,6 @@ With hopes this guide will help inform the team for a thorough review process an
     - [`std::thread` Multi-Threading](./multi-threading.md#stdthread-multi-threading)
     - ["Mixed" Multi-Threading](./multi-threading.md#mixed-multi-threading)
     - [`libuv` Multi-Threading](./multi-threading.md#libuv-multi-threading)
-    - [`blst-ts` Multi-Threading Implementation](./multi-threading.md#blst-ts-multi-threading-implementation)
     - [Returning Promises from Native Code](./multi-threading.md#returning-promises-from-native-code)
 12. [Errors](./errors.md)
     - [`C` Errors](./errors.md#c-errors)
