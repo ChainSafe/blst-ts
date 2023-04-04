@@ -120,7 +120,13 @@ Any key/value pair can be overridden by a condition.  This is useful for platfor
 
 ## Adding a Library as a Dependency
 
-There are a few ways to add a dependency using `node-gyp`.  The easiest way, by far is to add the dependencies directly to the published bundle and add the pertinent files to `sources`. This will make sure that everything is built on the targe system (at install time) and with a single build tool to promote compatibility.
+There are a few ways to add a dependency using `node-gyp`.  The easiest way, by far, is to add the pertinent files to `sources`. This will make sure that everything is built on the target system (at install time) and with a single build tool to promote compatibility.
+
+```json
+"sources": [
+    "<(module_root_dir)/deps/blst/src/server.c",
+]
+```
 
 The second, and much less desirable way, is to build the dependency separately and then link it to the project.  This is a bit more complicated and requires a bit more knowledge of the full build toolchain.  It is much more likely to break, as dependencies may be built incompatibly. Using this approach has two flavors.
 
@@ -136,7 +142,9 @@ To add a static library use the `libraries` key like:
 
 ### Separate Build Actions
 
-The more complex is adding build actions to a build target.
+The most complex way is adding build actions to have `node-gyp` build all targets.  `make` is the ultimate tool doing the builds and knowing that makes the inputs and outputs a bit more understandable. They are used to determine if a build is necessary and must match exactly or nothing happens (everything is done).
+
+These actions must also take into account cross-platform compatibility.  Actions do not support `conditions` so its challenging to craft commands without a build script.
 
 ```json
 "actions": [
