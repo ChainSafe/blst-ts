@@ -14,6 +14,10 @@ It builds both `Release` and `Debug` builds and that can be controlled with the 
 
 Before building one must first run `node-gyp configure` to setup the `build` folder. Note that running `npm install` automatically will run configure. You can read more about `node-gyp` commands [here](https://github.com/nodejs/node-gyp#how-to-use).
 
+## `node-gyp` dependencies
+
+There is a common issue that comes up regarding `python` versions when installing and running `node-gyp`.  Newer versions of mac have `python3` by default and `node-gyp` will not correctly find it on the `PATH`.  There are a few options to resolve this but the easiest is to use `pyenv` to manage the versions that are installed and used.
+
 ## `binding.gyp`
 
 The complexity of `node-gyp` is not in its simple commands but its poorly documented configuration file named `binding.gyp`.  [This](https://github.com/nodejs/node-gyp#the-bindinggyp-file) is the example of the file in the docs which is of little use.  Under the [Further reading](https://github.com/nodejs/node-gyp#further-reading) heading there is a link to ["`binding.gyp` files out in the wild wiki page"](https://github.com/nodejs/node-gyp/blob/main/docs/binding.gyp-files-in-the-wild.md) and this is where one is expected to figure it out.  Another helpful resource was going through the list of packages that depend on `node-addon-api` and looking through those projects' `binding.gyp`.

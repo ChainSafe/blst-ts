@@ -4,7 +4,7 @@
 
 JS has some serious luxuries. The runtime is forgiving because it is a single threaded, event driven, garbage collected language. The language is forgiving because it is dynamically typed and interpreted. All of that is a function of lines of code in `node`, `v8`, `libuv` and a host of other factors including good design and decent language semantics.
 
-When building naitve code those things will need to be done manually. Memory will need to be managed.  Threading context will need to be understood. This is not to say that it is impossible to write good code in `C/C++` but it is a lot more to think about than writing JS.
+When building native code, those things need to be done manually. Memory will need to be managed.  Threading context will need to be understood. This is not to say that it is impossible to write good code in `C/C++` but it is a lot more to think about than writing JS.
 
 As an example, async in JS can be confusing for new developers. Some docs and blogs were written very early and use patterns like callbacks. Some are from much later and use async generators. Along with structural changes, there have also been stylistic shifts over time. This same thing happened in `C/C++`.
 

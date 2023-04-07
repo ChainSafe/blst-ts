@@ -1,8 +1,8 @@
 # Reference
 
-
 ## Dumping Ground
-At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written. 
+
+At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written.
 
 There are a lot of good resource on the web and there is a curated list of resources so there is no need to reinvent the wheel.
 
@@ -13,6 +13,213 @@ What does this mean...
 
 , how best-practice `C++` code is structured and how the napi code actually interacts with `v8` and `libuv`.
 
+## Handles, Objects and Values
+
+How these three things relate is an implementation detail and should not be relied upon. It is however presented to provide some context for what `HandleScope` is doing under the hood
+
+## Object Inheritance Hierarchy
+
+Found [here](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L36)
+
+```c++
+//
+// Most object types in the V8 JavaScript are described in this file.
+//
+// Inheritance hierarchy:
+// - Object
+//   - Smi          (immediate small integer)
+//   - TaggedIndex  (properly sign-extended immediate small integer)
+//   - HeapObject   (superclass for everything allocated in the heap)
+//     - JSReceiver  (suitable for property access)
+//     - FixedArrayBase
+//     - PrimitiveHeapObject
+//     - Context
+//       - NativeContext
+//     - Cell
+//     - DescriptorArray
+//     - PropertyCell
+//     - PropertyArray
+//     - Code
+//     - AbstractCode, a wrapper around Code or BytecodeArray
+//     - Map
+//     - Foreign
+//     - SmallOrderedHashTable
+//       - SmallOrderedHashMap
+//       - SmallOrderedHashSet
+//     - SharedFunctionInfo
+//     - Struct
+//     - FeedbackCell
+//     - FeedbackVector
+//     - PreparseData
+//     - UncompiledData
+//       - UncompiledDataWithoutPreparseData
+//       - UncompiledDataWithPreparseData
+//     - SwissNameDictionary
+//
+// Formats of Object::ptr_:
+//  Smi:        [31 bit signed int] 0
+//  HeapObject: [32 bit direct pointer] (4 byte aligned) | 01
+```
+
+### `JSReciever`
+
+```c++
+//- JSProxy
+//- JSObject
+//  - JSArray
+//    - TemplateLiteralObject
+//  - JSArrayBuffer
+//  - JSArrayBufferView
+//    - JSTypedArray
+//    - JSDataView
+//  - JSCollection
+//    - JSSet
+//    - JSMap
+//  - JSCustomElementsObject (may have elements despite empty Fiy)
+//    - JSSpecialObject (requires custom property lookup ha
+//      - JS
+//      - JSGlobalProxy
+//      - JSModuleNamespace
+//    - JSPrimitiveWrapper
+//  - JSDate
+//  - JSFunctionOrBoundFunctionOrWrappedFunction
+//    - JSBoundFunction
+//    - JSFunction
+//    - JSWrappedFunction
+//  - JSGeneratorObject
+//  - JSMapIterator
+//  - JSMessageObject
+//  - JSRegExp
+//  - JSSetIterator
+//  - JSShadowRealm
+//  - JSSharedStruct
+//  - JSStringIterator
+//  - JSTemporalCalendar
+//  - JSTemporalDuration
+//  - JSTemporalInstant
+//  - JSTemporalPlainDate
+//  - JSTemporalPlainDateTime
+//  - JSTemporalPlainMonthDay
+//  - JSTemporalPlainTime
+//  - JSTemporalPlainYearMonth
+//  - JSTemporalTimeZone
+//  - JSTemporalZonedDateTime
+//  - JSWeakCollection
+//    - JSWeakMap
+//    - JSWeakSet
+//  - JSCollator            // If V8_INTL_SUPPORT enabled.
+//  - JSDateTimeFormat      // If V8_INTL_SUPPORT enabled.
+//  - JSDisplayNames        // If V8_INTL_SUPPORT enabled.
+//  - JSDurationFormat      // If V8_INTL_SUPPORT enabled.
+//  - JSListFormat          // If V8_INTL_SUPPORT enabled.
+//  - JSLocale              // If V8_INTL_SUPPORT enabled.
+//  - JSNumberFormat        // If V8_INTL_SUPPORT enabled.
+//  - JSPluralRules         // If V8_INTL_SUPPORT enabled.
+//  - JSRelativeTimeFormat  // If V8_INTL_SUPPORT enabled.
+//  - JSSegmenter           // If V8_INTL_SUPPORT enabled.
+//  - JSSegments            // If V8_INTL_SUPPORT enabled.
+//  - JSSegmentIterator     // If V8_INTL_SUPPORT enabled.
+//  - JSV8BreakIterator     // If V8_INTL_SUPPORT enabled.
+//  - WasmExceptionPackage
+//  - WasmTagObject
+//  - WasmGlobalObject
+//  - WasmInstanceObject
+//  - WasmMemoryObject
+//  - WasmModuleObject
+//  - WasmTableObject
+//  - WasmSuspenderObject
+```
+
+### `FixedArrayBase`
+
+```c++
+//  - ByteArray
+//  - BytecodeArray
+//  - FixedArray
+//    - HashTable
+//      - Dictionary
+//      - StringTable
+//      - StringSet
+//      - CompilationCacheTable
+//      - MapCache
+//    - OrderedHashTable
+//      - OrderedHashSet
+//      - OrderedHashMap
+//    - FeedbackMetadata
+//    - TemplateList
+//    - TransitionArray
+//    - ScopeInfo
+//    - SourceTextModuleInfo
+//    - ScriptContextTable
+//    - ClosureFeedbackCellArray
+//  - FixedDoubleArray
+```
+
+### `PrimitiveHeapObject`
+
+```c++
+//  - BigInt
+//  - HeapNumber
+//  - Name
+//    - Symbol
+//    - String
+//      - SeqString
+//        - SeqOneByteString
+//        - SeqTwoByteString
+//      - SlicedString
+//      - ConsString
+//      - ThinString
+//      - ExternalString
+//        - ExternalOneByteString
+//        - ExternalTwoByteString
+//      - InternalizedString
+//        - SeqInternalizedString
+//          - SeqOneByteInternalizedString
+//          - SeqTwoByteInternalizedString
+//        - ConsInternalizedString
+//        - ExternalInternalizedString
+//          - ExternalOneByteInternalizedString
+//          - ExternalTwoByteInternalizedString
+//  - Oddball
+```
+
+### `Struct`
+
+```c++
+//  - AccessorInfo
+//  - AsmWasmData
+//  - PromiseReaction
+//  - PromiseCapability
+//  - AccessorPair
+//  - AccessCheckInfo
+//  - InterceptorInfo
+//  - CallHandlerInfo
+//  - EnumCache
+//  - TemplateInfo
+//    - FunctionTemplateInfo
+//    - ObjectTemplateInfo
+//  - Script
+//  - DebugInfo
+//  - BreakPoint
+//  - BreakPointInfo
+//  - CallSiteInfo
+//  - CodeCache
+//  - PropertyDescriptorObject
+//  - PromiseOnStack
+//  - PrototypeInfo
+//  - Microtask
+//    - CallbackTask
+//    - CallableTask
+//    - PromiseReactionJobTask
+//      - PromiseFulfillReactionJobTask
+//      - PromiseRejectReactionJobTask
+//    - PromiseResolveThenableJobTask
+//  - Module
+//    - SourceTextModule
+//    - SyntheticModule
+//  - SourceTextModuleInfoEntry
+//  - StackFrameInfo
+```
 
 ## Full Async Implementations
 
