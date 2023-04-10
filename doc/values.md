@@ -4,7 +4,9 @@ _**note:** If you followed the development of this file you may have noticed tha
 
 ---
 
-There is a paradigm shift native addon developers must undergo to really grok how JavaScript values exist under the hood.  The JS runtime is a running application and we can use a runtime API to access JS values.  Data backing the values [exists on the heap](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects-inl.h#L445) regardless if the value is "stack" or "heap" allocated from a JS perspective. When working with a `napi_value` we are working with "references" to pointers to the heap data.
+There is a paradigm shift native addon developers must undergo to really grok how JavaScript values exist under the hood.  The JS runtime is a running application and we can use a runtime API to access JS values.  Data backing the values [exists on the heap](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects-inl.h#L445) regardless if the value is "stack" or "heap" allocated from a JS perspective. When working with a `napi_value` we are working with "references" to pointers to the heap data. Here is a picture taken from [this](https://docs.google.com/document/d/1_w49sakC1XM1OptjTurBDqO86NE16FH8LwbeUAtrbCo/edit#heading=h.8wg7tpqbpt7m) document from the current v8 design.
+
+![object-model](./assets/object-model.png)
 
 That heap data is managed by the JS engine, which means that the data is MOVED by the engine without notice. It is also actively cleaned up by the almighty garbage collector. This is a process that can be fraught for native code because it runs outside of the JS context.
 
@@ -145,26 +147,30 @@ Where it gets a bit more complicated is complex types. The underlying data is no
 
 ## Protecting Data from Garbage Collection
 
-In order to notify the `Isolate` that a value is still relevant, one must reference the data. There are [two types](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L136) of handles in node, local and persistent. Local are lexically driven references, ie the data is still in scope, and persistent references can be used when storing objects across several independent operations and have to be explicitly de-allocated when they are no longer used.
+In order to notify the `Isolate` that a value is still relevant, one must reference the data. There are [two types](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L136) of handles in node, local and persistent. Local are lexically driven references, ie the data is still in scope, and persistent references can be used when storing objects across several independent operations. They have to be explicitly created and de-allocated if no longer used.
 
 ## `v8::HandleScope` and `Napi::HandleScope`
 
-A stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted the garbage collector will no longer track the object stored in the handle and may deallocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
+Lexical references are manged by the `HandleScope`, a stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted the garbage collector will no longer track the object stored in the handle and may deallocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
 
-A `v8::HandleScope` represents a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap.  There is only ever one active HandleScope at a time and the active scope is tracked in [`Isolate->handle_scope_data_`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212). When a scope is deleted, the addresses in the block will stop being tracked and the previous scope will be restored, the HandleScope saved the `prev_next_` and `prev_limit_` pointers.
+A `v8::HandleScope` represents a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap and there is only ever one active `HandleScope` at a time.  The active scope is tracked in [here](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212) in the `Isolate->handle_scope_data_`. When a scope is deleted, the handles in the block will stop being tracked, and the previous scope will be restored from the saved `prev_next_` and `prev_limit_` pointers.
 
 ## The Reference System
 
-There are several `Reference` types available to us, and we will talk a bit about them all.
+The `Reference` system is used for non-lexically-based data persistance. There are several `Reference` types available to us, and we will talk a bit about them all. As a note, they are the second inheritance hierarchy in the `Napi` namespace, with the first being `Value`s.
 
 ```c++
-/// Holds a counted reference to a value; initially a weak reference unless
-/// otherwise specified, may be changed to/from a strong reference by adjusting
-/// the refcount.
-///
-/// The referenced value is not immediately destroyed when the reference count
-/// is zero; it is merely then eligible for garbage-collection if there are no
-/// other references to the value.
+// Holds a counted reference to a value; initially a weak reference unless
+// otherwise specified, may be changed to/from a strong reference by adjusting
+// the refcount.
+//
+// The referenced value is not immediately destroyed when the reference count
+// is zero; it is merely then eligible for garbage-collection if there are no
+// other references to the value.
+//
+// Note when getting the value of a Reference it is usually correct to do so
+// within a HandleScope so that the value handle gets cleaned up efficiently.
+  
 template <typename T>
 class Reference {}
 
@@ -173,7 +179,30 @@ class FunctionReference : public Reference<Function> {}
 class Error : public ObjectReference {}
 class TypeError : public Error {}
 class RangeError : public Error {}
+
+// Shortcuts to creating a new reference with inferred type and refcount = 0.
+template <typename T>
+Reference<T> Weak(T value);
+ObjectReference Weak(Object value);
+FunctionReference Weak(Function value);
+
+// Shortcuts to creating a new reference with inferred type and refcount = 1.
+template <typename T>
+Reference<T> Persistent(T value);
+ObjectReference Persistent(Object value);
+FunctionReference Persistent(Function value);
 ```
 
-If the ref count goes to zero the value will be eligible for garbage collection.
+### Persistent vs Weak References
 
+All references are initially created with a ref count of `0`.  This is a `Weak` reference.  When the ref count is `0` the value is eligible for garbage collection.  Increasing the ref count greater than `0` will result in a `Persistent` reference.  This means that the value will not be eligible garbage collection until the reference is deleted.
+
+### SuppressDestruct
+
+### Errors are References?
+
+Yes.  When a `Napi::Error` is created it is creating a JS `Error` under the hood and what is returned to the native code is a `Persistent` reference to the JS `Error` object.
+
+### `ObjectReference` and `FunctionReference`
+
+There are two specialized types of references that allow more functionality than a base `Reference`.  They are `ObjectReference` and `FunctionReference`.  They are used to
