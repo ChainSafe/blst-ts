@@ -4,13 +4,13 @@ _**note:** If you followed the development of this file you may have noticed tha
 
 ---
 
-Values provide two functions.  They facilitate lookup and garbage collection and there are two different systems for accomplishing that.  `v8::Context` is what [creates](./environment.md#) lexical context and `internal::v8::Object` [doclink](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L182), are the critical components that allow the runtime to function.
-
-There is a paradigm shift native addon developers must undergo to really grok how JavaScript values exist under the hood.  The JS runtime is a running application and we can use a runtime API to access JS values.  Values exist on the heap regardless if they are "stack" or "heap" allocated from a JS perspective. When working with a `napi_value` we are copying "references" to the heap data.
+There is a paradigm shift native addon developers must undergo to really grok how JavaScript values exist under the hood.  The JS runtime is a running application and we can use a runtime API to access JS values.  Data backing the values [exists on the heap](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects-inl.h#L445) regardless if the value is "stack" or "heap" allocated from a JS perspective. When working with a `napi_value` we are working with "references" to pointers to the heap data.
 
 That heap data is managed by the JS engine, which means that the data is MOVED by the engine without notice. It is also actively cleaned up by the almighty garbage collector. This is a process that can be fraught for native code because it runs outside of the JS context.
 
-You can find the full inheritance hierarchy [here](./reference.md#object-inheritance-hierarchy), but first note the following section as it will help to understand how `HandleScope` and `napi_value`  relate.
+Because data is heap allocated, values provide two functions.  They facilitate lookup and garbage collection and there are two different systems for accomplishing that.  `v8::Context` is what [creates](./environment.md#) lexical context.  `internal::v8::Object` [doclink](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L299) and handles to those objects allow the runtime to function with data that moves.
+
+You can find the full inheritance hierarchy [here](./reference.md#object-inheritance-hierarchy), but pay attention to the following section as it will help to understand how `HandleScope` and `napi_value`  relate.
 
 ```c++
 // - Object
@@ -26,64 +26,16 @@ The `Isolate` is responsible for handling all data related to JS execution and v
 
 When working with `napi_value`, and by extension `Napi::Value`, it is important to pass by value.  While it is possible to also pass by reference, which is glorified pass by value, one should never pass by pointer. That insinuates some form of heap allocation for the `napi_value` and the value is not properly counted in the references because of the extra level of indirection.
 
-It is important to note that `v8::Object` and a JavaScript `Object` are not the same. In a JS script, `new Object` creates an instance of `JSObject` under the hood and that is a subclass of `JSReceiver`.
+It is important to note that `v8::Object` and a JavaScript `Object` are not the same. In a JS script, `new Object` creates an instance of `JSObject` under-the-hood and that is a subclass of `JSReceiver`.
 
-The isolate creates objects during runtime and they will be stored in the faster to access space. When the GC runs over the fast access space, any objects that are still relevant are [assigned storage](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L261) by the `Isolate` in the slower to access space. The runtime will retain a `Handle` to the data so values can be looked up. The `Handle` will be added to and managed by the nearest `HandleScope` so that the GC can cleanup once the `HandleScope` is destroyed (variable goes out of scope lexically).
+The isolate creates objects during runtime and they will be stored in the faster to access space. The runtime will retain a `Handle` to the data so values can be looked up. The `Handle` will be added to, and managed by, the nearest `HandleScope` so that the GC can cleanup once the `HandleScope` is destroyed (variable goes out of scope lexically).
+When the GC runs over the fast access space, any objects that are still relevant are [assigned storage](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L378) by the `Isolate` in the slower to access space.
 
-Values, `napi_value` for the rest of this document will be referred to as Value, and thus the `v8::Object` also referred to simply as Object, will remain in scope for as long as the function is on the stack.  When the garbage collector runs (at some point, but assume...) while the function is still somewhere on the stack, all referenced objects on the stack that are not already moved, will be provided a `Handle` and moved with longer-lived variables. This is why pointing to the underlying data directly is not a great idea and patterns explained below were developed.
-
-## `v8::HandleScope` and `Napi::HandleScope`
-
-A stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted the garbage collector will no longer track the object stored in the handle and may deallocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
-
-## The Reference System
-
-There are [two levels](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L136) of handles. scoped and persistent
-
-If the ref count goes to zero the value will be eligible for garbage collection.
-
-## OLD STUFF BELOW HERE
-
-######################
-
-We will need to pay attention to what handles are announced to the GC to make sure that it does not sweep something we still need. It could (and will likely) result in a segfault. This is what the `Reference` system is for.  We can either manually copy data around or we can lean on that same system.  There are several `Reference` types available to us, and we will talk a bit about them all.
-
-We will also cover how to access values in the JS runtime.  How values work when native code is actively running on thread.  How context in `C` affects context in JS and vice versa.  Just because a function has not returned DOES NOT mean that the stack-allocated value in `C` is still alive.  Yes, really...
+Values, `napi_value` for the rest of this document will be referred to as Value, and similarly a `v8::Object` will also be referred to simply as Object, will remain in scope for as long as the native function is on the stack.  When the garbage collector runs (at some point, but assume) while a function is somewhere on the stack, all referenced objects on the stack that are not already moved, will be moved with longer-lived variables. This is why pointing to the underlying data directly is not a great idea and patterns explained below were developed.
 
 ## Napi Values
 
-The base type that all other types extend is the `napi_value` or `Napi::Value`.  There is also the idea of `Napi::Maybe` floating above that, but that topic is out of scope for this discussion.  For all intensive purposes, when you ask the engine for some data, it will return a value.  It is then the job of the implementer to suss out what type of value it is and then to convert it to the underlying, and actually useful, data that system level code can interpret.
-
-This is the inheritance hierarchy for `Napi::Value`:
-
-```c++
-class Boolean : public Value {}
-class Number : public Value {}
-class Number : public Value {}
-class BigInt : public Value {}
-class Date : public Value {}
-// This one surprised me.  I always thought date was an Object...
-
-class Name : public Value {}
-class String : public Name {}
-class Symbol : public Name {}
-
-class TypeTaggable : public Value {}
-class External : public TypeTaggable {}
-class Object : public TypeTaggable {}
-
-class Array : public Object {}
-class Function : public Object {}
-class Promise : public Object {}
-class DataView : public Object {}
-class ArrayBuffer : public Object {}
-class TypedArray : public Object {}
-
-template <typename T>
-class TypedArrayOf : public TypedArray {}
-using Uint8Array = TypedArrayOf<uint8_t>;
-class Buffer : public Uint8Array {}
-```
+There is only a subset of Object types that are exposed to the native addon layer, JS values being the most important. The base type that all other types extend is the `napi_value` or `Napi::Value`. There is also the idea of `Napi::Maybe` floating above that, but that topic is out of scope for this discussion.  For all intensive purposes, when you ask the engine for some data, it will return a value.  It is then the job of the implementer to suss out what type of value it is and then to convert it to the underlying, and actually useful, data that system level code can interpret.
 
 I will let a segment from the `node-addon-api` speak for itself...
 
@@ -181,17 +133,29 @@ class Value {
 };
 ```
 
-So back to the part about requesting values. In order to use JavaScript values one has to be on the JS thread and this is a very sticky wicket for addon developers.  One of the most important reasons for writing node addons is to circumvent the limitations of strictly staying on thread.  When working with the JS data off thread there are provisions that need to be made so that the data is accessible.
+So back to the part about requesting values. In order to access JavaScript values, the executing code must be on the JS thread. A challenge presents itself because one of the most important reasons for writing node addons is to circumvent the limitations of strictly staying on thread. When working with the JS data off thread there are provisions that need to be made so that the data is accessible.
 
-There are a few ways to do this with the simplest being copy it.  A quick `memcpy` or assignment to another variable, while on the thread, will allow that data to be used after leaving that context.  One simply asks `v8` for the value, saves it to a class member somewhere and off we go.  That is totally valid for some cases but in most its SLOW...
+## How to Use the Data Backing Values
 
-We have this awesome tracking and cleaning system at our disposal.  Its a luxury that most system level programmers do not share. It is also the reason why most system level programmers shy away from writing node bindings.  The API is huge.... like YUUGE!!!  It's that bad.
+There are a few ways to do this with the simplest being copy it.  A quick `memcpy` or assignment to another variable, while on the thread, will allow that data to be used after leaving the JS context.  One simply asks `v8` for the value, saves it to a class member somewhere and off we go.  That is totally valid for some cases, but in others it's SLOW...
 
-This is the reason I started this section with the paradigm shift.  `Node-API` is cleverly named with a bad marketing job.
+The two ends of the spectrum of copy vs. point are primitives and buffers. They are the simplest to work with. For primitive values, pointing to the data is a bad idea, because it moves, so copying is the correct approach.  With buffers, the `BackingStore` is [allocated](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/backing-store.cc#L240) using a normal [malloc/calloc](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L393).  This means that it will not move as long as it is not [resized](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L401).
+
+Where it gets a bit more complicated is complex types. The underlying data is not stored contiguously like in native `struct` or `array`. It is necessary to use the `Isolate`, like when working in a JS file, to resolve the leaf node Objects.  Once at the leaf node, apply the rules above for primitives and buffers.
+
+## Protecting Data from Garbage Collection
+
+In order to notify the `Isolate` that a value is still relevant, one must reference the data. There are [two types](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L136) of handles in node, local and persistent. Local are lexically driven references, ie the data is still in scope, and persistent references can be used when storing objects across several independent operations and have to be explicitly de-allocated when they are no longer used.
+
+## `v8::HandleScope` and `Napi::HandleScope`
+
+A stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted the garbage collector will no longer track the object stored in the handle and may deallocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
+
+A `v8::HandleScope` represents a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap.  There is only ever one active HandleScope at a time and the active scope is tracked in [`Isolate->handle_scope_data_`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212). When a scope is deleted, the addresses in the block will stop being tracked and the previous scope will be restored, the HandleScope saved the `prev_next_` and `prev_limit_` pointers.
 
 ## The Reference System
 
- The second inheritance tree is for the Reference system.
+There are several `Reference` types available to us, and we will talk a bit about them all.
 
 ```c++
 /// Holds a counted reference to a value; initially a weak reference unless
@@ -211,20 +175,5 @@ class TypeError : public Error {}
 class RangeError : public Error {}
 ```
 
-## Dead References, Dead Node
+If the ref count goes to zero the value will be eligible for garbage collection.
 
-```c++
-Napi::Function constructor = DeclareClass(...);
-Napi::Value instance = constructor.New({...});
-Napi::Value instance2 = constructor.New({...}); // segfault;
-```
-
-I know... extreme title.  Segfaults are scary!  But you may also be asking how is that possible.  How is it possible that two stack allocated instances, that are generated from the same constructor function that was also stack allocated segfault.  While this is an extreme example, and probably unlikely to occur frequently, it will occur given enough runtime.
-
-If there is no `HandleScope` to account for values in the function there is no guarantee that the GC will not delete an object during its execution.  And while the `C` function context is preserved between the lines, the JS context may not have been. Between calls to `New` the GC could have run.  If there was a JS function that called another JS function in that constructor, there would be a break in JS stack execution to reset the context.  During that break the engine could have triggered GC.
-
-## HandleScope
-
-`v8::HandleScope`s are created to associate values and represent a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap.  There is only ever one active HandleScope at a time and the active scope is tracked in [`Isolate->handle_scope_data_`](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212).
-
-In order to restore the previous scope the HandleScope saves the `prev_next_` and `prev_limit_` pointers.

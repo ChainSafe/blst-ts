@@ -17,6 +17,39 @@ What does this mean...
 
 How these three things relate is an implementation detail and should not be relied upon. It is however presented to provide some context for what `HandleScope` is doing under the hood
 
+
+## `Napi::Value` Inheritance Hierarchy
+
+This inheritance hierarchy for `Napi::Value` was built from [this](https://github.com/nodejs/node-addon-api/blob/main/napi.h) file.
+
+```c++
+class Boolean : public Value {}
+class Number : public Value {}
+class Number : public Value {}
+class BigInt : public Value {}
+class Date : public Value {}
+
+class Name : public Value {}
+class String : public Name {}
+class Symbol : public Name {}
+
+class TypeTaggable : public Value {}
+class External : public TypeTaggable {}
+class Object : public TypeTaggable {}
+
+class Array : public Object {}
+class Function : public Object {}
+class Promise : public Object {}
+class DataView : public Object {}
+class ArrayBuffer : public Object {}
+class TypedArray : public Object {}
+
+template <typename T>
+class TypedArrayOf : public TypedArray {}
+using Uint8Array = TypedArrayOf<uint8_t>;
+class Buffer : public Uint8Array {}
+```
+
 ## Object Inheritance Hierarchy
 
 Found [here](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L36)
