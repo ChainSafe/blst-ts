@@ -199,10 +199,12 @@ All references are initially created with a ref count of `0`.  This is a `Weak` 
 
 ### SuppressDestruct
 
+This is a method on the `Reference` class and stops the destructor from being called. Call this on a reference that is declared as static data, to prevent its destructor from running at program shutdown time, which would attempt to reset the reference when the environment is no longer valid. Avoid using this if at all possible. If you do need to use static data, MAKE SURE to warn your users that your addon is NOT thread-safe.
+
 ### Errors are References?
 
 Yes.  When a `Napi::Error` is created it is creating a JS `Error` under the hood and what is returned to the native code is a `Persistent` reference to the JS `Error` object.
 
 ### `ObjectReference` and `FunctionReference`
 
-There are two specialized types of references that allow more functionality than a base `Reference`.  They are `ObjectReference` and `FunctionReference`.  They are used to
+There are two specialized types of references that allow more functionality than a base `Reference`.  They are `ObjectReference` and `FunctionReference`.  They are used to call methods on the underlying Object like `Get`, `Has` and `Call` without having to dereference the handle.
