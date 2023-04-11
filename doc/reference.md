@@ -1,5 +1,32 @@
 # Reference
 
+## Links
+
+https://nodejs.org/dist/latest/docs/api/addons.html
+
+https://nodejs.org/dist/latest/docs/api/n-api.html
+
+https://github.com/nodejs/node-addon-api/tree/main/doc
+
+https://github.com/nodejs/node-addon-examples
+
+https://nodejs.github.io/node-addon-examples
+
+
+#### `node-gyp` and `binging.gyp`
+
+https://github.com/nodejs/node-gyp/blob/main/gyp/pylib/gyp/input.py
+
+https://gyp.gsrc.io/docs/InputFormatReference.md
+
+#### Memory Leaks
+
+[difficult node Issue that resolved with valgrind](https://github.com/nodejs/node/issues/26667)
+
+[`valgrind` command that works for node](https://github.com/oracle/odpi/blob/main/test/valgrind/run.sh)
+
+https://medium.com/@massey0ross/valgrind-in-macos-with-docker-3b0e4bbdece1
+
 ## Dumping Ground
 
 At the moment this is sort of a dumping ground for stuff that was written but didn't really fit in the section it was written.
