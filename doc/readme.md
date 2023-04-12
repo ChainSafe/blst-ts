@@ -4,7 +4,7 @@ This document is an attempt to provide a more approachable introduction to `@cha
 
 My goal is to share some resources that were helpful, decisions that were made, to give an overview of native addons, nuances of working with the dependencies, and most importantly how that all fits together at runtime.
 
-With hopes this guide will help inform the team for a thorough review process and onboard new contributors for maintenance. I also want to lower the barrier for using native code at ChainSafe so if there is a potential opportunity through native modules, it will be an easier decision-making and development process.
+Hopefully this guide will help inform the team for a thorough review process and onboard new contributors for maintenance. I also want to lower the barrier for using native code at ChainSafe, so if there is a potential opportunity through native modules, it will be an easier decision-making and development process.
 
 ## Table of Contents
 
