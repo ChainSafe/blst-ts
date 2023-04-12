@@ -8,7 +8,7 @@ The `blst-ts` library is built with `node-gyp`.
 
 ## `node-gyp`
 
-`node-gyp` is not known for being the most friendly build tool but there are a few tips here that will help make life easier when working with it.  It is a wrapper around `make` and will help to scaffold the files necessary (like `Makefile`'s) for compilation.
+`node-gyp` is not known for being the most friendly build tool, but there are a few tips here that will help make life easier when working with it.  It is a wrapper around `make` and will help to scaffold the files necessary (like `Makefile`'s) for compilation.
 
 It builds both `Release` and `Debug` builds and that can be controlled with the `--debug` flag when running the `configure`, `build` or `rebuild` commands.
 
