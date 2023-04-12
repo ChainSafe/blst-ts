@@ -1,4 +1,4 @@
-# The `blst-ts` Repository
+# The `@chainsafe/blst-ts` Repository
 
 ## Organization
 
@@ -25,7 +25,7 @@ There are a number of scripts to help while working in this repo.  The first two
 `dev` | Watches files and re-runs `build/test` as appropriate
 `download-spec-tests` | Pulls the official ethereum spec tests
 `build` | Runs `node-gyp` in `Release` mode
-`build:debud` | Runs `node-gyp` in `Debug` mode
+`build:debug` | Runs `node-gyp` in `Debug` mode
 `build:clean` | Runs `clean` and then runs a full `build`
 `test` | Runs unit, spec and performance tests
 `test:unit` | Runs unit tests
