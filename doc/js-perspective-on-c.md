@@ -12,9 +12,9 @@ The differences that are seen across docs/blogs/etc stem from `C` being quite ol
 
 ## Memory Management
 
-Stack and heap allocation are both similar and different to JS and it is important to understand the nuances because they have greatly influenced this library.  In  particular, focus on how everything gets freed.  It's easy to allocate memory but tracking and cleaning up the allocations is where the challenge lies.  Many of the paradigms in `C/C++` are inherently, or explicitly, implemented for resource management.  Because this library is primarily `c++` we will use [RAII](https://en.cppreference.com/w/cpp/language/raii) and OOP to help us along the way.
+Stack and heap allocation are both similar and different to JS and it is important to understand the nuances because they have greatly influenced this library.  In  particular, focus on how everything gets freed.  It's easy to allocate memory but tracking and cleaning up the allocations is where the challenge lies.  Many of the paradigms in `C/C++` are inherently, or explicitly, implemented for resource management.  Because this library is primarily `C++` we will use [RAII](https://en.cppreference.com/w/cpp/language/raii) and OOP to help us along the way.
 
-On of the big things I noticed in my journey to native code is, in general, it is much easier to deal with stack allocated objects.  Working with the heap is harder and error prone so the docs real like horror novels. Its all a bit frightening. Stack allocation is much more natural as it mimics JS but there are a few sticky wickets to pay attention to.
+One of the big things I noticed, on my journey to native code, is that its generally much easier to deal with stack allocated objects.  Working with the heap feels harder and more error prone.  Tutorials read like horror novels and its all a bit frightening. Stack allocation is much more natural as it mimics JS, but there are a few sticky wickets to pay attention to.
 
 First is that not everything can be stack allocated (see the discussion about [`blst::Pairing`](./blst.md#initialization-of-blstpairing) for a got-ya).  There was another thing that caught me by surprise but intuitively makes sense once I thought about it.  Stack overflow is real and arrays have lots of stuff in them.  In native code there is the possibility that user data may be bigger than the stack can hold.  I know... This is intuitive... But in JS those are things we don't really think about so it wasn't second nature yet. This is a real and dangerous risk.
 
@@ -51,25 +51,25 @@ SomethingFancy c = SomethingFancy{123};
 
 SomethingFancy 'a' is allocated and constructed using the "default constructor" and in this instance that is a "magic function" that is compiler created. 'b' is allocated and created in-place using the declared constructor as would be expected. 'c' is... complex. The compiler-created default constructor is being used to allocate memory at 'c' and a right-hand reference is created using the declared constructor.  Then the compiler-created destructor deletes the temporary at 'c' leaving an empty allocation, and then the value in the right-hand reference is copied to the allocation at 'c' using the compiler-created "magic" copy assignment operator.  Lots and lots of confusing compiler slight-of-hand.
 
-While this is not intended to be a full tutorial these idea were something that definitely took getting used to and those "magic" functions are very hard to debug.  I would also like to make note that the above example is strictly a `c++` thing.  `SomethingFancy` is not a built in type and constructor syntax with an initializer list are not `c`, they are '`c++`'.  The ideas of right-hand reference, operator overloading and constructor/destructors are all "`++`" too.
+While this is not intended to be a full tutorial these idea were something that definitely took getting used to and those "magic" functions are very hard to debug.  I would also like to make note that the above example is strictly a `C++` thing.  `SomethingFancy` is not a built in type and constructor syntax with an initializer list are not `C`, they are '`C++`'.  The ideas of right-hand reference, operator overloading and constructor/destructors are all "`++`" too.
 
 ```c
 int a;
-int b{42}; // not valid c, but is valid c++
+int b{42}; // not valid C, but is valid C++
 int c = 42;
 ```
 
-It is valid, and often times required, to allocate memory but to no initialize it.  In JS the uninitialized value is `undefined` in `c` using an uninitialized variable is "undefined behavior".  
+It is valid, and often times required, to allocate memory but to no initialize it.  In JS, the uninitialized value is `undefined`. In `C` using an uninitialized variable is "undefined behavior".  
 
-With `c` as the context 'a' is uninitialized and can be dangerous. 'b' is invalid syntax and 'c' is an integer initialized to 42.
+With `C` as the context, 'a' is uninitialized and can be dangerous. 'b' is invalid syntax and 'c' is an integer initialized to 42.
 
-With `c++` as the context 'a' is treated the same as raw `c`. 'b' is an integer initialized to 42 using constructor syntax. 'c' is an integer initialized to 42 using assignment syntax.
+With `C++` as the context, 'a' is treated the same as raw `C`. 'b' is an integer initialized to 42 using constructor syntax. 'c' is an integer initialized to 42 using assignment syntax.
 
 ## Passing To and Returning From Functions
 
-Building functions happen for the same reasons in c as they do in JS.  They help to ease the mental burden for "what something does".  The differences in memory allocation drive very different coding paradigms though.
+Building functions happen for the same reasons in `C` as they do in JS.  They help to ease the mental burden for "what something does".  The differences in memory allocation drive very different coding paradigms though.
 
-In modern JS we generally pass in what is needed inside the function context, return back the values that result and if an error occurs it is thrown.  That pattern generally holds true for both sync an async functions.
+In modern JS we generally pass in what is needed inside the function context, return back the values that result, and if an error occurs it is thrown.  That pattern generally holds true for both sync and async functions.
 
 `C` stack-allocation semantics, and the resulting variable scoping, often result in a pattern where both input and output arguments are passed and then the function either returns `void` or `int` (to denote the error code where `0` represents no error) to show if valid execution occurred.  Generally one sees variables allocated for both inputs and return(s) in the calling context and then those variables are passed into the function.  Many times the function call is placed in a conditional to check execution status.
 
@@ -93,16 +93,16 @@ return 0;
 
 There is one more paradigm that is worth explicitly stating.  Note in this example that `fclose` is in the conditional and `load_trusted_setup_file` is not.  `load_trusted_setup_file` is a function where the return value needs to be handled for either valid or invalid execution (ie valid but if fclose fails need to `free_trusted_setup` and for invalid execution the function returns `1`).  `fclose` however only requires that invalid execution requires further work.
 
-There are a few challenges that emerge from the way that `c` functions are structured.  In very large code-bases its very difficult to track allocations and de-allocations because they do not always occur in the same functions.
+There are a few challenges that emerge from the way that `C` functions are structured.  In very large code-bases, its very difficult to track allocations and de-allocations because they do not always occur in the same functions.
 
-In `c++` everything from above is true and there are some additional paradigms that should be presented.  Object have higher complexity for initialization/clean-up and bigger sizes.  Those "enhancements" and the `class` paradigm are where most of the complexity in `c++` (relative to `c`) comes in.  The trade of for the complexity is RAII.  Or i suppose RAII emerged because of the complexity and it is a very nice paradigm for large and complex systems.
+In `C++`, everything from above is true and there are some additional paradigms that should be presented.  Objects have higher complexity for initialization/clean-up and bigger sizes.  Those "enhancements" and the `class` paradigm are where most of the complexity in `C++` (relative to `C`) comes in.  The trade off for the complexity is RAII.  Or I suppose RAII emerged because of the complexity and it is a very nice paradigm for large and complex systems.
 
-RAII helps to overcome a lot of the challenges that emerge with allocations and de-allocations that occur in different locations in the codebase.  Most of the "magic" that happens in `c++` is the compiler filling in "defaults" so that the class structure isn't overly verbose.  It is not necessary to write functions for constructors, destructors, copy semantics nor move semantics.  They get "auto" generated for us, sometime with disastrous consequences.
+RAII helps to overcome a lot of the challenges that emerge with allocations and de-allocations that occur in different locations in the codebase.  Most of the "magic" that happens in `C++` is the compiler filling in "defaults" so that the class structure isn't overly verbose.  It is not necessary to write functions for constructors, destructors, copy semantics nor move semantics.  They get "auto" generated for us, sometimes with disastrous consequences.
 
 The "rule of 3" and "rule of 5" were created to crystalize the mental paradigm so that developers do not get bitten by the magic/helpers that get induced.
 
 ## Closing Thoughts
 
-It is simple to go watch some coding tutorials, like I did, and whip out a ton of code "that works".  Where most c/c++ code tutorials lack is this kind of stuff.  Best-practices.  Coding paradigms.  Relational anecdotes to paradigms I already understood...  The stuff that a senior dev would lean over and tell us Juniors if we still had a water cooler to talk by...
+It is simple to go watch some coding tutorials, like I did, and whip out a ton of code "that works".  Where most `C/C++` code tutorials lack is this kind of stuff.  Best-practices.  Coding paradigms.  Relational anecdotes to paradigms I already understood...  The stuff that a senior dev would lean over and tell us Juniors if we still had a water cooler to talk by...
 
 If you too have had a hard-fought win while learning system-level programming as a JS dev, this is the place to share that red badge of courage.

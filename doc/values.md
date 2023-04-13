@@ -24,16 +24,15 @@ You can find the full inheritance hierarchy [here](./reference.md#object-inherit
 //     - PrimitiveHeapObject  (primitives String/Symbol/Number)
 ```
 
-The `Isolate` is responsible for handling all data related to JS execution and values are only the slice that addon developers interact with.  Memory is allocated in the heap to manage all things JS and native code handles  are references, to pointers, to said data.
+The `Isolate` is responsible for handling all data related to JS execution and values are only the slice that addon developers interact with.  Memory is allocated in the heap to manage all things JS, and native code handles are references, to pointers, to said data.
 
 When working with `napi_value`, and by extension `Napi::Value`, it is important to pass by value.  While it is possible to also pass by reference, which is glorified pass by value, one should never pass by pointer. That insinuates some form of heap allocation for the `napi_value` and the value is not properly counted in the references because of the extra level of indirection.
 
 It is important to note that `v8::Object` and a JavaScript `Object` are not the same. In a JS script, `new Object` creates an instance of `JSObject` under-the-hood and that is a subclass of `JSReceiver`.
 
-The isolate creates objects during runtime and they will be stored in the faster to access space. The runtime will retain a `Handle` to the data so values can be looked up. The `Handle` will be added to, and managed by, the nearest `HandleScope` so that the GC can cleanup once the `HandleScope` is destroyed (variable goes out of scope lexically).
-When the GC runs over the fast access space, any objects that are still relevant are [assigned storage](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L378) by the `Isolate` in the slower to access space.
+The isolate creates objects during runtime and they will be stored in the faster-to-access space. The runtime will retain a `Handle` to the data so values can be looked up. The `Handle` will be added to, and managed by, the nearest `HandleScope` so that the GC can cleanup once the `HandleScope` is destroyed (variable goes out of scope lexically). When the GC runs over the fast-access space, any objects that are still relevant are [assigned storage](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/objects.h#L378) by the `Isolate` in the slower-to-access space.
 
-Values, `napi_value` for the rest of this document will be referred to as Value, and similarly a `v8::Object` will also be referred to simply as Object, will remain in scope for as long as the native function is on the stack.  When the garbage collector runs (at some point, but assume) while a function is somewhere on the stack, all referenced objects on the stack that are not already moved, will be moved with longer-lived variables. This is why pointing to the underlying data directly is not a great idea and patterns explained below were developed.
+A value, `napi_value` for the rest of this document will be referred to as Value, and similarly a `v8::Object` will also be referred to simply as Object, will remain in scope for as long as the native function is on the stack.  When the garbage collector runs (at some point, but assume) while a function is somewhere on the stack, all referenced objects on the stack that are not already moved, will be moved with longer-lived variables. This is why pointing to the underlying data directly is not a great idea and patterns explained below were developed.
 
 ## Napi Values
 
@@ -139,7 +138,7 @@ So back to the part about requesting values. In order to access JavaScript value
 
 ## How to Use the Data Backing Values
 
-There are a few ways to do this with the simplest being copy it.  A quick `memcpy` or assignment to another variable, while on the thread, will allow that data to be used after leaving the JS context.  One simply asks `v8` for the value, saves it to a class member somewhere and off we go.  That is totally valid for some cases, but in others it's SLOW...
+There are a few ways to do this with the simplest being to copy it.  A quick `memcpy` or assignment to another variable, while on the thread, will allow that data to be used after leaving the JS context.  One simply asks `v8` for the value, saves it to a class member somewhere and off we go.  That is totally valid for some cases, but in others it's SLOW...
 
 The two ends of the spectrum of copy vs. point are primitives and buffers. They are the simplest to work with. For primitive values, pointing to the data is a bad idea, because it moves, so copying is the correct approach.  With buffers, the `BackingStore` is [allocated](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/objects/backing-store.cc#L240) using a normal [malloc/calloc](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L393).  This means that it will not move as long as it is not [resized](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L401).
 

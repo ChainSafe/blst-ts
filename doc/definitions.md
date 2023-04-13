@@ -10,7 +10,7 @@ A `v8::Isolate` is the representation of a complete JavaScript execution environ
 
 ## `v8::Context`
 
-`Context` is a sand-boxed execution environment that allows separate, unrelated, JavaScript code to run in a single instance of the JavaScript engine. The JavaScript virtual machine implements the [Command Pattern](https://en.wikipedia.org/wiki/Command_pattern), and each message in the callback que is a "request for invocation" in an explicit evaluation context.  The context does a few things but most importantly is setting up the lexical environment associated with the function.
+`Context` is a sand-boxed execution environment that allows separate, unrelated, JavaScript code to run in a single instance of the JavaScript engine. The JavaScript virtual machine implements the [Command Pattern](https://en.wikipedia.org/wiki/Command_pattern), and each message in the callback queue is a "request for invocation" in an explicit evaluation context.  The context does a few things but most importantly is setting up the lexical environment associated with the function.
 
 This is an excerpt from "context.h":
 

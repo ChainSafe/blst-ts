@@ -44,4 +44,4 @@ This time a lightning bolt struck.  The debugger stepped to the `= default` func
 
 When in debugger mode, compiler-generated functions don't have a "line" to jump to because it's just the machine code that gets infilled.  The map doesn't have line reference so nothing shows and all one sees is flashes while the IDE is rendering whatever it is it renders in the instant before the debug segfault screen shows up.
 
-Once I saw what happened it was a simple matter of googling the surrounding topic and the rule of 3 and 5 become prominent reminders of a hard faught battle.
+Once I saw what happened it was a simple matter of googling the surrounding topic, and the rule of 3 and 5 become prominent reminders of a hard fought battle.

@@ -16,7 +16,7 @@ This is not as good as it seems though.  While it looks great on paper, under re
 
 ## `libuv` Multi-Threading
 
-The most predictable way to handle multi-threading is to use the build-in thread pool that ships with `node`.  It is the magic behind "single-threaded execution" that makes `node` so easy to reason about.  This method was ultimately implemented.
+The most predictable way to handle multi-threading is to use the built-in thread pool that ships with `node`.  It is the magic behind "single-threaded execution" that makes `node` so easy to reason about.  This method was ultimately implemented.
 
 Work is submitted to the thread-pool and queued for execution in the order it was received.  There are a number of constructs available through `n-api` and the discussion of several can be found in the [`n-api`](./napi.md) overview.
 
@@ -26,7 +26,7 @@ The functions that are used by `blst-ts` are the `napi_*_async_work` functions. 
 
 There are some distinct challenges to structuring asynchronous code.  The invocation will begin with context provided by the incoming `Napi::CallbackInfo` and that context will cease once the calling function returns.  The actual work will happen at some point in the future, as will returning a value to the calling context.
 
-The `Napi::Promise::Deferred` will help us bridge the gap between the calling context and returning context. Holding handles to and from Phase 2, where the work happens, is up to the implementer.  The section about [values and references](./values_and_references.md) will provide background on the topic.  tl/dr; one needs to create some `References` and then some handles to the native-compatible underlying data.
+The `Napi::Promise::Deferred` will help us bridge the gap between the calling context and returning context. Holding handles to and from Phase 2, where the work happens, is up to the implementer.  The section about [values](./values.md) will provide background on the topic.  tl/dr; one needs to create some `References` and then some handles to the native-compatible underlying data.
 
 Most of the parsing MUST happen on thread as there are calls in the underlying code to `napi_env`.  This is the critical no-no of native JS code.  There can be zero interaction with the JS runtime unless the function is actively running on-thread.  As an example a `Napi::String` will be what is delivered to native code but in order to get access to the `std::string` or `char *` one will need to get that on thread.  Just having a `napi_value` handle does not necessarily mean you have access to the actual data. That needs to be done before returning from the original calling context (function coming in from JS).
 
