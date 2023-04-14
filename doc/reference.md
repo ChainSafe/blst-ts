@@ -12,7 +12,6 @@ https://github.com/nodejs/node-addon-examples
 
 https://nodejs.github.io/node-addon-examples
 
-
 #### `node-gyp` and `binging.gyp`
 
 https://github.com/nodejs/node-gyp/blob/main/gyp/pylib/gyp/input.py
@@ -26,6 +25,20 @@ https://gyp.gsrc.io/docs/InputFormatReference.md
 [`valgrind` command that works for node](https://github.com/oracle/odpi/blob/main/test/valgrind/run.sh)
 
 https://medium.com/@massey0ross/valgrind-in-macos-with-docker-3b0e4bbdece1
+
+
+## Napi Versions
+
+| N-API Version | Node.js Version | Notes                        |
+|---------------|-----------------|------------------------------|
+| 1             | 8.0.0           | Experimental feature         |
+| 2             | 8.9.0           |                              |
+| 3             | 10.0.0          | N-API becomes stable         |
+| 4             | 10.16.0         |                              |
+| 5             | 10.17.0         |                              |
+| 6             | 12.11.0         |                              |
+| 7             | 14.0.0          |                              |
+
 
 ## Dumping Ground
 

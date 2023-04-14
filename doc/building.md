@@ -177,6 +177,14 @@ These actions must also take into account cross-platform compatibility.  Actions
 ]
 ```
 
+## Adding a Dependency that is Part of Node
+
+As an example, `@chainsafe/blst-ts` uses `openssl` to generate random bytes. Node.js uses OpenSSL [internally](https://nodejs.org/api/crypto.html) and links it [statically by default](https://github.com/nodejs/node/blob/c94be4125bfbc68e4cd9cbec27676347a314997d/configure.py#L355). When you build a native addon with node-gyp, you are linking your addon with the Node.js binary, which already has the OpenSSL library linked in. This is the reason you don't need to explicitly specify the `-lopenssl` in `binding.gyp` file.
+
+When you include an OpenSSL header file like <openssl/rand.h> in your native addon and use its functions, the linker resolves the corresponding OpenSSL symbols during the build process because [node-gyp knows](https://nodejs.org/api/addons.html#linking-to-libraries-included-with-nodejs) they are part of the Node.js binary.
+
+At runtime, when Node.js loads (dynamically links) the native addon using require, your addon is able to access the OpenSSL functions because those functions are part of the Node.js binary.
+
 ### Other `node-gyp` Targets
 
 ```json
