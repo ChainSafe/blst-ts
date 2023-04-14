@@ -178,28 +178,22 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
         }
     }
 };
+
 /**
  *
  *
- * GlobalState
+ * BlstTsAddon
  *
  *
  */
-// ********************
-// NOTE: This should be the ONLY static, global scope variable
-std::mutex GlobalState::_lock;
-// ********************
-GlobalState::GlobalState()
+BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     : _dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"},
-      _random_bytes_length{8},
       _secret_key_length{32},
       _public_key_compressed_length{48},
       _public_key_uncompressed_length{96},
       _signature_compressed_length{96},
       _signature_uncompressed_length{192},
-      _secret_key_type{"BLST_TS_SECRET_KEY"},
-      _public_key_type{"BLST_TS_PUBLIC_KEY"},
-      _signature_type{"BLST_TS_SIGNATURE"},
+      _random_bytes_length{8},
       _blst_error_strings{
           "BLST_SUCCESS",
           "BLST_BAD_ENCODING",
@@ -211,71 +205,47 @@ GlobalState::GlobalState()
           "BLST_BAD_SCALAR",
       }
 {
-}
-std::shared_ptr<GlobalState> GlobalState::GetInstance(BlstTsAddon *addon)
-{
-    static std::weak_ptr<GlobalState> shared;
-    const std::lock_guard<std::mutex> guard(_lock);
-    // Get an existing instance from the weak reference, if possible.
-    if (auto instance = shared.lock())
-    {
-        return instance;
-    }
-    // Create a new instance and keep a weak reference.
-    // Global state will be cleaned up when last thread exits.
-    auto instance = std::make_shared<GlobalState>();
-    shared = instance;
-    return instance;
-}
-/**
- *
- *
- * BlstTsAddon
- *
- *
- */
-void BlstTsAddon::BuildJsConstants(Napi::Env &env)
-{
-    _js_constants = Napi::Object::New(env);
-    _js_constants.Set(Napi::String::New(env, "DST"), Napi::String::New(env, _global_state->_dst));
-    _js_constants.Set(Napi::String::New(env, "SECRET_KEY_LENGTH"), Napi::Number::New(env, _global_state->_secret_key_length));
-    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, _global_state->_public_key_uncompressed_length));
-    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_COMPRESSED"), Napi::Number::New(env, _global_state->_public_key_compressed_length));
-    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, _global_state->_signature_uncompressed_length));
-    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_COMPRESSED"), Napi::Number::New(env, _global_state->_signature_compressed_length));
-}
-std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
-{
-    return _global_state->_blst_error_strings[err];
-}
-void BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
-{
-    // TODO: use the node version of this function
-    RAND_bytes(ikm, length);
-}
-BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
-{
-    BuildJsConstants(env);
-    DefineAddon(exports, {InstanceValue("BLST_CONSTANTS", _js_constants, napi_enumerable)});
-    SecretKey::Init(env, exports, this);
-    PublicKey::Init(env, exports, this);
-    Signature::Init(env, exports, this);
+    DefineAddon(exports, {
+                             InstanceValue("BLST_CONSTANTS", BuildJsConstants(env), napi_enumerable),
+                             InstanceMethod("testSync", &BlstTsAddon::TestSync, napi_enumerable),
+                             InstanceMethod("testAsync", &BlstTsAddon::TestAsync, napi_enumerable),
+                         });
+    // SecretKey::Init(env, exports, this);
+    // PublicKey::Init(env, exports, this);
+    // Signature::Init(env, exports, this);
     env.SetInstanceData(this);
 };
+std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
+{
+    return _blst_error_strings[err];
+}
+// [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
+// [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
+// [RandomBytesTraits::DeriveBits](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_random.cc#L65)
+// [CSPRNG](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_util.cc#L63)
+bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
+{
+    do
+    {
+        if (1 == RAND_status())
+            if (1 == RAND_bytes(ikm, length))
+                return true;
+    } while (1 == RAND_poll());
+
+    return false;
+}
+Napi::Value BlstTsAddon::TestSync(const Napi::CallbackInfo &info) { return info.Env().Undefined(); };
+Napi::Value BlstTsAddon::TestAsync(const Napi::CallbackInfo &info) { return info.Env().Undefined(); };
+Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
+{
+    Napi::Object _js_constants = Napi::Object::New(env);
+    _js_constants.Set(Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
+    _js_constants.Set(Napi::String::New(env, "SECRET_KEY_LENGTH"), Napi::Number::New(env, _secret_key_length));
+    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_COMPRESSED"), Napi::Number::New(env, _public_key_compressed_length));
+    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, _public_key_uncompressed_length));
+    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_COMPRESSED"), Napi::Number::New(env, _signature_compressed_length));
+    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, _signature_uncompressed_length));
+    return _js_constants;
+}
 
 NODE_API_ADDON(BlstTsAddon)
-
-// Napi::Object processEnv = _env
-//                               .Global()
-//                               .Get("process")
-//                               .As<Napi::Object>()
-//                               .Get("env")
-//                               .As<Napi::Object>();
-// Napi::Array keys = processEnv.GetPropertyNames();
-// for (uint32_t i = 0; i < keys.Length(); i++)
-// {
-//     Napi::Value key_value = keys[i];
-//     auto key = key_value.As<Napi::String>().Utf8Value();
-//     auto val = processEnv.Get(key).As<Napi::String>().Utf8Value();
-//     cout << key << "=" << val << endl;
-// }
