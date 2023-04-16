@@ -21,53 +21,125 @@ typedef enum
     Jacobian
 } CoordType;
 
-class BlstAsyncWorker : public Napi::AsyncWorker
+class ErrorHandler
 {
 public:
-    BlstAsyncWorker(const Napi::CallbackInfo &info) : Napi::AsyncWorker{info.Env()},
-                                                      _info{info},
-                                                      _env{Env()},
-                                                      _module{_env.GetInstanceData<BlstTsAddon>()},
-                                                      _deferred{_env},
-                                                      _use_deferred{false},
-                                                      _error{} {};
-    Napi::Value RunSync();
-    Napi::Value Run();
-    void ThrowJsException() { Napi::Error::New(_env, _error).ThrowAsJavaScriptException(); };
     bool HasError() { return _error.size() > 0; };
     std::string GetError() { return _error; };
 
 protected:
-    const Napi::CallbackInfo &_info;
+    ErrorHandler(Napi::Env env)
+        : _env{env},
+          _error{} {};
+
+    void SetError(const std::string &err) { _error = err; };
+    void ThrowJsException()
+    {
+        Napi::Error::New(_env, _error).ThrowAsJavaScriptException();
+    };
+
+    // All classes in this library extend ErrorHandler so store the env here
     Napi::Env _env;
+    std::string _error;
+};
+
+class BlstAsyncWorker : public ErrorHandler, public Napi::AsyncWorker
+{
+public:
+    BlstAsyncWorker(const Napi::CallbackInfo &info)
+        : ErrorHandler{info.Env()},
+          Napi::AsyncWorker{ErrorHandler::_env},
+          _env{ErrorHandler::_env},
+          _info{info},
+          _module{_env.GetInstanceData<BlstTsAddon>()},
+          _deferred{_env},
+          _use_deferred{false} {};
+    /**
+     * Runs the worker synchronously with the execution phase on-thread. When
+     * running synchronously, the worker should be stack allocated.
+     */
+    Napi::Value RunSync();
+    /**
+     * Runs the worker asynchronously and queue's the work for execution by
+     * libuv. When running asynchronously, the worker should be heap allocated
+     * with `new`. Realistically this should be the only `new`'s in the addon
+     * code.
+     */
+    Napi::Value Run();
+
+protected:
+    // Convenience reference to avoid ErrorHandler::_env everywhere
+    Napi::Env &_env;
+    const Napi::CallbackInfo &_info;
     BlstTsAddon *_module;
 
-    // pure virtual functions that must be implemented by the function worker
+    /**
+     * Pure virtual functions that must be implemented by the function worker to
+     * parse the incoming CallbackInfo into native values for the execution
+     * phase.  This function will be run on-thread.
+     */
     virtual void Setup() = 0;
+    /**
+     * Pure virtual function that must be implemented by the function worker to
+     * get the value returned from the execution phase.  This function will
+     * convert the native return value to a Napi::Value and will be run
+     * on-thread.
+     *
+     * @note The AsyncWorker::GetResult also exists but is meant for arguments
+     * that would get called to a callback function if using AsyncWorker
+     * without promises. Return type overloading is not supported in C++ and
+     * only a single return value is supported.
+     */
     virtual Napi::Value GetReturnValue() = 0;
 
+    /**
+     * Virtual function that overloads by calling both ErrorHandler::SetError
+     * and AsyncWorker::SetError to ensure clean execution.
+     * AsyncWorker::_error is a private, not protected, member so it cannot be
+     * accessed directly for synchronous execution error reporting.
+     */
     virtual void SetError(const std::string &err);
 
+    /**
+     * Overload OnOK and make `final` to ensure consumers to not attempt to
+     * implement. OnOK is called by the runtime when async work is complete.
+     * The runtime will call this function on the main event loop thread. The
+     * AsyncWorked class creates a `HandleScope` before calling OnOk.
+     *
+     * @note https://github.com/nodejs/node-addon-api/blob/d01304437cd4c661f0eda4deb84eb34d7e533f32/napi-inl.h#L5015
+     */
     void virtual OnOK() override final;
+    /**
+     * Overload OnError and make `final` to ensure consumers to not attempt to
+     * implement. OnError is called by the runtime when async work is complete.
+     * The runtime will call this function on the main event loop thread. The
+     * AsyncWorked class creates a `HandleScope` before calling OnError.
+     *
+     * @note https://github.com/nodejs/node-addon-api/blob/d01304437cd4c661f0eda4deb84eb34d7e533f32/napi-inl.h#L5017
+     */
     void virtual OnError(Napi::Error const &err) override final;
-    Napi::Promise GetPromise();
 
 private:
     Napi::Promise::Deferred _deferred;
     bool _use_deferred;
-    std::string _error;
+
+    /**
+     * GetPromise associated with _deferred for return to JS
+     */
+    Napi::Promise GetPromise();
 };
 
-class Uint8ArrayArg
+class Uint8ArrayArg : public ErrorHandler
 {
 public:
-    Uint8ArrayArg(const Napi::Env &env) : _env{env},
-                                          _error_prefix{},
-                                          _error{},
-                                          _data{nullptr},
-                                          _byte_length{0} {};
+    Uint8ArrayArg(Napi::Env env)
+        : ErrorHandler{env},
+          _error_prefix{},
+          _data{nullptr},
+          _byte_length{0},
+          _ref{} {};
     Uint8ArrayArg(
-        const Napi::Env &env,
+        Napi::Env env,
         const Napi::Value &val,
         const std::string &err_prefix);
 
@@ -78,17 +150,10 @@ public:
 
     const uint8_t *Data();
     size_t ByteLength();
-    void ThrowJsException() { Napi::Error::New(_env, _error).ThrowAsJavaScriptException(); };
-    bool HasError() { return _error.size() > 0; };
-    std::string GetError() { return _error; };
     bool ValidateLength(size_t length1, size_t length2 = 0);
 
 protected:
-    Napi::Env _env;
     std::string _error_prefix;
-    std::string _error;
-
-    void SetError(const std::string &err) { _error = err; };
 
 private:
     uint8_t *_data;
@@ -96,11 +161,11 @@ private:
     Napi::Reference<Napi::Uint8Array> _ref;
 };
 
-class Uint8ArrayArgArray
+class Uint8ArrayArgArray : public ErrorHandler
 {
 public:
     Uint8ArrayArgArray(
-        const Napi::Env &env,
+        Napi::Env env,
         const Napi::Value &arr_val,
         const std::string &err_prefix_singular,
         const std::string &err_prefix_plural);
@@ -108,21 +173,14 @@ public:
     Uint8ArrayArgArray(Uint8ArrayArgArray &&source) = default;
 
     Uint8ArrayArgArray &operator=(const Uint8ArrayArgArray &source) = delete;
-    Uint8ArrayArgArray &operator=(Uint8ArrayArgArray &&source) = default;
+    Uint8ArrayArgArray &operator=(Uint8ArrayArgArray &&source) = delete;
     Uint8ArrayArg &operator[](size_t index) { return _args[index]; }
 
     size_t Size() { return _args.size(); }
     void Reserve(size_t size) { return _args.reserve(size); }
-    void ThrowJsException() { Napi::Error::New(_env, _error).ThrowAsJavaScriptException(); };
-    bool HasError() { return _error.size() > 0; };
-    std::string GetError() { return _error; };
 
 private:
-    Napi::Env _env;
-    std::string _error;
     std::vector<Uint8ArrayArg> _args;
-
-    void SetError(const std::string &err) { _error = err; };
 };
 
 // #include "secret_key.h"

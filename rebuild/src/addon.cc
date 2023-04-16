@@ -17,9 +17,9 @@ Napi::Value BlstAsyncWorker::RunSync()
         return _env.Undefined();
     }
     OnExecute(_env);
-    // OnWorkComplete calls Destroy and GetReturnValue will segfault.
-    // the class is stack allocated when running this and will clean itself up
-    // so SuppressDestruct is safe here
+    // `OnWorkComplete` calls `Destroy` causing `GetReturnValue` to segfault.
+    // When calling `RunSnyc` the class is stack allocated (should be!!!) so
+    // should clean itself up and `SuppressDestruct` is safe here.
     SuppressDestruct();
     OnWorkComplete(_env, napi_ok);
     return HasError() ? _env.Undefined() : GetReturnValue();
@@ -38,7 +38,7 @@ Napi::Value BlstAsyncWorker::Run()
 };
 void BlstAsyncWorker::SetError(const std::string &err)
 {
-    _error = err;
+    ErrorHandler::SetError(err);
     Napi::AsyncWorker::SetError(err);
 };
 void BlstAsyncWorker::OnOK()
@@ -63,6 +63,7 @@ Napi::Promise BlstAsyncWorker::GetPromise()
 {
     return _deferred.Promise();
 };
+
 /**
  *
  *
@@ -71,13 +72,14 @@ Napi::Promise BlstAsyncWorker::GetPromise()
  *
  */
 Uint8ArrayArg::Uint8ArrayArg(
-    const Napi::Env &env,
+    Napi::Env env,
     const Napi::Value &val,
-    const std::string &err_prefix) : _env{env},
-                                     _error_prefix{err_prefix},
-                                     _error{},
-                                     _data{nullptr},
-                                     _byte_length{0}
+    const std::string &err_prefix)
+    : ErrorHandler{env},
+      _error_prefix{err_prefix},
+      _data{nullptr},
+      _byte_length{0},
+      _ref{}
 {
     if (val.IsTypedArray())
     {
@@ -152,12 +154,11 @@ bool Uint8ArrayArg::ValidateLength(size_t length1, size_t length2)
  *
  */
 Uint8ArrayArgArray::Uint8ArrayArgArray(
-    const Napi::Env &env,
+    Napi::Env env,
     const Napi::Value &raw_arg,
     const std::string &err_prefix_singular,
     const std::string &err_prefix_plural)
-    : _env{env},
-      _error{},
+    : ErrorHandler{env},
       _args{}
 {
     if (!raw_arg.IsArray())
