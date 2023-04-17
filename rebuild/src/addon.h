@@ -14,12 +14,12 @@
 using std::cout;
 using std::endl;
 
-#define BLST_TS_CATCH_BEGIN                      \
+#define WORKER_TRY_CATCH_BEGIN                   \
     Napi::HandleScope scope(ErrorHandler::_env); \
     try                                          \
     {
 
-#define BLST_TS_CATCH_END(name)                                 \
+#define WORKER_TRY_CATCH_END(name)                              \
     }                                                           \
     catch (std::exception err)                                  \
     {                                                           \

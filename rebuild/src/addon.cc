@@ -9,7 +9,7 @@
  */
 Napi::Value BlstAsyncWorker::RunSync()
 {
-    BLST_TS_CATCH_BEGIN
+    WORKER_TRY_CATCH_BEGIN
     Setup();
     if (HasError())
     {
@@ -26,12 +26,12 @@ Napi::Value BlstAsyncWorker::RunSync()
         goto out_err;
     }
     return GetReturnValue();
-    BLST_TS_CATCH_END("RunSync");
+    WORKER_TRY_CATCH_END("RunSync");
 };
 
 Napi::Value BlstAsyncWorker::Run()
 {
-    BLST_TS_CATCH_BEGIN
+    WORKER_TRY_CATCH_BEGIN
     _use_deferred = true;
     Setup();
     if (HasError())
@@ -40,7 +40,7 @@ Napi::Value BlstAsyncWorker::Run()
     }
     Queue();
     return GetPromise();
-    BLST_TS_CATCH_END("Run");
+    WORKER_TRY_CATCH_END("Run");
 };
 void BlstAsyncWorker::SetError(const std::string &err)
 {
