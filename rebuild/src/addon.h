@@ -2,6 +2,7 @@
 #define BLST_TS_ADDON_H__
 
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <mutex>
 #include <openssl/rand.h>
@@ -12,6 +13,30 @@
 // TODO: these should come out post PR review
 using std::cout;
 using std::endl;
+
+#define BLST_TS_CATCH_BEGIN                      \
+    Napi::HandleScope scope(ErrorHandler::_env); \
+    try                                          \
+    {
+
+#define BLST_TS_CATCH_END(name)                                 \
+    }                                                           \
+    catch (std::exception err)                                  \
+    {                                                           \
+        std::ostringstream msg;                                 \
+        msg << "caught exception in " #name ": " << err.what(); \
+        SetError(msg.str());                                    \
+        goto out_err;                                           \
+    }                                                           \
+    catch (...)                                                 \
+    {                                                           \
+        SetError("caught unknown exception in " #name);         \
+        goto out_err;                                           \
+    }                                                           \
+                                                                \
+    out_err:                                                    \
+    ThrowJsException();                                         \
+    return ErrorHandler::_env.Undefined();
 
 class BlstTsAddon;
 
@@ -49,10 +74,9 @@ public:
     BlstAsyncWorker(const Napi::CallbackInfo &info)
         : ErrorHandler{info.Env()},
           Napi::AsyncWorker{ErrorHandler::_env},
-          _env{ErrorHandler::_env},
           _info{info},
-          _module{_env.GetInstanceData<BlstTsAddon>()},
-          _deferred{_env},
+          _module{ErrorHandler::_env.GetInstanceData<BlstTsAddon>()},
+          _deferred{ErrorHandler::_env},
           _use_deferred{false} {};
     /**
      * Runs the worker synchronously with the execution phase on-thread. When
@@ -68,8 +92,6 @@ public:
     Napi::Value Run();
 
 protected:
-    // Convenience reference to avoid ErrorHandler::_env everywhere
-    Napi::Env &_env;
     const Napi::CallbackInfo &_info;
     BlstTsAddon *_module;
 

@@ -9,32 +9,38 @@
  */
 Napi::Value BlstAsyncWorker::RunSync()
 {
-    Napi::HandleScope scope(_env);
+    BLST_TS_CATCH_BEGIN
     Setup();
     if (HasError())
     {
-        ThrowJsException();
-        return _env.Undefined();
+        goto out_err;
     }
-    OnExecute(_env);
+    OnExecute(ErrorHandler::_env);
     // `OnWorkComplete` calls `Destroy` causing `GetReturnValue` to segfault.
     // When calling `RunSnyc` the class is stack allocated (should be!!!) so
     // should clean itself up and `SuppressDestruct` is safe here.
     SuppressDestruct();
-    OnWorkComplete(_env, napi_ok);
-    return HasError() ? _env.Undefined() : GetReturnValue();
+    OnWorkComplete(ErrorHandler::_env, napi_ok);
+    if (HasError())
+    {
+        goto out_err;
+    }
+    return GetReturnValue();
+    BLST_TS_CATCH_END("RunSync");
 };
+
 Napi::Value BlstAsyncWorker::Run()
 {
+    BLST_TS_CATCH_BEGIN
     _use_deferred = true;
     Setup();
     if (HasError())
     {
-        ThrowJsException();
-        return _env.Undefined();
+        goto out_err;
     }
     Queue();
     return GetPromise();
+    BLST_TS_CATCH_END("Run");
 };
 void BlstAsyncWorker::SetError(const std::string &err)
 {
