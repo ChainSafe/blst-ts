@@ -14,9 +14,9 @@
 using std::cout;
 using std::endl;
 
-#define WORKER_TRY_CATCH_BEGIN                   \
-    Napi::HandleScope scope(ErrorHandler::_env); \
-    try                                          \
+#define WORKER_TRY_CATCH_BEGIN               \
+    Napi::HandleScope scope(BlstBase::_env); \
+    try                                      \
     {
 
 #define WORKER_TRY_CATCH_END(name)                              \
@@ -36,7 +36,7 @@ using std::endl;
                                                                 \
     out_err:                                                    \
     ThrowJsException();                                         \
-    return ErrorHandler::_env.Undefined();
+    return BlstBase::_env.Undefined();
 
 class BlstTsAddon;
 
@@ -46,14 +46,14 @@ typedef enum
     Jacobian
 } CoordType;
 
-class ErrorHandler
+class BlstBase
 {
 public:
     bool HasError() { return _error.size() > 0; };
     std::string GetError() { return _error; };
 
 protected:
-    ErrorHandler(Napi::Env env)
+    BlstBase(Napi::Env env)
         : _env{env},
           _error{} {};
 
@@ -63,20 +63,21 @@ protected:
         Napi::Error::New(_env, _error).ThrowAsJavaScriptException();
     };
 
-    // All classes in this library extend ErrorHandler so store the env here
+    // All classes in this library extend BlstBase so store the env here
     Napi::Env _env;
     std::string _error;
 };
 
-class BlstAsyncWorker : public ErrorHandler, public Napi::AsyncWorker
+class BlstAsyncWorker : public BlstBase, public Napi::AsyncWorker
 {
 public:
     BlstAsyncWorker(const Napi::CallbackInfo &info)
-        : ErrorHandler{info.Env()},
-          Napi::AsyncWorker{ErrorHandler::_env},
+        : BlstBase{info.Env()},
+          Napi::AsyncWorker{BlstBase::_env},
+          _env{BlstBase::_env},
           _info{info},
-          _module{ErrorHandler::_env.GetInstanceData<BlstTsAddon>()},
-          _deferred{ErrorHandler::_env},
+          _module{BlstBase::_env.GetInstanceData<BlstTsAddon>()},
+          _deferred{BlstBase::_env},
           _use_deferred{false} {};
     /**
      * Runs the worker synchronously with the execution phase on-thread. When
@@ -92,6 +93,7 @@ public:
     Napi::Value Run();
 
 protected:
+    Napi::Env &_env;
     const Napi::CallbackInfo &_info;
     BlstTsAddon *_module;
 
@@ -115,7 +117,7 @@ protected:
     virtual Napi::Value GetReturnValue() = 0;
 
     /**
-     * Virtual function that overloads by calling both ErrorHandler::SetError
+     * Virtual function that overloads by calling both BlstBase::SetError
      * and AsyncWorker::SetError to ensure clean execution.
      * AsyncWorker::_error is a private, not protected, member so it cannot be
      * accessed directly for synchronous execution error reporting.
@@ -151,11 +153,11 @@ private:
     Napi::Promise GetPromise();
 };
 
-class Uint8ArrayArg : public ErrorHandler
+class Uint8ArrayArg : public BlstBase
 {
 public:
     Uint8ArrayArg(Napi::Env env)
-        : ErrorHandler{env},
+        : BlstBase{env},
           _error_prefix{},
           _data{nullptr},
           _byte_length{0},
@@ -183,7 +185,7 @@ private:
     Napi::Reference<Napi::Uint8Array> _ref;
 };
 
-class Uint8ArrayArgArray : public ErrorHandler
+class Uint8ArrayArgArray : public BlstBase
 {
 public:
     Uint8ArrayArgArray(
@@ -241,8 +243,7 @@ public:
      */
     bool GetRandomBytes(blst::byte *ikm, size_t length);
 
-    Napi::Value TestSync(const Napi::CallbackInfo &info);
-    Napi::Value TestAsync(const Napi::CallbackInfo &info);
+    Napi::Value RunTest(const Napi::CallbackInfo &info);
 
 private:
     /**
