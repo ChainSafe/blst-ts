@@ -1,4 +1,5 @@
 .nyc_output
+.vscode/settings.json
 coverage
 build
 dist

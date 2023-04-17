@@ -19,23 +19,28 @@ using std::endl;
     try                                      \
     {
 
-#define WORKER_TRY_CATCH_END(name)                              \
-    }                                                           \
-    catch (std::exception err)                                  \
-    {                                                           \
-        std::ostringstream msg;                                 \
-        msg << "caught exception in " #name ": " << err.what(); \
-        SetError(msg.str());                                    \
-        goto out_err;                                           \
-    }                                                           \
-    catch (...)                                                 \
-    {                                                           \
-        SetError("caught unknown exception in " #name);         \
-        goto out_err;                                           \
-    }                                                           \
-                                                                \
-    out_err:                                                    \
-    ThrowJsException();                                         \
+#define WORKER_TRY_CATCH_END(name)                                        \
+    }                                                                     \
+    catch (Napi::Error &err)                                               \
+    {                                                                     \
+        SetError(err.Message());                                          \
+        goto out_err;                                                     \
+    }                                                                     \
+    catch (std::exception & err)                                          \
+    {                                                                     \
+        std::ostringstream msg;                                           \
+        msg << "caught exception in " #name ": " << err.what();           \
+        SetError(msg.str());                                              \
+        goto out_err;                                                     \
+    }                                                                     \
+    catch (...)                                                           \
+    {                                                                     \
+        SetError("caught unknown exception in " #name);                   \
+        goto out_err;                                                     \
+    }                                                                     \
+                                                                          \
+    out_err:                                                              \
+    ThrowJsException();                                                   \
     return BlstBase::_env.Undefined();
 
 class BlstTsAddon;
@@ -93,6 +98,10 @@ public:
     Napi::Value Run();
 
 protected:
+    /**
+     * Both BlstBase and Napi::AsyncWorker have an _env member.  Save a ref to
+     * the correct one to avoid `BlstBase::_env` sprinkled throughout the code.
+     */
     Napi::Env &_env;
     const Napi::CallbackInfo &_info;
     BlstTsAddon *_module;

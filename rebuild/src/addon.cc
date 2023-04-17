@@ -233,7 +233,7 @@ protected:
                 SetError("setup: test case 0");
                 break;
             case 1:
-                throw Napi::Error::New(_env, "");
+                throw Napi::Error::New(_env, "setup: test case 1");
                 break;
             default:
                 SetError("setup: unknown test case");
@@ -256,6 +256,14 @@ protected:
         {
             switch (_test_case)
             {
+            case 0:
+                SetError("return: test case 0");
+                break;
+            case 1:
+                throw Napi::Error::New(_env, "return: test case 1");
+                break;
+            default:
+                SetError("return: unknown test case");
             }
         }
         return Napi::String::New(_env, _return_value);
@@ -349,133 +357,3 @@ Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
 }
 
 NODE_API_ADDON(BlstTsAddon)
-
-
-
-class TestWorker : public BlstAsyncWorker
-{
-public:
-    TestWorker(const Napi::CallbackInfo &info)
-        : BlstAsyncWorker{info},
-          _test_phase{TestPhase::SETUP},
-          _test_case{0},
-          _return_value{} {}
-
-    enum TestPhase
-    {
-        SETUP = 0,
-        EXECUTION,
-        RETURN
-    };
-
-protected:
-    void Setup() override
-    {
-        Napi::Value test_phase_value = _info[1];
-        if (!test_phase_value.IsNumber())
-        {
-            SetError("testPhase must be a TestPhase enum");
-            return;
-        }
-        _test_phase = static_cast<TestPhase>(test_phase_value.As<Napi::Number>().Uint32Value());
-        Napi::Value test_case_value = _info[2];
-        if (!test_case_value.IsNumber())
-        {
-            SetError("testCase must be a number");
-            return;
-        }
-        _test_case = test_case_value.As<Napi::Number>().Uint32Value();
-        if (_test_phase == TestPhase::SETUP)
-        {
-            switch (_test_case)
-            {
-            case 0:
-                SetError("setup: test case 0");
-                break;
-            case 1:
-                throw Napi::Error::New(_env, "");
-                break;
-            default:
-                SetError("setup: unknown test case");
-            }
-        }
-    }
-    void Execute() override
-    {
-        _return_value.append("CORRECT_VALUE");
-        if (_test_phase == TestPhase::EXECUTION)
-        {
-            switch (_test_case)
-            {
-            }
-        }
-    }
-    Napi::Value GetReturnValue() override
-    {
-        if (_test_phase == TestPhase::RETURN)
-        {
-            switch (_test_case)
-            {
-            }
-        }
-        return Napi::String::New(_env, _return_value);
-    }
-
-private:
-    TestPhase _test_phase;
-    uint32_t _test_case;
-    std::string _return_value;
-};
-
-class BlstTsAddon : public Napi::Addon<BlstTsAddon>
-{
-public:
-    std::string _dst;
-    size_t _secret_key_length;
-    size_t _public_key_compressed_length;
-    size_t _public_key_uncompressed_length;
-    size_t _signature_compressed_length;
-    size_t _signature_uncompressed_length;
-    size_t _random_bytes_length;
-    std::string _blst_error_strings[8];
-    // Napi::FunctionReference _secret_key_ctr;
-    // Napi::FunctionReference _public_key_ctr;
-    // Napi::FunctionReference _signature_ctr;
-
-    BlstTsAddon(Napi::Env env, Napi::Object exports);
-
-    BlstTsAddon(BlstTsAddon &&source) = delete;
-    BlstTsAddon(const BlstTsAddon &source) = delete;
-    BlstTsAddon &operator=(BlstTsAddon &&source) = delete;
-    BlstTsAddon &operator=(const BlstTsAddon &source) = delete;
-
-    /**
-     * Converts a blst error to an error string
-     */
-    std::string GetBlstErrorString(const blst::BLST_ERROR &err);
-
-    /**
-     * Uses the same openssl method as node to generate random bytes
-     */
-    bool GetRandomBytes(blst::byte *ikm, size_t length);
-
-    Napi::Value RunTest(const Napi::CallbackInfo &info);
-
-private:
-    /**
-     *  Creates a constants objects to pass to JS
-     */
-    Napi::Object BuildJsConstants(Napi::Env &env);
-};
-
-Napi::Value BlstTsAddon::RunTest(const Napi::CallbackInfo &info)
-{
-    bool is_async = info[0].ToBoolean().Value();
-    if (is_async)
-    {
-        TestWorker *worker = new TestWorker{info};
-        return worker->Run();
-    }
-    TestWorker worker{info};
-    return worker.RunSync();
-}

@@ -44,20 +44,34 @@ describe("bindings", () => {
   describe("C++ implementations", () => {
     describe("BlstAsyncWorker", () => {
       describe("setup phase", () => {
-        it("should handle errors using SetError", () => {});
-        it("should catch thrown errors", () => {});
+        it("should handle errors using SetError", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 0)).to.throw("setup: test case 0");
+        });
+        it("should catch thrown errors", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 1)).to.throw("setup: test case 1");
+        });
       });
       describe("execution phase", () => {
         describe("sync execution", () => {
-          it("should handle errors using SetError", () => {});
-          it("should catch thrown errors", () => {});
-          it("should return the correct value", () => {});
+          it("should handle errors using SetError", () => {
+            expect(() => runTest(false, TestPhase.SETUP, 0)).to.throw("setup: test case 0");
+          });
+          it("should catch thrown errors", () => {
+            expect(() => runTest(false, TestPhase.SETUP, 1)).to.throw("setup: test case 1");
+          });
+          it("should return the correct value", () => {
+            expect(runTest(false, TestPhase.EXECUTION, 0)).to.equal("CORRECT_VALUE");
+          });
         });
         describe("async execution", () => {
           it("should handle errors using SetError", () => {});
           it("should catch thrown errors", () => {});
-          it("should return a Promise", () => {});
-          it("should return a promise that resolves the correct value", () => {});
+          it("should return a Promise", () => {
+            expect(runTest(true, TestPhase.EXECUTION, 2)).is.instanceof(Promise);
+          });
+          it("should return a promise that resolves the correct value", async () => {
+            return expect(await runTest(true, TestPhase.EXECUTION, 2)).to.equal("CORRECT_VALUE");
+          });
         });
       });
       describe("value return phase", () => {
