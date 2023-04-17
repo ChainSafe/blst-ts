@@ -1,21 +1,16 @@
 import {expect} from "chai";
 import * as bindings from "../../lib";
 
-type TestFunction<T> = (
-  msg: bindings.BlstBuffer,
-  msgs: bindings.BlstBuffer[],
-  publicKey: bindings.PublicKeyArg,
-  publicKeys: bindings.PublicKeyArg[],
-  signature: bindings.SignatureArg,
-  signatures: bindings.SignatureArg[]
-) => T;
-type TestSync = TestFunction<boolean>;
-type TestAsync = TestFunction<Promise<boolean>>;
-interface BindingsTestRigs {
-  testSync: TestSync;
-  testAsync: TestAsync;
+enum TestPhase {
+  SETUP = 0,
+  EXECUTION = 1,
+  VALUE_RETURN = 2,
 }
-const {testSync, testAsync} = bindings as unknown as BindingsTestRigs;
+declare function TestFunction(isAsync: false, testPhase: TestPhase, testCase: number): string;
+declare function TestFunction(isAsync: true, testPhase: TestPhase, testCase: number): Promise<string>;
+declare function TestFunction(isAsync: boolean, testPhase: TestPhase, testCase: number): string | Promise<string>;
+type BindingsWithTestRig = typeof bindings & {runTest: typeof TestFunction};
+const {runTest} = bindings as unknown as BindingsWithTestRig;
 
 describe("bindings", () => {
   describe("constants", () => {
@@ -47,18 +42,28 @@ describe("bindings", () => {
     });
   });
   describe("C++ implementations", () => {
-    it("should have a testSync function", () => {
-      expect(testSync).to.be.a("function");
-    });
-    it("should have a testAsync function", () => {
-      expect(testAsync).to.be.a("function");
-    });
     describe("BlstAsyncWorker", () => {
-      it("should run synchronously and return a value", () => {
-        console.log(testSync("" as any, [] as any, "" as any, [] as any, "" as any, [] as any));
+      describe("setup phase", () => {
+        it("should handle errors using SetError", () => {});
+        it("should catch thrown errors", () => {});
       });
-      it("should run asynchronously and return a Promise of a value", () => {});
-      it("should not run if there is an error processing arguments", () => {});
+      describe("execution phase", () => {
+        describe("sync execution", () => {
+          it("should handle errors using SetError", () => {});
+          it("should catch thrown errors", () => {});
+          it("should return the correct value", () => {});
+        });
+        describe("async execution", () => {
+          it("should handle errors using SetError", () => {});
+          it("should catch thrown errors", () => {});
+          it("should return a Promise", () => {});
+          it("should return a promise that resolves the correct value", () => {});
+        });
+      });
+      describe("value return phase", () => {
+        it("should handle errors using SetError", () => {});
+        it("should catch thrown errors", () => {});
+      });
     });
     describe("Uint8ArrayArg", () => {
       it("should hold a reference that persists through gc", () => {});
@@ -66,20 +71,8 @@ describe("bindings", () => {
       it("should accept Buffer", () => {});
       it("should throw for invalid input", () => {});
     });
-    describe("Uint8ArrayArgArray", () => {});
-    describe("PublicKeyArg", () => {
-      it("should hold a reference that persists through gc", () => {});
-      it("should accept Uint8Array", () => {});
-      it("should accept a PublicKey instance", () => {});
-      it("should throw for invalid input", () => {});
+    describe("Uint8ArrayArgArray", () => {
+      // make array with a single Uint8ArrayArg and run tests from Uint8ArrayArg
     });
-    describe("PublicKeyArgArray", () => {});
-    describe("SignatureArg", () => {
-      it("should hold a reference that persists through gc", () => {});
-      it("should accept Uint8Array", () => {});
-      it("should accept Signature instance", () => {});
-      it("should throw for invalid input", () => {});
-    });
-    describe("SignatureArgArray", () => {});
   });
 });

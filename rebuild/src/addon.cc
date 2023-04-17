@@ -185,6 +185,87 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
         }
     }
 };
+/**
+ *
+ *
+ * TestWorker
+ *
+ *
+ */
+class TestWorker : public BlstAsyncWorker
+{
+public:
+    TestWorker(const Napi::CallbackInfo &info)
+        : BlstAsyncWorker{info},
+          _test_phase{0},
+          _test_case{0},
+          _return_value{} {}
+
+    enum TestPhase
+    {
+        SETUP = 0,
+        EXECUTION,
+        RETURN
+    };
+
+protected:
+    void Setup() override
+    {
+        Napi::Value test_phase_value = info[1];
+        if (!test_phase_value.IsNumber())
+        {
+            SetError("testPhase must be a TestPhase enum");
+            return;
+        }
+        _test_phase = reinterpret_cast<TestPhase>(test_phase_value.As<Napi::Number>().Uint32Value());
+        Napi::Value test_case_value = info[2];
+        if (!test_case_value.IsNumber())
+        {
+            SetError("testCase must be a number");
+            return;
+        }
+        _test_case = test_case_value.As<Napi::Number>().Uint32Value();
+        if (_test_phase == TestPhase::SETUP)
+        {
+            switch (_test_case)
+            {
+            case 0:
+                SetError("setup: test case 0");
+                break;
+            case 1:
+                throw Napi::Error(_env, "");
+                break;
+            default:
+                SEtError("setup: unknown test case");
+            }
+        }
+    }
+    void Execute() override
+    {
+        _return_value.append("CORRECT_VALUE");
+        if (_test_phase == TestPhase::EXECUTION)
+        {
+            switch (_test_case)
+            {
+            }
+        }
+    }
+    Napi::Value GetReturnValue() override
+    {
+        if (_test_phase == TestPhase::RETURN)
+        {
+            switch (_test_case)
+            {
+            }
+        }
+        return Napi::String::New(_env, _return_value);
+    }
+
+private:
+    TestPhase _test_phase;
+    uint32_t _test_case;
+    std::string _return_value;
+};
 
 /**
  *
@@ -225,7 +306,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
 std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
 {
     return _blst_error_strings[err];
-}
+};
 // [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
 // [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
 // [RandomBytesTraits::DeriveBits](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_random.cc#L65)
@@ -240,9 +321,18 @@ bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
     } while (1 == RAND_poll());
 
     return false;
-}
-Napi::Value BlstTsAddon::TestSync(const Napi::CallbackInfo &info) { return info.Env().Undefined(); };
-Napi::Value BlstTsAddon::TestAsync(const Napi::CallbackInfo &info) { return info.Env().Undefined(); };
+};
+Napi::Value BlstTsAddon::RunTest(const Napi::CallbackInfo &info)
+{
+    bool is_async = info[0].ToBoolean().Value();
+    if (is_async)
+    {
+        TestWorker *worker = new TestWorker{info};
+        return worker->Run();
+    }
+    TestWorker worker{info};
+    return worker.RunSync();
+};
 Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
 {
     Napi::Object _js_constants = Napi::Object::New(env);
