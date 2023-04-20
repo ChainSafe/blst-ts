@@ -240,8 +240,14 @@ protected:
             case 1:
                 throw Napi::Error::New(_env, "setup: test case 1");
                 break;
-            default:
-                SetError("setup: unknown test case");
+            case 2:
+                Uint8ArrayArg a{_env, _info[3], "TEST"};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
             }
         }
     }

@@ -6,9 +6,14 @@ enum TestPhase {
   EXECUTION = 1,
   VALUE_RETURN = 2,
 }
-declare function TestFunction(isAsync: false, testPhase: TestPhase, testCase: number): string;
-declare function TestFunction(isAsync: true, testPhase: TestPhase, testCase: number): Promise<string>;
-declare function TestFunction(isAsync: boolean, testPhase: TestPhase, testCase: number): string | Promise<string>;
+declare function TestFunction(isAsync: false, testPhase: TestPhase, testCase: number, testObj?: any): string;
+declare function TestFunction(isAsync: true, testPhase: TestPhase, testCase: number, testObj?: any): Promise<string>;
+declare function TestFunction(
+  isAsync: boolean,
+  testPhase: TestPhase,
+  testCase: number,
+  testObj?: any
+): string | Promise<string>;
 type BindingsWithTestRig = typeof bindings & {runTest: typeof TestFunction};
 const {runTest} = bindings as unknown as BindingsWithTestRig;
 
@@ -93,10 +98,52 @@ describe("bindings", () => {
       });
     });
     describe("Uint8ArrayArg", () => {
-      it("should hold a reference that persists through gc", () => {});
-      it("should accept Uint8Array", () => {});
-      it("should accept Buffer", () => {});
-      it("should throw for invalid input", () => {});
+      it("should hold a reference that persists through gc", () => {
+        // TODO: Figure out how to test this
+      });
+      it("should accept Uint8Array", () => {
+        expect(runTest(false, TestPhase.SETUP, 2, Uint8Array.from(Buffer.from("fancy string")))).to.equal(
+          "CORRECT_VALUE"
+        );
+      });
+      it("should accept Buffer", () => {
+        expect(runTest(false, TestPhase.SETUP, 2, Buffer.from("fancy string"))).to.equal("CORRECT_VALUE");
+      });
+      describe("should throw for invalid input", () => {
+        it("should throw for numbers", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, 2)).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for strings", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, "hello world")).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for objects", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, {testing: 123})).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for arrays", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, ["foo"])).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for null", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, null)).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for undefined", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, undefined)).to.throw("TEST must be of type BlstBuffer");
+        });
+        it("should throw for Symbol", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, Symbol.for("baz"))).to.throw(
+            "TEST must be of type BlstBuffer"
+          );
+        });
+        it("should throw for Proxy", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, new Proxy({test: "yo"}, {}))).to.throw(
+            "TEST must be of type BlstBuffer"
+          );
+        });
+        it("should throw for Uint16Array", () => {
+          expect(() => runTest(false, TestPhase.SETUP, 2, new Uint16Array())).to.throw(
+            "TEST must be of type BlstBuffer"
+          );
+        });
+      });
     });
     describe("Uint8ArrayArgArray", () => {
       // make array with a single Uint8ArrayArg and run tests from Uint8ArrayArg
