@@ -146,7 +146,14 @@ describe("bindings", () => {
       });
     });
     describe("Uint8ArrayArgArray", () => {
-      // make array with a single Uint8ArrayArg and run tests from Uint8ArrayArg
+      it("should accept an array of Uint8ArrayArg", () => {
+        expect(runTest(false, TestPhase.SETUP, 3, [Buffer.from("valid")])).to.equal("CORRECT_VALUE");
+      });
+      it("should throw for non-array input", () => {
+        expect(() => runTest(false, TestPhase.SETUP, 3, Buffer.from("valid"))).to.throw(
+          "TESTS must be of type BlstBuffer[]"
+        );
+      });
     });
   });
 });

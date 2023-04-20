@@ -241,6 +241,7 @@ protected:
                 throw Napi::Error::New(_env, "setup: test case 1");
                 break;
             case 2:
+            {
                 Uint8ArrayArg a{_env, _info[3], "TEST"};
                 if (a.HasError())
                 {
@@ -248,6 +249,17 @@ protected:
                     return;
                 }
                 break;
+            }
+            case 3:
+            {
+                Uint8ArrayArgArray a{_env, _info[3], "TEST", "TESTS"};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
             }
         }
     }
