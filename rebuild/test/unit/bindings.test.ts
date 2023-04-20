@@ -54,29 +54,42 @@ describe("bindings", () => {
       describe("execution phase", () => {
         describe("sync execution", () => {
           it("should handle errors using SetError", () => {
-            expect(() => runTest(false, TestPhase.SETUP, 0)).to.throw("setup: test case 0");
+            expect(() => runTest(false, TestPhase.EXECUTION, 0)).to.throw("execution: test case 0");
           });
           it("should catch thrown errors", () => {
-            expect(() => runTest(false, TestPhase.SETUP, 1)).to.throw("setup: test case 1");
+            expect(() => runTest(false, TestPhase.EXECUTION, 1)).to.throw("execution: test case 1");
           });
           it("should return the correct value", () => {
-            expect(runTest(false, TestPhase.EXECUTION, 0)).to.equal("CORRECT_VALUE");
+            expect(runTest(false, TestPhase.EXECUTION, 2)).to.equal("CORRECT_VALUE");
           });
         });
         describe("async execution", () => {
-          it("should handle errors using SetError", () => {});
-          it("should catch thrown errors", () => {});
+          it("should handle errors using SetError", async () => {
+            try {
+              await runTest(true, TestPhase.EXECUTION, 0);
+              throw new Error("Should have thrown");
+            } catch (e) {
+              expect((e as Error).message).to.equal("execution: test case 0");
+            }
+          });
           it("should return a Promise", () => {
-            expect(runTest(true, TestPhase.EXECUTION, 2)).is.instanceof(Promise);
+            const res = runTest(true, TestPhase.EXECUTION, 2);
+            expect(res).is.instanceof(Promise);
+            return res;
           });
           it("should return a promise that resolves the correct value", async () => {
-            return expect(await runTest(true, TestPhase.EXECUTION, 2)).to.equal("CORRECT_VALUE");
+            const res = await runTest(true, TestPhase.EXECUTION, 2);
+            expect(res).to.equal("CORRECT_VALUE");
           });
         });
       });
       describe("value return phase", () => {
-        it("should handle errors using SetError", () => {});
-        it("should catch thrown errors", () => {});
+        it("should handle errors using SetError", () => {
+          expect(() => runTest(false, TestPhase.VALUE_RETURN, 0)).to.throw("return: test case 0");
+        });
+        it("should catch thrown errors", () => {
+          expect(() => runTest(false, TestPhase.VALUE_RETURN, 1)).to.throw("return: test case 1");
+        });
       });
     });
     describe("Uint8ArrayArg", () => {

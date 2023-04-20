@@ -25,7 +25,12 @@ Napi::Value BlstAsyncWorker::RunSync()
     {
         goto out_err;
     }
-    return GetReturnValue();
+    Napi::Value ret_val = GetReturnValue();
+    if (HasError())
+    {
+        goto out_err;
+    }
+    return ret_val;
     WORKER_TRY_CATCH_END("RunSync");
 };
 
@@ -247,6 +252,16 @@ protected:
         {
             switch (_test_case)
             {
+            case 0:
+                SetError("execution: test case 0");
+                break;
+            case 1:
+                throw Napi::Error::New(_env, "execution: test case 1");
+                break;
+            case 2:
+            default:
+                // no-op
+                break;
             }
         }
     }
