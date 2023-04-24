@@ -64,13 +64,15 @@ namespace
         void Execute() override
         {
             size_t sk_length = _module->_secret_key_length;
-            if (_entropy.Data() == nullptr) // no entropy passed
+            // no entropy passed, assume no info
+            if (_entropy.Data() == nullptr)
             {
                 blst::byte ikm[sk_length];
                 _module->GetRandomBytes(ikm, sk_length);
                 _key.keygen(ikm, sk_length);
                 return;
             }
+            // both entropy and info passed
             if (_info_str.length() != 0)
             {
                 _key.keygen(_entropy.Data(), sk_length, _info_str);
@@ -153,6 +155,11 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
     SecretKey *sk = SecretKey::Unwrap(wrapped);
     Uint8ArrayArg skBytes{env, info[0], "skBytes"};
     skBytes.ValidateLength(module->_secret_key_length);
+    if (skBytes.HasError())
+    {
+        skBytes.ThrowJsException();
+        return env.Undefined();
+    }
     sk->_key->from_bendian(skBytes.Data());
     return wrapped;
 }
