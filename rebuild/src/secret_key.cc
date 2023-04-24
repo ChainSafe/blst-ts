@@ -61,33 +61,31 @@ namespace
             _info_str.append(_info[1].As<Napi::String>().Utf8Value());
         };
 
+        /**
+         * The keygen function defaults to empty string so just pass in the
+         * the info string. Is initialized to empty string if not passed.
+         */
         void Execute() override
         {
             size_t sk_length = _module->_secret_key_length;
-            // no entropy passed, assume no info
             if (_entropy.Data() == nullptr)
             {
                 blst::byte ikm[sk_length];
                 _module->GetRandomBytes(ikm, sk_length);
-                _key.keygen(ikm, sk_length);
+                _key.keygen(ikm, sk_length, _info_str);
                 return;
             }
-            // both entropy and info passed
-            if (_info_str.length() != 0)
-            {
-                _key.keygen(_entropy.Data(), sk_length, _info_str);
-                return;
-            }
-            _key.keygen(_entropy.Data(), sk_length);
+            _key.keygen(_entropy.Data(), sk_length, _info_str);
         };
 
         Napi::Value GetReturnValue() override
         {
+            Napi::EscapableHandleScope scope(_env);
             Napi::Object wrapped = _module->_secret_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
             wrapped.TypeTag(&_module->_secret_key_tag);
             SecretKey *sk = SecretKey::Unwrap(wrapped);
             sk->_key.reset(new blst::SecretKey{_key});
-            return wrapped;
+            return scope.Escape(wrapped);
         };
 
     private:
@@ -135,20 +133,22 @@ namespace
  */
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info)
 {
+    Napi::EscapableHandleScope scope(info.Env());
     FromKeygenWorker *worker = new FromKeygenWorker{info};
-    return worker->Run();
+    return scope.Escape(worker->Run());
 }
 
 Napi::Value SecretKey::FromKeygenSync(const Napi::CallbackInfo &info)
 {
+    Napi::EscapableHandleScope scope(info.Env());
     FromKeygenWorker worker{info};
-    Napi::Value key = worker.RunSync();
-    return key;
+    return scope.Escape(worker.RunSync());
 }
 
 Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
     Napi::Object wrapped = module->_secret_key_ctr.New({Napi::External<void>::New(env, nullptr)});
     wrapped.TypeTag(&module->_secret_key_tag);
@@ -161,7 +161,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
         return env.Undefined();
     }
     sk->_key->from_bendian(skBytes.Data());
-    return wrapped;
+    return scope.Escape(wrapped);
 }
 
 SecretKey::SecretKey(const Napi::CallbackInfo &info)
@@ -180,9 +180,10 @@ SecretKey::SecretKey(const Napi::CallbackInfo &info)
 Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
     Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(env, _module->_secret_key_length);
     _key->to_bendian(serialized.Data());
-    return serialized;
+    return scope.Escape(serialized);
 }
 
 // Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
