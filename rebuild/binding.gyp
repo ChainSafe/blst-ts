@@ -6,6 +6,7 @@
         'deps/blst/src/server.c',
         'deps/blst/build/assembly.S',
         'src/addon.cc',
+        'src/secret_key.cc',
       ],
       'include_dirs': [
         'deps/blst/bindings',

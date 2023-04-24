@@ -24,7 +24,6 @@ export interface Serializable {
   serialize(): Uint8Array;
 }
 
-
 /**
  * Critical constants for BLST public key infrastructure.
  */
@@ -36,7 +35,6 @@ export const BLST_CONSTANTS: {
   SIGNATURE_LENGTH_UNCOMPRESSED: number;
   SIGNATURE_LENGTH_COMPRESSED: number;
 };
-
 
 /*
  * Private constructor. Randomly generate ikm when new'ing a key if no

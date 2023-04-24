@@ -33,7 +33,6 @@ Napi::Value BlstAsyncWorker::RunSync()
     return ret_val;
     WORKER_TRY_CATCH_END("RunSync");
 };
-
 Napi::Value BlstAsyncWorker::Run()
 {
     WORKER_TRY_CATCH_BEGIN
@@ -338,7 +337,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
                              InstanceValue("BLST_CONSTANTS", BuildJsConstants(env), napi_enumerable),
                              InstanceMethod("runTest", &BlstTsAddon::RunTest, napi_enumerable),
                          });
-    // SecretKey::Init(env, exports, this);
+    SecretKey::Init(env, exports, this);
     // PublicKey::Init(env, exports, this);
     // Signature::Init(env, exports, this);
     env.SetInstanceData(this);

@@ -14,33 +14,36 @@
 using std::cout;
 using std::endl;
 
+#define BLST_TS_SECRET_KEY_LOWER_TAG 0ULL
+#define BLST_TS_SECRET_KEY_UPPER_TAG 1ULL
+
 #define WORKER_TRY_CATCH_BEGIN               \
     Napi::HandleScope scope(BlstBase::_env); \
     try                                      \
     {
 
-#define WORKER_TRY_CATCH_END(name)                                        \
-    }                                                                     \
-    catch (Napi::Error &err)                                               \
-    {                                                                     \
-        SetError(err.Message());                                          \
-        goto out_err;                                                     \
-    }                                                                     \
-    catch (std::exception & err)                                          \
-    {                                                                     \
-        std::ostringstream msg;                                           \
-        msg << "caught exception in " #name ": " << err.what();           \
-        SetError(msg.str());                                              \
-        goto out_err;                                                     \
-    }                                                                     \
-    catch (...)                                                           \
-    {                                                                     \
-        SetError("caught unknown exception in " #name);                   \
-        goto out_err;                                                     \
-    }                                                                     \
-                                                                          \
-    out_err:                                                              \
-    ThrowJsException();                                                   \
+#define WORKER_TRY_CATCH_END(name)                              \
+    }                                                           \
+    catch (Napi::Error & err)                                   \
+    {                                                           \
+        SetError(err.Message());                                \
+        goto out_err;                                           \
+    }                                                           \
+    catch (std::exception & err)                                \
+    {                                                           \
+        std::ostringstream msg;                                 \
+        msg << "caught exception in " #name ": " << err.what(); \
+        SetError(msg.str());                                    \
+        goto out_err;                                           \
+    }                                                           \
+    catch (...)                                                 \
+    {                                                           \
+        SetError("caught unknown exception in " #name);         \
+        goto out_err;                                           \
+    }                                                           \
+                                                                \
+    out_err:                                                    \
+    ThrowJsException();                                         \
     return BlstBase::_env.Undefined();
 
 class BlstTsAddon;
@@ -216,7 +219,10 @@ private:
     std::vector<Uint8ArrayArg> _args;
 };
 
-// #include "secret_key.h"
+/**
+ * Circular dependency if these are moved up to the top of the file.
+ */
+#include "secret_key.h"
 // #include "public_key.h"
 // #include "signature.h"
 
@@ -231,7 +237,8 @@ public:
     size_t _signature_uncompressed_length;
     size_t _random_bytes_length;
     std::string _blst_error_strings[8];
-    // Napi::FunctionReference _secret_key_ctr;
+    Napi::FunctionReference _secret_key_ctr;
+    napi_type_tag _secret_key_tag;
     // Napi::FunctionReference _public_key_ctr;
     // Napi::FunctionReference _signature_ctr;
 
