@@ -59,6 +59,10 @@ class BlstBase
 public:
     bool HasError() { return _error.size() > 0; };
     std::string GetError() { return _error; };
+    void ThrowJsException()
+    {
+        Napi::Error::New(_env, _error).ThrowAsJavaScriptException();
+    };
 
 protected:
     BlstBase(Napi::Env env)
@@ -66,10 +70,6 @@ protected:
           _error{} {};
 
     void SetError(const std::string &err) { _error = err; };
-    void ThrowJsException()
-    {
-        Napi::Error::New(_env, _error).ThrowAsJavaScriptException();
-    };
 
     // All classes in this library extend BlstBase so store the env here
     Napi::Env _env;
