@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "node-addon-api": "^6.0.0",
+    "node-addon-api": "^6.1.0",
     "node-gyp": "^9.3.1"
   }
 }
