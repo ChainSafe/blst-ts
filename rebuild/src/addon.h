@@ -16,6 +16,8 @@ using std::endl;
 
 #define BLST_TS_SECRET_KEY_LOWER_TAG 0ULL
 #define BLST_TS_SECRET_KEY_UPPER_TAG 1ULL
+#define BLST_TS_PUBLIC_KEY_LOWER_TAG 2ULL
+#define BLST_TS_PUBLIC_KEY_UPPER_TAG 3ULL
 
 #define WORKER_TRY_CATCH_BEGIN               \
     Napi::HandleScope scope(BlstBase::_env); \
@@ -67,12 +69,14 @@ public:
 protected:
     BlstBase(Napi::Env env)
         : _env{env},
+          _module{_env.GetInstanceData<BlstTsAddon>()},
           _error{} {};
 
     void SetError(const std::string &err) { _error = err; };
 
-    // All classes in this library extend BlstBase so store the env here
+    // All classes in this library extend BlstBase so store the env/module here
     Napi::Env _env;
+    BlstTsAddon *_module; 
     std::string _error;
 };
 
@@ -84,7 +88,6 @@ public:
           Napi::AsyncWorker{BlstBase::_env},
           _env{BlstBase::_env},
           _info{info},
-          _module{BlstBase::_env.GetInstanceData<BlstTsAddon>()},
           _deferred{BlstBase::_env},
           _use_deferred{false} {};
     /**
@@ -107,7 +110,6 @@ protected:
      */
     Napi::Env &_env;
     const Napi::CallbackInfo &_info;
-    BlstTsAddon *_module;
 
     /**
      * Pure virtual functions that must be implemented by the function worker to
@@ -223,7 +225,7 @@ private:
  * Circular dependency if these are moved up to the top of the file.
  */
 #include "secret_key.h"
-// #include "public_key.h"
+#include "public_key.h"
 // #include "signature.h"
 
 class BlstTsAddon : public Napi::Addon<BlstTsAddon>
@@ -239,7 +241,8 @@ public:
     std::string _blst_error_strings[8];
     Napi::FunctionReference _secret_key_ctr;
     napi_type_tag _secret_key_tag;
-    // Napi::FunctionReference _public_key_ctr;
+    Napi::FunctionReference _public_key_ctr;
+    napi_type_tag _public_key_tag;
     // Napi::FunctionReference _signature_ctr;
 
     BlstTsAddon(Napi::Env env, Napi::Object exports);

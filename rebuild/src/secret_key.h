@@ -19,7 +19,7 @@ public:
     static Napi::Value Deserialize(const Napi::CallbackInfo &info);
     SecretKey(const Napi::CallbackInfo &info);
     Napi::Value Serialize(const Napi::CallbackInfo &info);
-    // Napi::Value ToPublicKey(const Napi::CallbackInfo &info);
+    Napi::Value ToPublicKey(const Napi::CallbackInfo &info);
     // Napi::Value Sign(const Napi::CallbackInfo &info);
     // Napi::Value SignSync(const Napi::CallbackInfo &info);
 

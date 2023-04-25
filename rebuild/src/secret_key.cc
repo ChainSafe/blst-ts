@@ -2,12 +2,13 @@
 
 void SecretKey::Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *module)
 {
+    Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it
     auto proto = {
         StaticMethod("fromKeygen", &SecretKey::FromKeygen, static_cast<napi_property_attributes>(napi_static | napi_enumerable)),
         StaticMethod("fromKeygenSync", &SecretKey::FromKeygenSync, static_cast<napi_property_attributes>(napi_static | napi_enumerable)),
         StaticMethod("deserialize", &SecretKey::Deserialize, static_cast<napi_property_attributes>(napi_static | napi_enumerable)),
         InstanceMethod("serialize", &SecretKey::Serialize, static_cast<napi_property_attributes>(napi_enumerable)),
-        // InstanceMethod("toPublicKey", &SecretKey::ToPublicKey, static_cast<napi_property_attributes>(napi_enumerable)),
+        InstanceMethod("toPublicKey", &SecretKey::ToPublicKey, static_cast<napi_property_attributes>(napi_enumerable)),
         // InstanceMethod("sign", &SecretKey::Sign, static_cast<napi_property_attributes>(napi_enumerable)),
         // InstanceMethod("signSync", &SecretKey::SignSync, static_cast<napi_property_attributes>(napi_enumerable))
     };
@@ -186,14 +187,15 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info)
     return scope.Escape(serialized);
 }
 
-// Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
-// {
-//     Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
-//     PublicKey *pk = PublicKey::Unwrap(wrapped);
-//     pk->_jacobian.reset(new blst::P1{*_key});
-//     pk->_is_jacobian = true;
-//     return wrapped;
-// }
+Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
+{
+    Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
+    wrapped.TypeTag(&_module->_public_key_tag);
+    PublicKey *pk = PublicKey::Unwrap(wrapped);
+    pk->_jacobian.reset(new blst::P1{*_key});
+    pk->_has_jacobian = true;
+    return wrapped;
+}
 
 // Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
 // {

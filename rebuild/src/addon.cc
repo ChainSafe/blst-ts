@@ -338,7 +338,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
                              InstanceMethod("runTest", &BlstTsAddon::RunTest, napi_enumerable),
                          });
     SecretKey::Init(env, exports, this);
-    // PublicKey::Init(env, exports, this);
+    PublicKey::Init(env, exports, this);
     // Signature::Init(env, exports, this);
     env.SetInstanceData(this);
 }
