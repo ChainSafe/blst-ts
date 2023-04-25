@@ -8,6 +8,7 @@
         'src/addon.cc',
         'src/secret_key.cc',
         'src/public_key.cc',
+        'src/signature.cc',
       ],
       'include_dirs': [
         'deps/blst/bindings',

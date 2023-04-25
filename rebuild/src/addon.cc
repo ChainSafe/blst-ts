@@ -339,7 +339,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
                          });
     SecretKey::Init(env, exports, this);
     PublicKey::Init(env, exports, this);
-    // Signature::Init(env, exports, this);
+    Signature::Init(env, exports, this);
     env.SetInstanceData(this);
 }
 std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)

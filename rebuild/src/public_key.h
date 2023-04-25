@@ -5,7 +5,6 @@
 #include "napi.h"
 #include "blst.hpp"
 #include "addon.h"
-
 class PublicKey : public BlstBase, public Napi::ObjectWrap<PublicKey>
 {
 public:
@@ -14,7 +13,7 @@ public:
     std::unique_ptr<blst::P1> _jacobian;
     std::unique_ptr<blst::P1_Affine> _affine;
 
-    static void Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *module);
+    static void Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module);
     static Napi::Value Deserialize(const Napi::CallbackInfo &info);
     PublicKey(const Napi::CallbackInfo &info);
     Napi::Value Serialize(const Napi::CallbackInfo &info);
@@ -23,10 +22,6 @@ public:
 
     const blst::P1 *AsJacobian();
     const blst::P1_Affine *AsAffine();
-
-protected:
-    // helper to avoid disambiguation of base classes env's
-    const Napi::Env &_env;
 };
 
 class PublicKeyArg : public BlstBase

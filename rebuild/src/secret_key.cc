@@ -1,6 +1,6 @@
 #include "secret_key.h"
 
-void SecretKey::Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *module)
+void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it
     auto proto = {
@@ -9,9 +9,8 @@ void SecretKey::Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *m
         StaticMethod("deserialize", &SecretKey::Deserialize, static_cast<napi_property_attributes>(napi_static | napi_enumerable)),
         InstanceMethod("serialize", &SecretKey::Serialize, static_cast<napi_property_attributes>(napi_enumerable)),
         InstanceMethod("toPublicKey", &SecretKey::ToPublicKey, static_cast<napi_property_attributes>(napi_enumerable)),
-        // InstanceMethod("sign", &SecretKey::Sign, static_cast<napi_property_attributes>(napi_enumerable)),
-        // InstanceMethod("signSync", &SecretKey::SignSync, static_cast<napi_property_attributes>(napi_enumerable))
-    };
+        InstanceMethod("sign", &SecretKey::Sign, static_cast<napi_property_attributes>(napi_enumerable)),
+        InstanceMethod("signSync", &SecretKey::SignSync, static_cast<napi_property_attributes>(napi_enumerable))};
     Napi::Function ctr = DefineClass(env, "SecretKey", proto, module);
     module->_secret_key_ctr = Napi::Persistent(ctr);
     module->_secret_key_tag = {.lower = BLST_TS_SECRET_KEY_LOWER_TAG, .upper = BLST_TS_SECRET_KEY_UPPER_TAG};
@@ -95,34 +94,36 @@ namespace
         std::string _info_str;
     };
 
-    // class SignWorker : public BlstAsyncWorker
-    // {
-    // public:
-    //     SignWorker(const Napi::CallbackInfo &info, const blst::SecretKey &key)
-    //         : BlstAsyncWorker{info},
-    //           _key{key},
-    //           _point{},
-    //           _msg{_env, info[0], "msg to sign"} {};
-    //     void Setup() override{};
-    //     void Execute() override
-    //     {
-    //         _point.hash_to(_msg.Data(), _msg.ByteLength(), _module->_global_state->_dst);
-    //         _point.sign_with(_key);
-    //     };
-    //     Napi::Value GetReturnValue() override
-    //     {
-    //         Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
-    //         Signature *sig = Signature::Unwrap(wrapped);
-    //         sig->_jacobian.reset(new blst::P2{_point});
-    //         sig->_is_jacobian = true;
-    //         return wrapped;
-    //     };
+    class SignWorker : public BlstAsyncWorker
+    {
+    public:
+        SignWorker(const Napi::CallbackInfo &info, const blst::SecretKey &key)
+            : BlstAsyncWorker{info},
+              _key{key},
+              _point{},
+              _msg{_env, info[0], "msg to sign"} {};
+        void Setup() override{};
+        void Execute() override
+        {
+            _point.hash_to(_msg.Data(), _msg.ByteLength(), _module->_dst);
+            _point.sign_with(_key);
+        };
+        Napi::Value GetReturnValue() override
+        {
+            Napi::EscapableHandleScope scope(_env);
+            Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
+            wrapped.TypeTag(&_module->_signature_tag);
+            Signature *sig = Signature::Unwrap(wrapped);
+            sig->_jacobian.reset(new blst::P2{_point});
+            sig->_has_jacobian = true;
+            return scope.Escape(wrapped);
+        };
 
-    // private:
-    //     const blst::SecretKey &_key;
-    //     blst::P2 _point;
-    //     Uint8ArrayArg _msg;
-    // };
+    private:
+        const blst::SecretKey &_key;
+        blst::P2 _point;
+        Uint8ArrayArg _msg;
+    };
 } // namespace (anonymous)
 
 /**
@@ -189,22 +190,28 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info)
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
 {
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
     Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
     wrapped.TypeTag(&_module->_public_key_tag);
     PublicKey *pk = PublicKey::Unwrap(wrapped);
     pk->_jacobian.reset(new blst::P1{*_key});
     pk->_has_jacobian = true;
-    return wrapped;
+    return scope.Escape(wrapped);
 }
 
-// Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
-// {
-//     SignWorker *worker = new SignWorker{info, *_key};
-//     return worker->Run();
-// }
+Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
+    SignWorker *worker = new SignWorker{info, *_key};
+    return scope.Escape(worker->Run());
+}
 
-// Napi::Value SecretKey::SignSync(const Napi::CallbackInfo &info)
-// {
-//     SignWorker worker{info, *_key};
-//     return worker.RunSync();
-// }
+Napi::Value SecretKey::SignSync(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
+    SignWorker worker{info, *_key};
+    return scope.Escape(worker.RunSync());
+}

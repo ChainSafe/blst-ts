@@ -1,6 +1,6 @@
 #include "public_key.h"
 
-void PublicKey::Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *module)
+void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it
     auto proto = {
@@ -11,7 +11,7 @@ void PublicKey::Init(const Napi::Env &env, Napi::Object &exports, BlstTsAddon *m
     };
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
     module->_public_key_ctr = Napi::Persistent(ctr);
-    module->_secret_key_tag = {.lower = BLST_TS_PUBLIC_KEY_LOWER_TAG, .upper = BLST_TS_PUBLIC_KEY_UPPER_TAG};
+    module->_public_key_tag = {.lower = BLST_TS_PUBLIC_KEY_LOWER_TAG, .upper = BLST_TS_PUBLIC_KEY_UPPER_TAG};
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
 }
 
@@ -153,7 +153,7 @@ const blst::P1 *PublicKey::AsJacobian()
 {
     if (!_has_jacobian && !_has_affine)
     {
-        throw Napi::Error::New(_env, "PublicKey not initialized");
+        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
     }
     if (!_has_jacobian)
     {
@@ -167,7 +167,7 @@ const blst::P1_Affine *PublicKey::AsAffine()
 {
     if (!_has_jacobian && !_has_affine)
     {
-        throw Napi::Error::New(_env, "PublicKey not initialized");
+        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
     }
     if (!_has_affine)
     {
@@ -183,13 +183,12 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
       _has_jacobian{false},
       _has_affine{false},
       _jacobian{nullptr},
-      _affine{nullptr},
-      _env{BlstBase::_env}
+      _affine{nullptr}
 {
-    Napi::Env env = info.Env();
+    Napi::HandleScope scope(BlstBase::_env);
     if (!info[0].IsExternal())
     {
-        Napi::Error::New(env, "PublicKey constructor is private").ThrowAsJavaScriptException();
+        Napi::Error::New(BlstBase::_env, "PublicKey constructor is private").ThrowAsJavaScriptException();
         return;
     }
 };

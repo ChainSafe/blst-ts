@@ -18,6 +18,8 @@ using std::endl;
 #define BLST_TS_SECRET_KEY_UPPER_TAG 1ULL
 #define BLST_TS_PUBLIC_KEY_LOWER_TAG 2ULL
 #define BLST_TS_PUBLIC_KEY_UPPER_TAG 3ULL
+#define BLST_TS_SIGNATURE_LOWER_TAG 4ULL
+#define BLST_TS_SIGNATURE_UPPER_TAG 5ULL
 
 #define WORKER_TRY_CATCH_BEGIN               \
     Napi::HandleScope scope(BlstBase::_env); \
@@ -76,7 +78,7 @@ protected:
 
     // All classes in this library extend BlstBase so store the env/module here
     Napi::Env _env;
-    BlstTsAddon *_module; 
+    BlstTsAddon *_module;
     std::string _error;
 };
 
@@ -226,7 +228,7 @@ private:
  */
 #include "secret_key.h"
 #include "public_key.h"
-// #include "signature.h"
+#include "signature.h"
 
 class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
@@ -243,7 +245,8 @@ public:
     napi_type_tag _secret_key_tag;
     Napi::FunctionReference _public_key_ctr;
     napi_type_tag _public_key_tag;
-    // Napi::FunctionReference _signature_ctr;
+    Napi::FunctionReference _signature_ctr;
+    napi_type_tag _signature_tag;
 
     BlstTsAddon(Napi::Env env, Napi::Object exports);
 
