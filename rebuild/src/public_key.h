@@ -58,10 +58,7 @@ public:
 
     PublicKeyArgArray &operator=(const PublicKeyArgArray &source) = delete;
     PublicKeyArgArray &operator=(PublicKeyArgArray &&source) = default;
-    PublicKeyArg &operator[](size_t index)
-    {
-        return _keys[index];
-    }
+    PublicKeyArg &operator[](size_t index) { return _keys[index]; }
 
     size_t Size() { return _keys.size(); }
     void Reserve(size_t size) { return _keys.reserve(size); }
