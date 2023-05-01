@@ -18,7 +18,7 @@ One of the big things I noticed, on my journey to native code, is that its gener
 
 First is that not everything can be stack allocated (see the discussion about [`blst::Pairing`](./blst.md#initialization-of-blstpairing) for a got-ya).  There was another thing that caught me by surprise but intuitively makes sense once I thought about it.  Stack overflow is real and arrays have lots of stuff in them.  In native code there is the possibility that user data may be bigger than the stack can hold.  I know... This is intuitive... But in JS those are things we don't really think about so it wasn't second nature yet. This is a real and dangerous risk.
 
-Another big piece is that in `C`, all functions are pass AND return by value.  Full stop.  It is possible to pass references and pointers yes, but those are both first class citizens that get passed by value. The whole premise behind creating the references/pointers is that the "value" associated is much smaller so the copy operation is faster.  In generally a pointer is the same size as the system bytes (ie. 32-bit systems have 4 byte memory addresses and 64-bit systems have 8 byte memory addresses) and references depend on both system and compiler specifics.  Complex objects on the other hand can get VERY large.
+Another big piece is that in `C`, all functions are pass AND return by value.  Full stop.  It is possible to pass references and pointers yes, but those are both first class citizens that get passed by value. The whole premise behind creating the references/pointers is that the "value" associated is much smaller so the copy operation is faster.  In general, a pointer is the same size as the system bytes (ie. 32-bit systems have 4 byte memory addresses and 64-bit systems have 8 byte memory addresses) and references depend on both system and compiler specifics.  Complex objects on the other hand can get VERY large.
 
 While the solution to most efficiency problems will be passing by ref or pointer, the specifics of how to allocate and return need to be well understood to avoid segfault.  For the rest of this tutorial we will reference the following class:
 
@@ -91,7 +91,7 @@ if (ret != C_KZG_OK) {
 return 0;
 ```
 
-There is one more paradigm that is worth explicitly stating.  Note in this example that `fclose` is in the conditional and `load_trusted_setup_file` is not.  `load_trusted_setup_file` is a function where the return value needs to be handled for either valid or invalid execution (ie valid but if fclose fails need to `free_trusted_setup` and for invalid execution the function returns `1`).  `fclose` however only requires that invalid execution requires further work.
+There is one more paradigm that is worth explicitly stating.  Note in this example that `fclose` is in the conditional and `load_trusted_setup_file` is not.  `load_trusted_setup_file` is a function where the return value needs to be handled for either valid or invalid execution (i.e. valid but if `fclose` fails need to `free_trusted_setup` and for invalid execution the function returns `1`).  `fclose` however only requires that invalid execution requires further work.
 
 There are a few challenges that emerge from the way that `C` functions are structured.  In very large code-bases, its very difficult to track allocations and de-allocations because they do not always occur in the same functions.
 

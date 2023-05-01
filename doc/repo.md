@@ -55,4 +55,4 @@ TODO: Need to do more research about dll linking to verify we do not need to spe
 
 ## Style Guide
 
-An attempt was made to use the Google style guide for C++.  It's possible that the implementation does not fully comply.  While the code looks "readable" it may be worth going through the guide again and updating for compliance. The style guide can be found [here](https://google.github.io/styleguide/cppguide.html).
+An attempt was made to use the Google style guide for C++.  The linting was done via [the C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools) in VSCode.  It's possible that the implementation does not fully comply with the style guide.  While the code looks "readable" it may be worth going through the guide again and updating for compliance. The style guide can be found [here](https://google.github.io/styleguide/cppguide.html).

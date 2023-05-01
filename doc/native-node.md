@@ -71,7 +71,7 @@ The `C` and `C++` apis' are nearly identical.  The 2 exceptions are:
 - New features arrive in `C` first.  It generally takes a few months for the `C++` api to catch up
 - Not all features get implemented in `node-addon-api` but its a small list
 
-See the [`C/C++` big decision](./intro.md#c-vs-c) for more differences.
+See the [`C/C++` big decision](./readme.md#c-vs-c) for more differences.
 
 ## `napi-rs`
 

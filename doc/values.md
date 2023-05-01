@@ -1,6 +1,6 @@
 # JavaScript Values Under-the-Hood
 
-_**note:** If you followed the development of this file you may have noticed that it took a very long time to write and changed during writing.  There is a lot of inconsistency in the writings surrounding [`HandleScope`](https://github.com/nodejs/node-addon-api/blob/main/doc/handle_scope.md)._ _I built the code using what I read so it "works correctly" but at the time I had no idea why, nor how._ _To try an explain it better I read what was available and wrote about it._ _I realized it didn't "make sense."_ _So I read through the `node` source to try and figure it out but there is a TON of code that makes "values work."_ _I revised this document a couple times during the process as my understanding evolved._ _I think this is how it works but have [requested a review](https://github.com/nodejs/node/issues/47504) from the V8 team to make sure its correct._ _I also want to hightlight this body of work in hopes it, or parts of it, may be added to the [official documentation](https://github.com/nodejs/node-addon-api/tree/main/doc) or the [examples repo](https://github.com/nodejs/node-addon-examples) to move the content up the open-source tree where it will be more visible to the broader community._
+_**note:** If you followed the development of this file you may have noticed that it took a very long time to write and changed during writing.  There is a lot of inconsistency in the writings surrounding [`HandleScope`](https://github.com/nodejs/node-addon-api/blob/main/doc/handle_scope.md)._ _I built the code using what I read so it "works correctly" but at the time I had no idea why, nor how._ _To try and explain it better I read what was available and wrote about it._ _I realized it didn't "make sense."_ _So I read through the `node` source to try and figure it out but there is a TON of code that makes "values work."_ _I revised this document a couple times during the process as my understanding evolved._ _I think this is how it works but have [requested a review](https://github.com/nodejs/node/issues/47504) from the V8 team to make sure its correct._ _I also want to highlight this body of work in hopes it, or parts of it, may be added to the [official documentation](https://github.com/nodejs/node-addon-api/tree/main/doc) or the [examples repo](https://github.com/nodejs/node-addon-examples) to move the content up the open-source tree where it will be more visible to the broader community._
 
 ---
 
@@ -150,9 +150,29 @@ In order to notify the `Isolate` that a value is still relevant, one must refere
 
 ## `v8::HandleScope` and `Napi::HandleScope`
 
-Lexical references are manged by the `HandleScope`, a stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted the garbage collector will no longer track the object stored in the handle and may deallocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
+Cleanup of lexical references are manged by the `HandleScope`, a stack-allocated class that governs a number of local handles. After a handle scope has been created, all local handles will be allocated within that handle scope until either the handle scope is deleted or another handle scope is created.  If there is already a handle scope and a new one is created, all allocations will take place in the new handle scope until it is deleted.  After that, new handles will again be allocated in the original handle scope. After the handle scope of a local handle has been deleted, the garbage collector will no longer track the object stored in the handle and may de-allocate it.  The behavior of accessing a handle for which the handle scope has been deleted is undefined.
 
-A `v8::HandleScope` represents a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap and there is only ever one active `HandleScope` at a time.  The active scope is tracked in [here](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212) in the `Isolate->handle_scope_data_`. When a scope is deleted, the handles in the block will stop being tracked, and the previous scope will be restored from the saved `prev_next_` and `prev_limit_` pointers.
+A `v8::HandleScope` represents a [block of memory](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-local-handle.h#L111-L113) in the `Isolate`-managed heap and there is only ever one active `HandleScope` at a time for a given `Environment`. Because of the single-threaded JS execution model, there is on ly ever one active context and thus one active `HandleScope` globally however there may be many active `HandleScope`s across all of the different contexts in the call-back queue.  The active scope is tracked in [here](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/execution/isolate.h#L2212) in the `Isolate->handle_scope_data_`. When a scope is deleted, the handles in the block will stop being tracked, and the previous scope will be restored from the saved `prev_next_` and `prev_limit_` pointers.
+
+### Advanced `HandleScope` Usage
+
+```c++
+
+inline Error& Error::operator=(const Error& other) {
+  Reset();
+
+  _env = other.Env();
+  HandleScope scope(_env);
+
+  napi_value value = other.Value();
+  if (value != nullptr) {
+    napi_status status = napi_create_reference(_env, value, 1, &_ref);
+    NAPI_THROW_IF_FAILED(_env, status, *this);
+  }
+
+  return *this;
+}
+```
 
 ## The Reference System
 

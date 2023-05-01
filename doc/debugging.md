@@ -1,15 +1,14 @@
 # Debugging Addons
 
-Special thanks to [@a7ul](https://github.com/a7ul/) for writing [this](https://medium.com/@a7ul/debugging-nodejs-c-addons-using-vs-code-27e9940fc3ad) blog post.  It was very helpful.
+Special thanks to [@a7ul](https://github.com/a7ul/) for writing [this blog post](https://medium.com/@a7ul/debugging-nodejs-c-addons-using-vs-code-27e9940fc3ad).  It was very helpful.
 
-[This](https://github.com/nodejs/node/issues/26667) issue in `nodejs/node` also gave a lot of insight and a [comment](https://github.com/nodejs/node/issues/26667#issuecomment-475329557) provided a good combination of `valgrind` flags to successfully highlight a memory leak using `Docker` on my mac.
+[This issue](https://github.com/nodejs/node/issues/26667) in `nodejs/node` also gave a lot of insight and a [comment](https://github.com/nodejs/node/issues/26667#issuecomment-475329557) provided a good combination of `valgrind` flags to successfully highlight a memory leak using `Docker` on my mac.
 
 ## Setting-Up `Valgrind`
 
 ## Debugging by Example
 
 _**note:** This section was driven by a learning challenge. There was a very difficult bug that was induced by a compiler-generated function. Compiler-generated functions are a big reason hard-core `c` programmers do not like `c++`, but that is a hotly debated topic.
-
 
 ### The "bug"
 

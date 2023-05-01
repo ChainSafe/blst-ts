@@ -1,6 +1,6 @@
 # Errors
 
-It is [possible](https://github.com/nodejs/node-addon-api/blob/main/doc/setup.md) to build Addons with, or without, errors turned on.  It was [one](./intro.md#error-handling) of the decisions that was made when implementing this library.
+It is [possible](https://github.com/nodejs/node-addon-api/blob/main/doc/setup.md) to build Addons with, or without, errors turned on.  It was [one](./readme.md#error-handling) of the decisions that was made when implementing this library.
 
 ## `C` Errors
 
