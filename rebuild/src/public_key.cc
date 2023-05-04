@@ -262,6 +262,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env)
 PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
     : PublicKeyArg{env}
 {
+    Napi::HandleScope scope(_env);
     _ref = Napi::Persistent(raw_arg);
     if (raw_arg.IsTypedArray())
     {
@@ -317,6 +318,7 @@ PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
     : BlstBase{env},
       _keys{}
 {
+    Napi::HandleScope scope(_env);
     if (!raw_arg.IsArray())
     {
         SetError("publicKeys must be of type PublicKeyArg[]");

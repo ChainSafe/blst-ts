@@ -223,13 +223,14 @@ private:
     std::vector<Uint8ArrayArg> _args;
 };
 
+class BlstTsAddon;
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
 #include "secret_key.h"
 #include "public_key.h"
 #include "signature.h"
-
+#include "functions.h"
 class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
 public:
