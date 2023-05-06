@@ -259,11 +259,10 @@ PublicKeyArg::PublicKeyArg(Napi::Env env)
       _public_key{nullptr},
       _bytes{_env} {};
 
-PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     : PublicKeyArg{env}
 {
     Napi::HandleScope scope(_env);
-    _ref = Napi::Persistent(raw_arg);
     if (raw_arg.IsTypedArray())
     {
         if (raw_arg.As<Napi::TypedArray>().TypedArrayType() != napi_uint8_array)
@@ -281,7 +280,15 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
         Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(_env, nullptr)});
         wrapped.TypeTag(&_module->_public_key_tag);
         _public_key = PublicKey::Unwrap(wrapped);
-        _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+        try
+        {
+            _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+        }
+        catch (blst::BLST_ERROR &err)
+        {
+            SetError(_module->GetBlstErrorString(err));
+            return;
+        }
         _public_key->_has_jacobian = true;
         return;
     }
@@ -290,6 +297,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
         Napi::Object raw_obj = raw_arg.As<Napi::Object>();
         if (raw_obj.CheckTypeTag(&_module->_public_key_tag))
         {
+            _ref = Napi::Persistent(raw_obj);
             _public_key = PublicKey::Unwrap(raw_obj);
             return;
         }
@@ -314,7 +322,7 @@ const blst::P1_Affine *PublicKeyArg::AsAffine()
  *
  *
  */
-PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
     : BlstBase{env},
       _keys{}
 {
@@ -332,7 +340,9 @@ PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
         _keys.push_back(PublicKeyArg{env, arr[i]});
         if (_keys[i].HasError())
         {
-            SetError(_keys[i].GetError());
+            std::ostringstream msg;
+            msg << _keys[i].GetError() << ": Invalid key at index " << i;
+            SetError(msg.str());
             return;
         }
     }

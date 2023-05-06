@@ -28,7 +28,7 @@ class PublicKeyArg : public BlstBase
 {
 public:
     PublicKeyArg(Napi::Env env);
-    PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg);
+    PublicKeyArg(Napi::Env env, Napi::Value raw_arg);
     PublicKeyArg(const PublicKeyArg &source) = delete;
     PublicKeyArg(PublicKeyArg &&source) = default;
 
@@ -41,13 +41,13 @@ public:
 private:
     PublicKey *_public_key;
     Uint8ArrayArg _bytes;
-    Napi::Reference<Napi::Value> _ref;
+    Napi::Reference<Napi::Object> _ref;
 };
 
 class PublicKeyArgArray : public BlstBase
 {
 public:
-    PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg);
+    PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg);
     PublicKeyArgArray(const PublicKeyArgArray &source) = delete;
     PublicKeyArgArray(PublicKeyArgArray &&source) = default;
 
