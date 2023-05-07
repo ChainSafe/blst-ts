@@ -277,42 +277,42 @@ protected:
     }
     void Execute() override
     {
-        _return_value.append("CORRECT_VALUE");
-        if (_test_phase == TestPhase::EXECUTION)
+        if (_test_phase != TestPhase::EXECUTION)
         {
-            switch (_test_case)
-            {
-            case 0:
-                SetError("execution: TestCase.SET_ERROR");
-                break;
-            case 1:
-                // skip in execution. cannot throw from here
-                // throw Napi::Error::New(_env, "execution: TestCase.THROW_ERROR");
-                break;
-            case 2:
-            default:
-                // no-op
-                break;
-            }
+            _return_value.append("CORRECT_VALUE");
+            return;
+        }
+        
+        switch (_test_case)
+        {
+        case 0:
+            SetError("execution: TestCase.SET_ERROR");
+            break;
+        case 1:
+            throw std::exception();
+            break;
+        case -1:
+        default:
+            _return_value.append("CORRECT_VALUE");
         }
     }
     Napi::Value GetReturnValue() override
     {
-        if (_test_phase == TestPhase::RETURN)
+        if (_test_phase != TestPhase::RETURN)
         {
-            switch (_test_case)
-            {
-            case 0:
-                SetError("return: TestCase.SET_ERROR");
-                break;
-            case 1:
-                throw Napi::Error::New(_env, "return: TestCase.THROW_ERROR");
-                break;
-            default:
-                SetError("return: unknown test case");
-            }
+            return Napi::String::New(_env, _return_value);
         }
-        return Napi::String::New(_env, _return_value);
+        switch (_test_case)
+        {
+        case 0:
+            SetError("return: TestCase.SET_ERROR");
+            break;
+        case 1:
+            throw Napi::Error::New(_env, "return: TestCase.THROW_ERROR");
+            break;
+        default:
+            SetError("return: unknown test case");
+        }
     }
 
 private:

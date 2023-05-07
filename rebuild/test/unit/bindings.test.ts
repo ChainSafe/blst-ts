@@ -54,7 +54,7 @@ describe("bindings", () => {
           });
           it("should catch thrown errors", () => {
             expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.EXECUTION, TestCase.THROW_ERROR)).to.throw(
-              "execution: TestCase.THROW_ERROR"
+              "std::exception"
             );
           });
           it("should return the correct value", () => {
@@ -62,6 +62,11 @@ describe("bindings", () => {
           });
         });
         describe("async execution", () => {
+          it("should return a Promise that resolves the correct value", async () => {
+            const res = runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.NORMAL_EXECUTION);
+            expect(res).is.instanceof(Promise);
+            expect(await res).to.equal("CORRECT_VALUE");
+          });
           it("should handle errors using SetError", async () => {
             try {
               await runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.SET_ERROR);
@@ -70,14 +75,13 @@ describe("bindings", () => {
               expect((e as Error).message).to.equal("execution: TestCase.SET_ERROR");
             }
           });
-          it("should return a Promise", () => {
-            const res = runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.NORMAL_EXECUTION);
-            expect(res).is.instanceof(Promise);
-            return res;
-          });
-          it("should return a promise that resolves the correct value", async () => {
-            const res = await runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.NORMAL_EXECUTION);
-            expect(res).to.equal("CORRECT_VALUE");
+          it("should catch thrown errors", async () => {
+            try {
+              await runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.THROW_ERROR);
+              throw new Error("Should have thrown");
+            } catch (e) {
+              expect((e as Error).message).to.equal("std::exception");
+            }
           });
         });
       });

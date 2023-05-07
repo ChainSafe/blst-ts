@@ -124,6 +124,11 @@ protected:
      * Pure virtual functions that must be implemented by the function worker to
      * parse the incoming CallbackInfo into native values for the execution
      * phase.  This function will be run on-thread.
+     * 
+     * @remark It is CRITICALLY important that errors which do not inherit from
+     * std::exception are caught by the implementer.  Any exceptions that escape
+     * from here cannot be caught by javascript and will cause the node process
+     * to hard abort. This is NON-RECOVERABLE.
      */
     virtual void Setup() = 0;
     /**
