@@ -58,14 +58,14 @@ describe("bindings", () => {
             );
           });
           it("should return the correct value", () => {
-            expect(runTest(TestSyncOrAsync.SYNC, TestPhase.EXECUTION, 2)).to.equal("CORRECT_VALUE");
+            expect(runTest(TestSyncOrAsync.SYNC, TestPhase.EXECUTION, 2)).to.equal("VALID_TEST");
           });
         });
         describe("async execution", () => {
           it("should return a Promise that resolves the correct value", async () => {
             const res = runTest(TestSyncOrAsync.ASYNC, TestPhase.EXECUTION, TestCase.NORMAL_EXECUTION);
             expect(res).is.instanceof(Promise);
-            expect(await res).to.equal("CORRECT_VALUE");
+            expect(await res).to.equal("VALID_TEST");
           });
           it("should handle errors using SetError", async () => {
             try {
@@ -110,66 +110,39 @@ describe("bindings", () => {
             TestCase.UINT_8_ARRAY_ARG,
             Uint8Array.from(Buffer.from("fancy string"))
           )
-        ).to.equal("CORRECT_VALUE");
+        ).to.equal("VALID_TEST");
       });
       it("should accept Buffer", () => {
         expect(
           runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, Buffer.from("fancy string"))
-        ).to.equal("CORRECT_VALUE");
+        ).to.equal("VALID_TEST");
       });
       describe("should throw for invalid input", () => {
-        it("should throw for numbers", () => {
-          expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, 2)).to.throw(
-            "TEST must be of type BlstBuffer"
-          );
-        });
-        it("should throw for strings", () => {
-          expect(() =>
-            runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, "hello world")
-          ).to.throw("TEST must be of type BlstBuffer");
-        });
-        it("should throw for objects", () => {
-          expect(() =>
-            runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, {testing: 123})
-          ).to.throw("TEST must be of type BlstBuffer");
-        });
-        it("should throw for arrays", () => {
-          expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, ["foo"])).to.throw(
-            "TEST must be of type BlstBuffer"
-          );
-        });
-        it("should throw for null", () => {
-          expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, null)).to.throw(
-            "TEST must be of type BlstBuffer"
-          );
-        });
-        it("should throw for undefined", () => {
-          expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, undefined)).to.throw(
-            "TEST must be of type BlstBuffer"
-          );
-        });
-        it("should throw for Symbol", () => {
-          expect(() =>
-            runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, Symbol.for("baz"))
-          ).to.throw("TEST must be of type BlstBuffer");
-        });
-        it("should throw for Proxy", () => {
-          expect(() =>
-            runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, new Proxy({test: "yo"}, {}))
-          ).to.throw("TEST must be of type BlstBuffer");
-        });
-        it("should throw for Uint16Array", () => {
-          expect(() =>
-            runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, new Uint16Array())
-          ).to.throw("TEST must be of type BlstBuffer");
-        });
+        const invalidInputs: [string, any][] = [
+          ["numbers", 2],
+          ["strings", "hello world"],
+          ["objects", {testing: 123}],
+          ["arrays", ["foo"]],
+          ["null", null],
+          ["undefined", undefined],
+          ["Symbol", Symbol.for("baz")],
+          ["Proxy", new Proxy({test: "yo"}, {})],
+          ["Uint16Array", new Uint16Array()],
+        ];
+        for (const [name, input] of invalidInputs) {
+          it(`should throw for ${name}`, () => {
+            expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, input)).to.throw(
+              "TEST must be of type BlstBuffer"
+            );
+          });
+        }
       });
     });
     describe("Uint8ArrayArgArray", () => {
       it("should accept an array of Uint8ArrayArg", () => {
         expect(
           runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG_ARRAY, [Buffer.from("valid")])
-        ).to.equal("CORRECT_VALUE");
+        ).to.equal("VALID_TEST");
       });
       it("should throw for non-array input", () => {
         expect(() =>

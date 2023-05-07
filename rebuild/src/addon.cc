@@ -215,6 +215,8 @@ public:
         NORMAL_EXECUTION = -1,
         SET_ERROR = 0,
         THROW_ERROR = 1,
+        UINT_8_ARRAY_ARG = 2,
+        UINT_8_ARRAY_ARG_ARRAY = 3
     };
 
 public:
@@ -279,10 +281,10 @@ protected:
     {
         if (_test_phase != TestPhase::EXECUTION)
         {
-            _return_value.append("CORRECT_VALUE");
+            _return_value.append("VALID_TEST");
             return;
         }
-        
+
         switch (_test_case)
         {
         case 0:
@@ -293,7 +295,7 @@ protected:
             break;
         case -1:
         default:
-            _return_value.append("CORRECT_VALUE");
+            _return_value.append("VALID_TEST");
         }
     }
     Napi::Value GetReturnValue() override
