@@ -199,21 +199,34 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
 class TestWorker : public BlstAsyncWorker
 {
 public:
+    enum TestSyncOrAsync
+    {
+        SYNC = 0,
+        ASYNC = 1,
+    };
+    enum TestPhase
+    {
+        SETUP = 0,
+        EXECUTION = 1,
+        RETURN = 2
+    };
+    enum TestCase
+    {
+        NORMAL_EXECUTION = -1,
+        SET_ERROR = 0,
+        THROW_ERROR = 1,
+    };
+
+public:
     TestWorker(const Napi::CallbackInfo &info)
         : BlstAsyncWorker{info},
           _test_phase{TestPhase::SETUP},
           _test_case{0},
           _return_value{} {}
 
-    enum TestPhase
-    {
-        SETUP = 0,
-        EXECUTION,
-        RETURN
-    };
-
 protected:
-    void Setup() override
+    void
+    Setup() override
     {
         Napi::Value test_phase_value = _info[1];
         if (!test_phase_value.IsNumber())
@@ -225,19 +238,19 @@ protected:
         Napi::Value test_case_value = _info[2];
         if (!test_case_value.IsNumber())
         {
-            SetError("testCase must be a number");
+            SetError("testCase must be a TestCase enum");
             return;
         }
-        _test_case = test_case_value.As<Napi::Number>().Uint32Value();
+        _test_case = test_case_value.As<Napi::Number>().Int32Value();
         if (_test_phase == TestPhase::SETUP)
         {
             switch (_test_case)
             {
             case 0:
-                SetError("setup: test case 0");
+                SetError("setup: TestCase.SET_ERROR");
                 break;
             case 1:
-                throw Napi::Error::New(_env, "setup: test case 1");
+                throw Napi::Error::New(_env, "setup: TestCase.THROW_ERROR");
                 break;
             case 2:
             {
@@ -270,10 +283,11 @@ protected:
             switch (_test_case)
             {
             case 0:
-                SetError("execution: test case 0");
+                SetError("execution: TestCase.SET_ERROR");
                 break;
             case 1:
-                throw Napi::Error::New(_env, "execution: test case 1");
+                // skip in execution. cannot throw from here
+                // throw Napi::Error::New(_env, "execution: TestCase.THROW_ERROR");
                 break;
             case 2:
             default:
@@ -289,10 +303,10 @@ protected:
             switch (_test_case)
             {
             case 0:
-                SetError("return: test case 0");
+                SetError("return: TestCase.SET_ERROR");
                 break;
             case 1:
-                throw Napi::Error::New(_env, "return: test case 1");
+                throw Napi::Error::New(_env, "return: TestCase.THROW_ERROR");
                 break;
             default:
                 SetError("return: unknown test case");
@@ -303,7 +317,7 @@ protected:
 
 private:
     TestPhase _test_phase;
-    uint32_t _test_case;
+    int32_t _test_case;
     std::string _return_value;
 };
 
@@ -368,14 +382,18 @@ bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
 };
 Napi::Value BlstTsAddon::RunTest(const Napi::CallbackInfo &info)
 {
-    bool is_async = info[0].ToBoolean().Value();
-    if (is_async)
+    if (!info[0].IsNumber())
     {
-        TestWorker *worker = new TestWorker{info};
-        return worker->Run();
+        throw Napi::TypeError::New(info.Env(), "First argument must be enum TestSyncOrAsync");
     }
-    TestWorker worker{info};
-    return worker.RunSync();
+    int32_t sync_or_async = info[0].ToNumber().Int32Value();
+    if (sync_or_async == 0)
+    {
+        TestWorker worker{info};
+        return worker.RunSync();
+    }
+    TestWorker *worker = new TestWorker{info};
+    return worker->Run();
 }
 Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
 {

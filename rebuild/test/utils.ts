@@ -1,8 +1,10 @@
 import {expect} from "chai";
 import {randomFillSync} from "crypto";
-import {BlstBuffer, Serializable, SecretKey, PublicKey, Signature} from "../lib";
+import bindings, {SecretKey, PublicKey, Signature} from "../lib";
+import {BufferLike, BindingsWithTestRig, TestSyncOrAsync, TestPhase, TestCase} from "./types";
 
-type BufferLike = string | BlstBuffer | Serializable;
+const {runTest} = bindings as unknown as BindingsWithTestRig;
+export {runTest, TestSyncOrAsync, TestPhase, TestCase};
 
 function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;

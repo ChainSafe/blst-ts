@@ -279,6 +279,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
         }
         Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(_env, nullptr)});
         wrapped.TypeTag(&_module->_public_key_tag);
+        _ref = Napi::Persistent(wrapped);
         _public_key = PublicKey::Unwrap(wrapped);
         try
         {
