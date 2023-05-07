@@ -265,17 +265,13 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     Napi::HandleScope scope(_env);
     if (raw_arg.IsTypedArray())
     {
-        if (raw_arg.As<Napi::TypedArray>().TypedArrayType() != napi_uint8_array)
-        {
-            SetError("PublicKeyArg must be Uint8Array or Buffer");
-            return;
-        }
         _bytes = Uint8ArrayArg{_env, raw_arg, "PublicKeyArg"};
         _bytes.ValidateLength(_module->_public_key_compressed_length, _module->_public_key_uncompressed_length);
         if (_bytes.HasError())
         {
-            SetError(_bytes.GetError());
-            return;
+            // goto set_error to get more specific error message
+            // instead of Uint8Array error message
+            goto set_error;
         }
         Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(_env, nullptr)});
         wrapped.TypeTag(&_module->_public_key_tag);
@@ -287,7 +283,9 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
         }
         catch (blst::BLST_ERROR &err)
         {
-            SetError(_module->GetBlstErrorString(err));
+            std::ostringstream msg;
+            msg << _module->GetBlstErrorString(err) << ": Invalid PublicKey";
+            SetError(msg.str());
             return;
         }
         _public_key->_has_jacobian = true;
@@ -303,6 +301,8 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
             return;
         }
     }
+
+set_error:
     SetError("PublicKeyArg must be a PublicKey instance or a 48/96 byte Uint8Array");
 };
 
@@ -342,7 +342,7 @@ PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
         if (_keys[i].HasError())
         {
             std::ostringstream msg;
-            msg << _keys[i].GetError() << ": Invalid key at index " << i;
+            msg << _keys[i].GetError() << " at index " << i;
             SetError(msg.str());
             return;
         }

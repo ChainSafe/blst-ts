@@ -19,7 +19,6 @@ export enum TestCase {
   PUBLIC_KEY_ARG = 4,
   PUBLIC_KEY_ARG_ARRAY = 5,
 }
-
 export declare function TestFunction(
   syncOrAsync: TestSyncOrAsync.SYNC,
   testPhase: TestPhase,
@@ -39,3 +38,9 @@ export declare function TestFunction(
   testObj?: any
 ): string | Promise<string>;
 export type BindingsWithTestRig = typeof bindings & {runTest: typeof TestFunction};
+export interface NapiTestSet {
+  msg: Uint8Array;
+  secretKey: bindings.SecretKey;
+  publicKey: bindings.PublicKey;
+  signature: bindings.Signature;
+}

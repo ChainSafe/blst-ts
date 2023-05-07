@@ -216,7 +216,9 @@ public:
         SET_ERROR = 0,
         THROW_ERROR = 1,
         UINT_8_ARRAY_ARG = 2,
-        UINT_8_ARRAY_ARG_ARRAY = 3
+        UINT_8_ARRAY_ARG_ARRAY = 3,
+        PUBLIC_KEY_ARG = 4,
+        PUBLIC_KEY_ARG_ARRAY = 5
     };
 
 public:
@@ -248,13 +250,13 @@ protected:
         {
             switch (_test_case)
             {
-            case 0:
+            case TestCase::SET_ERROR:
                 SetError("setup: TestCase.SET_ERROR");
                 break;
-            case 1:
+            case TestCase::THROW_ERROR:
                 throw Napi::Error::New(_env, "setup: TestCase.THROW_ERROR");
                 break;
-            case 2:
+            case TestCase::UINT_8_ARRAY_ARG:
             {
                 Uint8ArrayArg a{_env, _info[3], "TEST"};
                 if (a.HasError())
@@ -264,9 +266,29 @@ protected:
                 }
                 break;
             }
-            case 3:
+            case TestCase::UINT_8_ARRAY_ARG_ARRAY:
             {
                 Uint8ArrayArgArray a{_env, _info[3], "TEST", "TESTS"};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::PUBLIC_KEY_ARG:
+            {
+                PublicKeyArg a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::PUBLIC_KEY_ARG_ARRAY:
+            {
+                PublicKeyArgArray a{_env, _info[3]};
                 if (a.HasError())
                 {
                     SetError(a.GetError());
@@ -287,10 +309,10 @@ protected:
 
         switch (_test_case)
         {
-        case 0:
+        case TestCase::SET_ERROR:
             SetError("execution: TestCase.SET_ERROR");
             break;
-        case 1:
+        case TestCase::THROW_ERROR:
             throw std::exception();
             break;
         case -1:
@@ -306,15 +328,16 @@ protected:
         }
         switch (_test_case)
         {
-        case 0:
+        case TestCase::SET_ERROR:
             SetError("return: TestCase.SET_ERROR");
             break;
-        case 1:
+        case TestCase::THROW_ERROR:
             throw Napi::Error::New(_env, "return: TestCase.THROW_ERROR");
             break;
         default:
             SetError("return: unknown test case");
         }
+        return _env.Undefined();
     }
 
 private:

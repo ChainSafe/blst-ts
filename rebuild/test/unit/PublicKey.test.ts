@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {PublicKey, SecretKey} from "../../lib";
-import {expectEqualHex, expectNotEqualHex} from "../utils";
-import {publicKeyExample, SECRET_KEY_BYTES} from "../__fixtures__";
+import {BLST_CONSTANTS, PublicKey, SecretKey} from "../../lib";
+import {TestCase, TestPhase, TestSyncOrAsync, expectEqualHex, expectNotEqualHex, runTest} from "../utils";
+import {badPublicKey, validPublicKey, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__";
 
 describe("PublicKey", () => {
   it("should exist", () => {
@@ -38,14 +38,17 @@ describe("PublicKey", () => {
         );
       });
       it("should take uncompressed byte arrays", () => {
-        expectEqualHex(PublicKey.deserialize(publicKeyExample.p1).serialize(false), publicKeyExample.p1);
+        expectEqualHex(
+          PublicKey.deserialize(validPublicKey.uncompressed).serialize(false),
+          validPublicKey.uncompressed
+        );
       });
       it("should take compressed byte arrays", () => {
-        expectEqualHex(PublicKey.deserialize(publicKeyExample.p1Comp), publicKeyExample.p1Comp);
-        expectEqualHex(PublicKey.deserialize(publicKeyExample.p1Comp).serialize(true), publicKeyExample.p1Comp);
+        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed), validPublicKey.compressed);
+        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed).serialize(true), validPublicKey.compressed);
       });
       it("should throw on invalid key", () => {
-        const pkSeed = PublicKey.deserialize(publicKeyExample.p1Comp);
+        const pkSeed = PublicKey.deserialize(validPublicKey.compressed);
         expect(() =>
           PublicKey.deserialize(Uint8Array.from([...pkSeed.serialize().subarray(0, 46), ...Buffer.from("a1")]))
         ).to.throw("BLST_POINT_NOT_ON_CURVE");
@@ -55,15 +58,79 @@ describe("PublicKey", () => {
   describe("methods", () => {
     describe("keyValidate()", () => {
       it("should not throw on valid public key", async () => {
-        const pk = PublicKey.deserialize(publicKeyExample.p1);
+        const pk = PublicKey.deserialize(validPublicKey.uncompressed);
         return pk.keyValidate().then((res) => expect(res).to.be.undefined);
       });
     });
     describe("keyValidateSync()", () => {
       it("should not throw on valid public key", async () => {
-        const pk = PublicKey.deserialize(publicKeyExample.p1);
+        const pk = PublicKey.deserialize(validPublicKey.uncompressed);
         expect(pk.keyValidateSync()).to.be.undefined;
       });
     });
+  });
+});
+describe("PublicKeyArg", () => {
+  it("should accept compressed serialized key", () => {
+    expect(runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG, validPublicKey.compressed)).to.equal(
+      "VALID_TEST"
+    );
+  });
+  it("should accept uncompressed serialized key", () => {
+    expect(
+      runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG, validPublicKey.uncompressed)
+    ).to.equal("VALID_TEST");
+  });
+  it("should accept PublicKey as argument", () => {
+    expect(
+      runTest(
+        TestSyncOrAsync.SYNC,
+        TestPhase.SETUP,
+        TestCase.PUBLIC_KEY_ARG,
+        PublicKey.deserialize(validPublicKey.uncompressed)
+      )
+    ).to.equal("VALID_TEST");
+  });
+  describe("should throw for invalid inputs", () => {
+    expect(badPublicKey.length).to.equal(BLST_CONSTANTS.PUBLIC_KEY_LENGTH_UNCOMPRESSED);
+
+    const sk = SecretKey.fromKeygenSync();
+    const inputs = [
+      ["SecretKey", sk],
+      ["Signature", sk.signSync(Buffer.from("test message"))],
+    ].concat(invalidInputs);
+
+    for (const [name, input] of inputs) {
+      it(`should throw for ${name}`, () => {
+        expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG, input)).to.throw(
+          "PublicKeyArg must be a PublicKey instance or a 48/96 byte Uint8Array"
+        );
+      });
+    }
+  });
+  it("should throw for invalid PublicKey", () => {
+    expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG, badPublicKey)).to.throw(
+      "BLST_BAD_ENCODING: Invalid PublicKey"
+    );
+  });
+});
+describe("PublicKeyArgArray", () => {
+  it("should throw for non-array input", () => {
+    expect(() =>
+      runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG_ARRAY, Buffer.from("valid"))
+    ).to.throw("publicKeys must be of type PublicKeyArg[]");
+  });
+  it("should throw for invalid key", () => {
+    expect(badPublicKey.length).to.equal(BLST_CONSTANTS.PUBLIC_KEY_LENGTH_UNCOMPRESSED);
+    try {
+      runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG_ARRAY, [
+        validPublicKey.compressed,
+        validPublicKey.uncompressed,
+        badPublicKey,
+      ]);
+      throw new Error("function should throw");
+    } catch (err) {
+      expect((err as Error).message).to.equal("BLST_BAD_ENCODING: Invalid PublicKey at index 2");
+    }
   });
 });

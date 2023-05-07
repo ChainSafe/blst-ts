@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import * as bindings from "../../lib";
 import {runTest, TestCase, TestPhase, TestSyncOrAsync} from "../utils";
+import {invalidInputs} from "../__fixtures__";
 
 describe("bindings", () => {
   describe("constants", () => {
@@ -118,17 +119,6 @@ describe("bindings", () => {
         ).to.equal("VALID_TEST");
       });
       describe("should throw for invalid input", () => {
-        const invalidInputs: [string, any][] = [
-          ["numbers", 2],
-          ["strings", "hello world"],
-          ["objects", {testing: 123}],
-          ["arrays", ["foo"]],
-          ["null", null],
-          ["undefined", undefined],
-          ["Symbol", Symbol.for("baz")],
-          ["Proxy", new Proxy({test: "yo"}, {})],
-          ["Uint16Array", new Uint16Array()],
-        ];
         for (const [name, input] of invalidInputs) {
           it(`should throw for ${name}`, () => {
             expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.UINT_8_ARRAY_ARG, input)).to.throw(
