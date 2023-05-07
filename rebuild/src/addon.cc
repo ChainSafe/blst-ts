@@ -218,7 +218,9 @@ public:
         UINT_8_ARRAY_ARG = 2,
         UINT_8_ARRAY_ARG_ARRAY = 3,
         PUBLIC_KEY_ARG = 4,
-        PUBLIC_KEY_ARG_ARRAY = 5
+        PUBLIC_KEY_ARG_ARRAY = 5,
+        SIGNATURE_ARG = 6,
+        SIGNATURE_ARG_ARRAY = 7
     };
 
 public:
@@ -289,6 +291,26 @@ protected:
             case TestCase::PUBLIC_KEY_ARG_ARRAY:
             {
                 PublicKeyArgArray a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::SIGNATURE_ARG:
+            {
+                SignatureArg a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::SIGNATURE_ARG_ARRAY:
+            {
+                SignatureArgArray a{_env, _info[3]};
                 if (a.HasError())
                 {
                     SetError(a.GetError());

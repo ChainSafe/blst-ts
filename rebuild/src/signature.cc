@@ -41,7 +41,6 @@ namespace
 
     protected:
         void Setup() override{};
-        ;
 
         void Execute() override
         {
@@ -244,42 +243,52 @@ SignatureArg::SignatureArg(Napi::Env env)
       _signature{nullptr},
       _bytes{_env} {};
 
-SignatureArg::SignatureArg(Napi::Env env, const Napi::Value &raw_arg)
+SignatureArg::SignatureArg(Napi::Env env, Napi::Value raw_arg)
     : SignatureArg{env}
 {
-    _ref = Napi::Persistent(raw_arg);
+    Napi::HandleScope scope(_env);
     if (raw_arg.IsTypedArray())
     {
-        if (raw_arg.As<Napi::TypedArray>().TypedArrayType() != napi_uint8_array)
-        {
-            SetError("SignatureArg must be Uint8Array or Buffer");
-            return;
-        }
         _bytes = Uint8ArrayArg{_env, raw_arg, "SignatureArg"};
         _bytes.ValidateLength(
             _module->_signature_compressed_length,
             _module->_signature_uncompressed_length);
         if (_bytes.HasError())
         {
-            SetError(_bytes.GetError());
+            // goto set_error to get more specific error message
+            // instead of Uint8Array error message
+            goto set_error;
+        }
+        Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(_env, nullptr)});
+        wrapped.TypeTag(&_module->_signature_tag);
+        _ref = Napi::Persistent(raw_arg);
+        _signature = Signature::Unwrap(wrapped);
+        try
+        {
+            _signature->_jacobian.reset(new blst::P2{_bytes.Data(), _bytes.ByteLength()});
+        }
+        catch (blst::BLST_ERROR &err)
+        {
+            std::ostringstream msg;
+            msg << _module->GetBlstErrorString(err) << ": Invalid Signature";
+            SetError(msg.str());
             return;
         }
-        Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(_env, nullptr)});
-        wrapped.TypeTag(&_module->_public_key_tag);
-        _signature = Signature::Unwrap(wrapped);
-        _signature->_jacobian.reset(new blst::P2{_bytes.Data(), _bytes.ByteLength()});
         _signature->_has_jacobian = true;
         return;
     }
     if (raw_arg.IsObject())
     {
         Napi::Object raw_obj = raw_arg.As<Napi::Object>();
-        if (raw_obj.CheckTypeTag(&_module->_public_key_tag))
+        if (raw_obj.CheckTypeTag(&_module->_signature_tag))
         {
+            _ref = Napi::Persistent(raw_arg);
             _signature = Signature::Unwrap(raw_obj);
             return;
         }
     }
+
+set_error:
     SetError("SignatureArg must be a Signature instance or a 96/192 byte Uint8Array");
 };
 
@@ -300,13 +309,14 @@ const blst::P2_Affine *SignatureArg::AsAffine()
  *
  *
  */
-SignatureArgArray::SignatureArgArray(Napi::Env env, const Napi::Value &raw_arg)
+SignatureArgArray::SignatureArgArray(Napi::Env env, Napi::Value raw_arg)
     : BlstBase{env},
       _signatures{}
 {
+    Napi::HandleScope scope(_env);
     if (!raw_arg.IsArray())
     {
-        SetError("signatures argument must be of type SignatureArg[]");
+        SetError("signatures must be of type SignatureArg[]");
         return;
     }
     Napi::Array arr = raw_arg.As<Napi::Array>();
@@ -317,7 +327,9 @@ SignatureArgArray::SignatureArgArray(Napi::Env env, const Napi::Value &raw_arg)
         _signatures.push_back(SignatureArg{env, arr[i]});
         if (_signatures[i].HasError())
         {
-            SetError(_signatures[i].GetError());
+            std::ostringstream msg;
+            msg << _signatures[i].GetError() << " at index " << i;
+            SetError(msg.str());
             return;
         }
     }

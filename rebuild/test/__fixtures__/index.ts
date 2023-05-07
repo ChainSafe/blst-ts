@@ -45,15 +45,21 @@ export const badPublicKey = Uint8Array.from(
   ])
 );
 
-export const signatureExample = {
+export const validSignature = {
   keygen: "********************************", // Must be at least 32 bytes
-  p2: fromHex(
+  uncompressed: fromHex(
     "057565542eaa01ef2b910bf0eaba4d98a1e5b8b79cc425db08f8780732d0ea9bc85fc6175f272b2344bb27bc572ebf14022e52689dcedfccf44a00e5bd1aa59db44517217d6b0f21b372169ee761938c28914ddcb9663de54db288e760a8e14f0f465dc9f94edd3ea43442840e4ef6aeb51d1f77e8e5c5a0fadfb46f186f4644899c7cbefd6ead2b138b030b2914b748051cbab5d38fceb8bea84973ac08d1db5436f177dbcb11d9b7bbb39b6dc32047472f573c64be1d28fd848716c2844f88"
   ),
-  p2Comp: fromHex(
+  compressed: fromHex(
     "a57565542eaa01ef2b910bf0eaba4d98a1e5b8b79cc425db08f8780732d0ea9bc85fc6175f272b2344bb27bc572ebf14022e52689dcedfccf44a00e5bd1aa59db44517217d6b0f21b372169ee761938c28914ddcb9663de54db288e760a8e14f"
   ),
 };
+export const badSignature = Uint8Array.from(
+  Buffer.from([
+    ...Uint8Array.prototype.slice.call(makeNapiTestSet().signature.serialize(false), 8),
+    ...Buffer.from("0123456789abcdef", "hex"),
+  ])
+);
 
 // export interface SwigBindingTestSet {
 //   skBytes: Uint8Array;

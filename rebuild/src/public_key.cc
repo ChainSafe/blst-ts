@@ -266,7 +266,9 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     if (raw_arg.IsTypedArray())
     {
         _bytes = Uint8ArrayArg{_env, raw_arg, "PublicKeyArg"};
-        _bytes.ValidateLength(_module->_public_key_compressed_length, _module->_public_key_uncompressed_length);
+        _bytes.ValidateLength(
+            _module->_public_key_compressed_length,
+            _module->_public_key_uncompressed_length);
         if (_bytes.HasError())
         {
             // goto set_error to get more specific error message

@@ -18,6 +18,8 @@ export enum TestCase {
   UINT_8_ARRAY_ARG_ARRAY = 3,
   PUBLIC_KEY_ARG = 4,
   PUBLIC_KEY_ARG_ARRAY = 5,
+  SIGNATURE_ARG = 6,
+  SIGNATURE_ARG_ARRAY = 7,
 }
 export declare function TestFunction(
   syncOrAsync: TestSyncOrAsync.SYNC,
