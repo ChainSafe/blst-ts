@@ -199,21 +199,40 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
 class TestWorker : public BlstAsyncWorker
 {
 public:
+    enum TestSyncOrAsync
+    {
+        SYNC = 0,
+        ASYNC = 1,
+    };
+    enum TestPhase
+    {
+        SETUP = 0,
+        EXECUTION = 1,
+        RETURN = 2
+    };
+    enum TestCase
+    {
+        NORMAL_EXECUTION = -1,
+        SET_ERROR = 0,
+        THROW_ERROR = 1,
+        UINT_8_ARRAY_ARG = 2,
+        UINT_8_ARRAY_ARG_ARRAY = 3,
+        PUBLIC_KEY_ARG = 4,
+        PUBLIC_KEY_ARG_ARRAY = 5,
+        SIGNATURE_ARG = 6,
+        SIGNATURE_ARG_ARRAY = 7
+    };
+
+public:
     TestWorker(const Napi::CallbackInfo &info)
         : BlstAsyncWorker{info},
           _test_phase{TestPhase::SETUP},
           _test_case{0},
           _return_value{} {}
 
-    enum TestPhase
-    {
-        SETUP = 0,
-        EXECUTION,
-        RETURN
-    };
-
 protected:
-    void Setup() override
+    void
+    Setup() override
     {
         Napi::Value test_phase_value = _info[1];
         if (!test_phase_value.IsNumber())
@@ -225,21 +244,21 @@ protected:
         Napi::Value test_case_value = _info[2];
         if (!test_case_value.IsNumber())
         {
-            SetError("testCase must be a number");
+            SetError("testCase must be a TestCase enum");
             return;
         }
-        _test_case = test_case_value.As<Napi::Number>().Uint32Value();
+        _test_case = test_case_value.As<Napi::Number>().Int32Value();
         if (_test_phase == TestPhase::SETUP)
         {
             switch (_test_case)
             {
-            case 0:
-                SetError("setup: test case 0");
+            case TestCase::SET_ERROR:
+                SetError("setup: TestCase.SET_ERROR");
                 break;
-            case 1:
-                throw Napi::Error::New(_env, "setup: test case 1");
+            case TestCase::THROW_ERROR:
+                throw Napi::Error::New(_env, "setup: TestCase.THROW_ERROR");
                 break;
-            case 2:
+            case TestCase::UINT_8_ARRAY_ARG:
             {
                 Uint8ArrayArg a{_env, _info[3], "TEST"};
                 if (a.HasError())
@@ -249,9 +268,49 @@ protected:
                 }
                 break;
             }
-            case 3:
+            case TestCase::UINT_8_ARRAY_ARG_ARRAY:
             {
                 Uint8ArrayArgArray a{_env, _info[3], "TEST", "TESTS"};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::PUBLIC_KEY_ARG:
+            {
+                PublicKeyArg a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::PUBLIC_KEY_ARG_ARRAY:
+            {
+                PublicKeyArgArray a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::SIGNATURE_ARG:
+            {
+                SignatureArg a{_env, _info[3]};
+                if (a.HasError())
+                {
+                    SetError(a.GetError());
+                    return;
+                }
+                break;
+            }
+            case TestCase::SIGNATURE_ARG_ARRAY:
+            {
+                SignatureArgArray a{_env, _info[3]};
                 if (a.HasError())
                 {
                     SetError(a.GetError());
@@ -264,46 +323,48 @@ protected:
     }
     void Execute() override
     {
-        _return_value.append("CORRECT_VALUE");
-        if (_test_phase == TestPhase::EXECUTION)
+        if (_test_phase != TestPhase::EXECUTION)
         {
-            switch (_test_case)
-            {
-            case 0:
-                SetError("execution: test case 0");
-                break;
-            case 1:
-                throw Napi::Error::New(_env, "execution: test case 1");
-                break;
-            case 2:
-            default:
-                // no-op
-                break;
-            }
+            _return_value.append("VALID_TEST");
+            return;
+        }
+
+        switch (_test_case)
+        {
+        case TestCase::SET_ERROR:
+            SetError("execution: TestCase.SET_ERROR");
+            break;
+        case TestCase::THROW_ERROR:
+            throw std::exception();
+            break;
+        case -1:
+        default:
+            _return_value.append("VALID_TEST");
         }
     }
     Napi::Value GetReturnValue() override
     {
-        if (_test_phase == TestPhase::RETURN)
+        if (_test_phase != TestPhase::RETURN)
         {
-            switch (_test_case)
-            {
-            case 0:
-                SetError("return: test case 0");
-                break;
-            case 1:
-                throw Napi::Error::New(_env, "return: test case 1");
-                break;
-            default:
-                SetError("return: unknown test case");
-            }
+            return Napi::String::New(_env, _return_value);
         }
-        return Napi::String::New(_env, _return_value);
+        switch (_test_case)
+        {
+        case TestCase::SET_ERROR:
+            SetError("return: TestCase.SET_ERROR");
+            break;
+        case TestCase::THROW_ERROR:
+            throw Napi::Error::New(_env, "return: TestCase.THROW_ERROR");
+            break;
+        default:
+            SetError("return: unknown test case");
+        }
+        return _env.Undefined();
     }
 
 private:
     TestPhase _test_phase;
-    uint32_t _test_case;
+    int32_t _test_case;
     std::string _return_value;
 };
 
@@ -364,17 +425,21 @@ bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
     } while (1 == RAND_poll());
 
     return false;
-};
+}
 Napi::Value BlstTsAddon::RunTest(const Napi::CallbackInfo &info)
 {
-    bool is_async = info[0].ToBoolean().Value();
-    if (is_async)
+    if (!info[0].IsNumber())
     {
-        TestWorker *worker = new TestWorker{info};
-        return worker->Run();
+        throw Napi::TypeError::New(info.Env(), "First argument must be enum TestSyncOrAsync");
     }
-    TestWorker worker{info};
-    return worker.RunSync();
+    int32_t sync_or_async = info[0].ToNumber().Int32Value();
+    if (sync_or_async == 0)
+    {
+        TestWorker worker{info};
+        return worker.RunSync();
+    }
+    TestWorker *worker = new TestWorker{info};
+    return worker->Run();
 }
 Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
 {

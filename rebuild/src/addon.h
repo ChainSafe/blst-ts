@@ -26,28 +26,35 @@ using std::endl;
     try                                      \
     {
 
-#define WORKER_TRY_CATCH_END(name)                              \
-    }                                                           \
-    catch (Napi::Error & err)                                   \
-    {                                                           \
-        SetError(err.Message());                                \
-        goto out_err;                                           \
-    }                                                           \
-    catch (std::exception & err)                                \
-    {                                                           \
-        std::ostringstream msg;                                 \
-        msg << "caught exception in " #name ": " << err.what(); \
-        SetError(msg.str());                                    \
-        goto out_err;                                           \
-    }                                                           \
-    catch (...)                                                 \
-    {                                                           \
-        SetError("caught unknown exception in " #name);         \
-        goto out_err;                                           \
-    }                                                           \
-                                                                \
-    out_err:                                                    \
-    ThrowJsException();                                         \
+#define WORKER_TRY_CATCH_END(name)                                 \
+    }                                                              \
+    catch (blst::BLST_ERROR & err)                                 \
+    {                                                              \
+        std::ostringstream msg;                                    \
+        msg << "BLST_ERROR::" << _module->GetBlstErrorString(err); \
+        SetError(msg.str());                                       \
+        goto out_err;                                              \
+    }                                                              \
+    catch (Napi::Error & err)                                      \
+    {                                                              \
+        SetError(err.Message());                                   \
+        goto out_err;                                              \
+    }                                                              \
+    catch (std::exception & err)                                   \
+    {                                                              \
+        std::ostringstream msg;                                    \
+        msg << "caught exception in " #name ": " << err.what();    \
+        SetError(msg.str());                                       \
+        goto out_err;                                              \
+    }                                                              \
+    catch (...)                                                    \
+    {                                                              \
+        SetError("caught unknown exception in " #name);            \
+        goto out_err;                                              \
+    }                                                              \
+                                                                   \
+    out_err:                                                       \
+    ThrowJsException();                                            \
     return BlstBase::_env.Undefined();
 
 class BlstTsAddon;

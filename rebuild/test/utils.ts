@@ -1,8 +1,10 @@
 import {expect} from "chai";
 import {randomFillSync} from "crypto";
-import {BlstBuffer, Serializable, SecretKey, PublicKey, Signature} from "../lib";
+import * as bindings from "../lib";
+import {BufferLike, BindingsWithTestRig, TestSyncOrAsync, TestPhase, TestCase, NapiTestSet} from "./types";
 
-type BufferLike = string | BlstBuffer | Serializable;
+const {runTest} = bindings as unknown as BindingsWithTestRig;
+export {runTest, TestSyncOrAsync, TestPhase, TestCase};
 
 function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;
@@ -37,15 +39,8 @@ export function getFilledUint8(length: number, fillWith: string | number | Buffe
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
-export interface NapiTestSet {
-  msg: Uint8Array;
-  secretKey: SecretKey;
-  publicKey: PublicKey;
-  signature: Signature;
-}
-
-export function makeNapiTestSet(msg: Uint8Array): NapiTestSet {
-  const secretKey = SecretKey.fromKeygenSync(randomFillSync(Buffer.alloc(32)));
+export function makeNapiTestSet(msg: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
+  const secretKey = bindings.SecretKey.fromKeygenSync(randomFillSync(Buffer.alloc(32)));
   const publicKey = secretKey.toPublicKey();
   const signature = secretKey.signSync(msg);
   return {

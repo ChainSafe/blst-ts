@@ -259,28 +259,37 @@ PublicKeyArg::PublicKeyArg(Napi::Env env)
       _public_key{nullptr},
       _bytes{_env} {};
 
-PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     : PublicKeyArg{env}
 {
-    _ref = Napi::Persistent(raw_arg);
+    Napi::HandleScope scope(_env);
     if (raw_arg.IsTypedArray())
     {
-        if (raw_arg.As<Napi::TypedArray>().TypedArrayType() != napi_uint8_array)
-        {
-            SetError("PublicKeyArg must be Uint8Array or Buffer");
-            return;
-        }
         _bytes = Uint8ArrayArg{_env, raw_arg, "PublicKeyArg"};
-        _bytes.ValidateLength(_module->_public_key_compressed_length, _module->_public_key_uncompressed_length);
+        _bytes.ValidateLength(
+            _module->_public_key_compressed_length,
+            _module->_public_key_uncompressed_length);
         if (_bytes.HasError())
         {
-            SetError(_bytes.GetError());
-            return;
+            // goto set_error to get more specific error message
+            // instead of Uint8Array error message
+            goto set_error;
         }
         Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(_env, nullptr)});
         wrapped.TypeTag(&_module->_public_key_tag);
+        _ref = Napi::Persistent(wrapped);
         _public_key = PublicKey::Unwrap(wrapped);
-        _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+        try
+        {
+            _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+        }
+        catch (blst::BLST_ERROR &err)
+        {
+            std::ostringstream msg;
+            msg << _module->GetBlstErrorString(err) << ": Invalid PublicKey";
+            SetError(msg.str());
+            return;
+        }
         _public_key->_has_jacobian = true;
         return;
     }
@@ -289,10 +298,13 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
         Napi::Object raw_obj = raw_arg.As<Napi::Object>();
         if (raw_obj.CheckTypeTag(&_module->_public_key_tag))
         {
+            _ref = Napi::Persistent(raw_obj);
             _public_key = PublicKey::Unwrap(raw_obj);
             return;
         }
     }
+
+set_error:
     SetError("PublicKeyArg must be a PublicKey instance or a 48/96 byte Uint8Array");
 };
 
@@ -313,10 +325,11 @@ const blst::P1_Affine *PublicKeyArg::AsAffine()
  *
  *
  */
-PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
     : BlstBase{env},
       _keys{}
 {
+    Napi::HandleScope scope(_env);
     if (!raw_arg.IsArray())
     {
         SetError("publicKeys must be of type PublicKeyArg[]");
@@ -330,7 +343,9 @@ PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
         _keys.push_back(PublicKeyArg{env, arr[i]});
         if (_keys[i].HasError())
         {
-            SetError(_keys[i].GetError());
+            std::ostringstream msg;
+            msg << _keys[i].GetError() << " at index " << i;
+            SetError(msg.str());
             return;
         }
     }
