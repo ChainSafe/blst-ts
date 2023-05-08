@@ -236,6 +236,7 @@ private:
 #include "secret_key.h"
 #include "public_key.h"
 #include "signature.h"
+#include "functions.h"
 
 class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
