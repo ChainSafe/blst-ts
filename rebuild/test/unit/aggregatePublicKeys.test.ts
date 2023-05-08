@@ -13,11 +13,11 @@ describe("Aggregate Public Keys", () => {
     });
     it("should be able to keyValidate PublicKey", () => {
       const agg = aggregatePublicKeysSync(keys);
-      expect(agg.keyValidateSync()).to.be.undefined;
+      expect(agg!.keyValidateSync()).to.be.undefined;
     });
     it("should return a key that is not in the keys array", () => {
       const agg = aggregatePublicKeysSync(keys);
-      const serialized = agg.serialize();
+      const serialized = agg!.serialize();
       expect(keys.find((key) => key.serialize() == serialized)).to.be.undefined;
     });
   });
@@ -30,12 +30,12 @@ describe("Aggregate Public Keys", () => {
     });
     it("should be able to keyValidate PublicKey", async () => {
       const agg = await aggregatePublicKeys(keys);
-      const res = await agg.keyValidate();
+      const res = await agg!.keyValidate();
       expect(res).to.be.undefined;
     });
     it("should return a key that is not in the keys array", async () => {
       const agg = await aggregatePublicKeys(keys);
-      const serialized = agg.serialize();
+      const serialized = agg!.serialize();
       expect(keys.find((key) => key.serialize() == serialized)).to.be.undefined;
     });
   });

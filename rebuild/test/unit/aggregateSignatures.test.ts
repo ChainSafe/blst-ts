@@ -13,11 +13,11 @@ describe("Aggregate Signatures", () => {
     });
     it("should be able to keyValidate Signature", () => {
       const agg = aggregateSignaturesSync(signatures);
-      expect(agg.sigValidateSync()).to.be.undefined;
+      expect(agg!.sigValidateSync()).to.be.undefined;
     });
     it("should return a key that is not in the keys array", () => {
       const agg = aggregateSignaturesSync(signatures);
-      const serialized = agg.serialize();
+      const serialized = agg!.serialize();
       expect(signatures.find((key) => key.serialize() == serialized)).to.be.undefined;
     });
   });
@@ -30,12 +30,12 @@ describe("Aggregate Signatures", () => {
     });
     it("should be able to keyValidate Signature", async () => {
       const agg = await aggregateSignatures(signatures);
-      const res = await agg.sigValidate();
+      const res = await agg!.sigValidate();
       expect(res).to.be.undefined;
     });
     it("should return a key that is not in the keys array", async () => {
       const agg = await aggregateSignatures(signatures);
-      const serialized = agg.serialize();
+      const serialized = agg!.serialize();
       expect(signatures.find((key) => key.serialize() == serialized)).to.be.undefined;
     });
   });
