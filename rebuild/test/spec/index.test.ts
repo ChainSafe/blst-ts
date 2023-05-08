@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
-import {PublicKey, aggregatePublicKeysSync} from "../../lib";
+import {PublicKey, aggregatePublicKeysSync, aggregateSignaturesSync} from "../../lib";
 import {fromHex, normalizeHex} from "../utils";
 
 interface TestData {
@@ -21,7 +21,7 @@ interface TestData {
 
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
-  // aggregate,
+  aggregate,
   // aggregate_verify,
   eth_aggregate_pubkeys,
   // eth_fast_aggregate_verify,
@@ -112,10 +112,11 @@ for (const forkName of fs.readdirSync(generalTestsDir)) {
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-// function aggregate(input: string[]): string | null {
-//   const agg = functions.aggregateSignaturesSync(input.map((hex) => Signature.deserialize(fromHex(hex))));
-//   return toHex(agg.serialize());
-// }
+function aggregate(input: string[]): string | null {
+  const agg = aggregateSignaturesSync(input.map((hex) => fromHex(hex)));
+  if (agg === null) return agg;
+  return normalizeHex(agg.serialize());
+}
 
 /**
  * ```
@@ -142,13 +143,8 @@ for (const forkName of fs.readdirSync(generalTestsDir)) {
  * ```
  */
 function eth_aggregate_pubkeys(input: string[]): string | null {
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  // for (const pk of input) {
-  //   if (pk === G1_POINT_AT_INFINITY) return null;
-  // }
-
   const agg = aggregatePublicKeysSync(input.map((hex) => fromHex(hex)));
-  if (agg == null) return null;
+  if (agg == null) return agg;
   return normalizeHex(agg.serialize());
 }
 

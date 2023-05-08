@@ -91,6 +91,7 @@ namespace
     public:
         AggregateSignaturesWorker(const Napi::CallbackInfo &info, size_t arg_position)
             : BlstAsyncWorker(info),
+              _is_valid{true},
               _result{},
               _signatures{_env, _info[arg_position]} {}
 
@@ -105,6 +106,11 @@ namespace
 
         void Execute() override
         {
+            if (_signatures.Size() == 0)
+            {
+                _is_valid = false;
+                return;
+            }
             for (size_t i = 0; i < _signatures.Size(); i++)
             {
                 try
@@ -123,6 +129,10 @@ namespace
         Napi::Value GetReturnValue() override
         {
             Napi::EscapableHandleScope scope(_env);
+            if (!_is_valid)
+            {
+                return scope.Escape(_env.Null());
+            }
             Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
             wrapped.TypeTag(&_module->_signature_tag);
             Signature *sig = Signature::Unwrap(wrapped);
@@ -132,6 +142,7 @@ namespace
         };
 
     private:
+        bool _is_valid;
         blst::P2 _result;
         SignatureArgArray _signatures;
     };
