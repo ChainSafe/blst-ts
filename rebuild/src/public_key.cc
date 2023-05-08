@@ -182,18 +182,10 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info)
             : _module->_public_key_uncompressed_length);
     if (_has_jacobian)
     {
-        // if (_jacobian->is_inf())
-        // {
-        //     return scope.Escape(env.Null());
-        // }
         compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());
     }
     else if (_has_affine)
     {
-        // if (_affine->is_inf())
-        // {
-        //     return scope.Escape(env.Null());
-        // }
         compressed ? _affine->compress(serialized.Data()) : _affine->serialize(serialized.Data());
     }
     else
