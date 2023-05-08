@@ -29,7 +29,7 @@ class SignatureArg : public BlstBase
 {
 public:
     SignatureArg(Napi::Env env);
-    SignatureArg(Napi::Env env,  Napi::Value raw_arg);
+    SignatureArg(Napi::Env env, Napi::Value raw_arg);
     SignatureArg(const SignatureArg &source) = delete;
     SignatureArg(SignatureArg &&source) = default;
 

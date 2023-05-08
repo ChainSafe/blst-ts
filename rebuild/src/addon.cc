@@ -426,7 +426,7 @@ bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
     } while (1 == RAND_poll());
 
     return false;
-};
+}
 Napi::Value BlstTsAddon::RunTest(const Napi::CallbackInfo &info)
 {
     if (!info[0].IsNumber())
