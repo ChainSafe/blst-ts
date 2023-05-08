@@ -25,42 +25,4 @@ public:
     const blst::P2_Affine *AsAffine();
 };
 
-class SignatureArg : public BlstBase
-{
-public:
-    SignatureArg(Napi::Env env);
-    SignatureArg(Napi::Env env, const Napi::Value &raw_arg);
-    SignatureArg(const SignatureArg &source) = delete;
-    SignatureArg(SignatureArg &&source) = default;
-
-    SignatureArg &operator=(const SignatureArg &source) = delete;
-    SignatureArg &operator=(SignatureArg &&source) = default;
-
-    const blst::P2 *AsJacobian();
-    const blst::P2_Affine *AsAffine();
-
-private:
-    Signature *_signature;
-    Uint8ArrayArg _bytes;
-    Napi::Reference<Napi::Value> _ref;
-};
-
-class SignatureArgArray : public BlstBase
-{
-public:
-    SignatureArgArray(Napi::Env env, const Napi::Value &raw_arg);
-    SignatureArgArray(const SignatureArgArray &source) = delete;
-    SignatureArgArray(SignatureArgArray &&source) = default;
-
-    SignatureArgArray &operator=(const SignatureArgArray &source) = delete;
-    SignatureArgArray &operator=(SignatureArgArray &&source) = default;
-    SignatureArg &operator[](size_t index) { return _signatures[index]; }
-
-    size_t Size() { return _signatures.size(); }
-    void Reserve(size_t size) { return _signatures.reserve(size); }
-
-private:
-    std::vector<SignatureArg> _signatures;
-};
-
 #endif /* BLST_TS_SIGNATURE_H__ */
