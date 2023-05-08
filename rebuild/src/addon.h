@@ -203,6 +203,7 @@ public:
     const uint8_t *Data();
     size_t ByteLength();
     bool ValidateLength(size_t length1, size_t length2 = 0);
+    bool IsZeroBytes();
 
 protected:
     std::string _error_prefix;

@@ -16,6 +16,7 @@ namespace
     public:
         AggregatePublicKeysWorker(const Napi::CallbackInfo &info, size_t arg_position)
             : BlstAsyncWorker(info),
+              _is_valid{true},
               _result{},
               _public_keys{_env, _info[arg_position]} {}
 
@@ -29,8 +30,19 @@ namespace
 
         void Execute() override
         {
+            if (_public_keys.Size() == 0)
+            {
+                _is_valid = false;
+                return;
+            }
             for (size_t i = 0; i < _public_keys.Size(); i++)
             {
+                bool is_valid = _public_keys[i].NativeValidate();
+                if (!is_valid)
+                {
+                    _is_valid = false;
+                    return;
+                }
                 try
                 {
                     _result.add(*_public_keys[i].AsJacobian());
@@ -47,6 +59,10 @@ namespace
         Napi::Value GetReturnValue() override
         {
             Napi::EscapableHandleScope scope(_env);
+            if (!_is_valid)
+            {
+                return scope.Escape(_env.Null());
+            }
             Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
             wrapped.TypeTag(&_module->_public_key_tag);
             PublicKey *pk = PublicKey::Unwrap(wrapped);
@@ -58,6 +74,7 @@ namespace
         blst::P1 &GetAggregate() { return _result; };
 
     private:
+        bool _is_valid;
         blst::P1 _result;
         PublicKeyArgArray _public_keys;
     };

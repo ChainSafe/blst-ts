@@ -18,8 +18,10 @@
     "build:clean": "npm run clean && npm run build",
     "build:debug": "node-gyp build --debug",
     "lint": "eslint --color --ext .ts lib/ test/",
+    "download-spec-tests": "ts-node test/spec/downloadTests.ts",
     "test": "yarn test:unit",
-    "test:unit": "mocha test/unit/**/*.test.ts"
+    "test:unit": "mocha test/unit/**/*.test.ts",
+    "test:spec": "mocha test/spec/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -45,7 +47,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
+    "node-fetch": "2.6.6",
     "prettier": "^2.8.7",
+    "tar": "^6.1.14",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
