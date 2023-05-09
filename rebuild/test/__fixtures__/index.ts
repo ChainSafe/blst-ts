@@ -1,4 +1,4 @@
-import {fromHex, getFilledUint8, makeNapiTestSet} from "../utils";
+import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets} from "../utils";
 
 export const invalidInputs: [string, any][] = [
   ["numbers", 2],
@@ -48,3 +48,13 @@ export const badSignature = Uint8Array.from(
     ...Buffer.from("0123456789abcdef", "hex"),
   ])
 );
+
+export const validSignatureSet = makeNapiTestSets(1).map((set) => {
+  const {msg, secretKey, publicKey, signature} = set;
+  return {
+    msg,
+    secretKey,
+    publicKey,
+    signature,
+  };
+})[0];

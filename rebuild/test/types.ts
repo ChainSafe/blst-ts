@@ -20,6 +20,8 @@ export enum TestCase {
   PUBLIC_KEY_ARG_ARRAY = 5,
   SIGNATURE_ARG = 6,
   SIGNATURE_ARG_ARRAY = 7,
+  SIGNATURE_SET = 8,
+  SIGNATURE_SET_ARRAY = 9,
 }
 export declare function TestFunction(
   syncOrAsync: TestSyncOrAsync.SYNC,

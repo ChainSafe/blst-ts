@@ -1,84 +1,84 @@
 import {expect} from "chai";
 import {verifyMultipleAggregateSignatures, verifyMultipleAggregateSignaturesSync} from "../../lib";
 import {TestCase, TestPhase, TestSyncOrAsync, makeNapiTestSets, runTest} from "../utils";
+import {invalidInputs, validSignatureSet} from "../__fixtures__";
 
 describe("SignatureSet", () => {
-  it("should only accept an object", () => {});
-  it("should accept a BlstBuffer for 'msg' property", () => {});
-  it("should accept a PublicKeyArg for 'publicKey' property", () => {});
-  it("should accept a SignatureArg for 'signature' property", () => {});
-  describe("should throw for invalid inputs", () => {});
+  it("should only accept a valid SignatureSet object", () => {
+    expect(runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET, validSignatureSet)).to.equal(
+      "VALID_TEST"
+    );
+  });
+  describe("should throw for invalid inputs", () => {
+    it("should throw for non-object input", () => {
+      expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET, [])).to.throw(
+        "SignatureSet must be an object with msg, publicKey and signature properties"
+      );
+    });
+
+    for (const [name, input] of invalidInputs) {
+      it(`should throw for 'msg' that is a ${name}`, () => {
+        const badMsg = {
+          ...validSignatureSet,
+          msg: input,
+        };
+        expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET, badMsg)).to.throw(
+          "msg must be of type BlstBuffer"
+        );
+      });
+      it(`should throw for 'publicKey' that is a ${name}`, () => {
+        const badMsg = {
+          ...validSignatureSet,
+          publicKey: input,
+        };
+        expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET, badMsg)).to.throw(
+          "PublicKeyArg must be a PublicKey instance or a 48/96 byte Uint8Array"
+        );
+      });
+      it(`should throw for 'signature' that is a ${name}`, () => {
+        const badMsg = {
+          ...validSignatureSet,
+          signature: input,
+        };
+        expect(() => runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET, badMsg)).to.throw(
+          "SignatureArg must be a Signature instance or a 96/192 byte Uint8Array"
+        );
+      });
+    }
+  });
 });
 describe("SignatureSetArray", () => {
   it("should throw for non-array input", () => {
     expect(() =>
-      runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.PUBLIC_KEY_ARG_ARRAY, Buffer.from("valid"))
-    ).to.throw("publicKeys must be of type PublicKeyArg[]");
+      runTest(TestSyncOrAsync.SYNC, TestPhase.SETUP, TestCase.SIGNATURE_SET_ARRAY, Buffer.from("valid"))
+    ).to.throw("signatureSets must be of type SignatureSet[]");
   });
 });
 
-// describe("verifyMultipleAggregateSignatures", () => {
-//   const sets = makeNapiTestSets(10).map((set) => {
-//     const {msg, secretKey, publicKey, signature} = set;
-//     return {
-//       msg,
-//       secretKey,
-//       publicKey,
-//       signature,
-//     };
-//   });
-//   describe("Inputs", () => {
-//     // const asBuffers = sets.map(({msg, secretKey, publicKey, signature}) => ({
-//     //   msg: Buffer.from(msg),
-//     //   secretKey: secretKey.serialize(),
-//     //   publicKey: publicKey.serialize(),
-//     //   signature: signature.serialize(),
-//     // }));
-//     it("should take Uint8Array inputs", () => {
-//       // expect(() => verifyMultipleAggregateSignaturesSync(asBuffers)).not.to.throw;
-//     });
-//     describe("Invalid inputs", () => {
-//       it("should throw for not passing an array", () => {});
-//       it("should throw for not passing an array of objects", () => {});
-//       it("each SignatureSet.msg exists", () => {});
-//       it("each SignatureSet.publicKey exists", () => {});
-//       it("each SignatureSet.signature exists", () => {});
-//     });
-//   });
-//   describe("Synchronous", () => {
-//     it("should exist", () => {
-//       expect(typeof verifyMultipleAggregateSignaturesSync).to.equal("function");
-//     });
-//     it("should return a boolean", () => {
-//       const result = verifyMultipleAggregateSignaturesSync([]);
-//       expect(typeof result).to.equal("boolean");
-//     });
-//     it("should default to false", () => {
-//       const result = verifyMultipleAggregateSignaturesSync([]);
-//       expect(result).to.be.false;
-//     });
-//     it("should return true for valid sets", () => {
-//       // const res = verifyMultipleAggregateSignaturesSync(sets);
-//       // expect(res).to.be.true;
-//     });
-//   });
-//   describe("Promise Based", () => {
-//     it("should exist", () => {
-//       expect(typeof verifyMultipleAggregateSignatures).to.equal("function");
-//     });
-//     it("should return a Promise<boolean>", async () => {
-//       // const resPromise = verifyMultipleAggregateSignatures([]);
-//       // expect(resPromise).to.be.instanceOf(Promise);
-//       // const result = await resPromise;
-//       // expect(typeof result).to.equal("boolean");
-//     });
-//     it("should default to false", async () => {
-//       // const result = await verifyMultipleAggregateSignatures([]);
-//       // expect(result).to.be.false;
-//     });
-//     it("should return true for valid sets", async () => {
-//       // const res = await verifyMultipleAggregateSignatures(sets);
-//       // expect(res).to.be.true;
-//     });
-//   });
-// });
+describe("Verify Multiple Aggregate Signatures", () => {
+  describe("verifyMultipleAggregateSignaturesSync", () => {
+    it("should return a boolean", () => {
+      expect(verifyMultipleAggregateSignaturesSync([])).to.be.a("boolean");
+    });
+    it("should default to false", () => {
+      expect(verifyMultipleAggregateSignaturesSync([])).to.be.false;
+    });
+    it("should return true for valid sets", () => {
+      expect(verifyMultipleAggregateSignaturesSync(makeNapiTestSets(6))).to.be.true;
+    });
+  });
+  describe("verifyMultipleAggregateSignatures", () => {
+    it("should return Promise<boolean>", async () => {
+      const resPromise = verifyMultipleAggregateSignatures([]);
+      expect(resPromise).to.be.instanceOf(Promise);
+      const res = await resPromise;
+      expect(res).to.be.a("boolean");
+    });
+    it("should default to Promise<false>", async () => {
+      expect(await verifyMultipleAggregateSignatures([])).to.be.false;
+    });
+    it("should return true for valid sets", async () => {
+      expect(await verifyMultipleAggregateSignatures(makeNapiTestSets(6))).to.be.true;
+    });
+  });
+});

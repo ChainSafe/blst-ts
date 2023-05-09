@@ -2,60 +2,94 @@
 
 namespace
 {
-    SignatureSet::SignatureSet(Napi::Env env, const Napi::Value &raw_arg)
-        : BlstBase{env},
-          _msg{_env},
-          _publicKey{_env},
-          _signature{_env}
+    class SignatureSet : public BlstBase
     {
-        Napi::HandleScope scope(_env);
-        if (!raw_arg.IsObject())
+    public:
+        Uint8ArrayArg _msg;
+        PublicKeyArg _publicKey;
+        SignatureArg _signature;
+
+        SignatureSet(Napi::Env env, const Napi::Value &raw_arg)
+            : BlstBase{env},
+              _msg{_env},
+              _publicKey{_env},
+              _signature{_env}
         {
-            SetError("SignatureSet must be an object");
-            return;
+            Napi::HandleScope scope(_env);
+            if (raw_arg.IsObject())
+            {
+                Napi::Object set = raw_arg.As<Napi::Object>();
+                if (set.Has("msg") && set.Has("publicKey") && set.Has("signature"))
+                {
+                    _msg = Uint8ArrayArg{_env, set.Get("msg"), "msg"};
+                    if (_msg.HasError())
+                    {
+                        SetError(_msg.GetError());
+                        return;
+                    }
+                    _publicKey = PublicKeyArg{_env, set.Get("publicKey")};
+                    if (_publicKey.HasError())
+                    {
+                        SetError(_publicKey.GetError());
+                        return;
+                    }
+                    _signature = SignatureArg{_env, set.Get("signature")};
+                    if (_signature.HasError())
+                    {
+                        SetError(_signature.GetError());
+                        return;
+                    }
+                    return;
+                }
+            }
+            SetError("SignatureSet must be an object with msg, publicKey and signature properties");
         }
-        Napi::Object set = raw_arg.As<Napi::Object>();
-        if (!set.Has("msg"))
-        {
-            SetError("SignatureSet must have a 'msg' property");
-            return;
-        }
-        _msg = Uint8ArrayArg{_env, set.Get("msg"), "msg"};
-        if (!set.Has("publicKey"))
-        {
-            SetError("SignatureSet must have a 'publicKey' property");
-            return;
-        }
-        _publicKey = PublicKeyArg{_env, set.Get("publicKey")};
-        if (!set.Has("signature"))
-        {
-            SetError("SignatureSet must have a 'signature' property");
-            return;
-        }
-        _signature = SignatureArg{_env, set.Get("signature")};
+
+        // non-copyable. Should only be created directly in
+        // SignatureSetArray via copy elision
+        SignatureSet(const SignatureSet &source) = delete;
+        SignatureSet(SignatureSet &&source) = default;
+        SignatureSet &operator=(const SignatureSet &source) = delete;
+        SignatureSet &operator=(SignatureSet &&source) = default;
     };
 
-    SignatureSetArray::SignatureSetArray(Napi::Env env, const Napi::Value &raw_arg)
-        : BlstBase{env},
-          _sets{}
+    class SignatureSetArray : public BlstBase
     {
-        if (!raw_arg.IsArray())
+    public:
+        std::vector<SignatureSet> _sets;
+
+        SignatureSetArray(Napi::Env env, const Napi::Value &raw_arg)
+            : BlstBase{env},
+              _sets{}
         {
-            SetError("signatureSets must be of type SignatureSet[]");
-            return;
-        }
-        Napi::Array arr = raw_arg.As<Napi::Array>();
-        uint32_t length = arr.Length();
-        _sets.reserve(length);
-        for (uint32_t i = 0; i < length; i++)
-        {
-            _sets.push_back({_env, arr[i]});
-            if (_sets[i].HasError())
+            if (!raw_arg.IsArray())
             {
-                SetError(_sets[i].GetError());
+                SetError("signatureSets must be of type SignatureSet[]");
                 return;
             }
+            Napi::Array arr = raw_arg.As<Napi::Array>();
+            uint32_t length = arr.Length();
+            _sets.reserve(length);
+            for (uint32_t i = 0; i < length; i++)
+            {
+                _sets.push_back({_env, arr[i]});
+                if (_sets[i].HasError())
+                {
+                    SetError(_sets[i].GetError());
+                    return;
+                }
+            }
         }
+
+        // immovable/non-copyable. should only be created directly as class member
+        SignatureSetArray(const SignatureSetArray &source) = delete;
+        SignatureSetArray(SignatureSetArray &&source) = delete;
+        SignatureSetArray &operator=(const SignatureSetArray &source) = delete;
+        SignatureSetArray &operator=(SignatureSetArray &&source) = delete;
+
+        SignatureSet &operator[](size_t index) { return _sets[index]; }
+
+        size_t Size() { return _sets.size(); }
     };
 
     /**
@@ -182,6 +216,16 @@ namespace
                 case TestCase::SIGNATURE_ARG_ARRAY:
                 {
                     SignatureArgArray a{_env, _info[3]};
+                    if (a.HasError())
+                    {
+                        SetError(a.GetError());
+                        return;
+                    }
+                    break;
+                }
+                case TestCase::SIGNATURE_SET:
+                {
+                    SignatureSet a{_env, _info[3]};
                     if (a.HasError())
                     {
                         SetError(a.GetError());
