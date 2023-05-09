@@ -9,6 +9,7 @@
         'src/secret_key.cc',
         'src/public_key.cc',
         'src/signature.cc',
+        'src/functions.cc',
       ],
       'include_dirs': [
         'deps/blst/bindings',

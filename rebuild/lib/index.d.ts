@@ -112,3 +112,6 @@ export class Signature implements Serializable {
   sigValidate(): Promise<void>;
   sigValidateSync(): void;
 }
+
+export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet): boolean
+export function verifyMultipleAggregateSignaturesSync(signatureSets: SignatureSet): boolean

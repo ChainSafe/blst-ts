@@ -1,4 +1,4 @@
-#include "public_key.h"
+#include "addon.h"
 
 void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
@@ -259,7 +259,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env)
       _public_key{nullptr},
       _bytes{_env} {};
 
-PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
+PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
     : PublicKeyArg{env}
 {
     Napi::HandleScope scope(_env);
@@ -325,7 +325,7 @@ const blst::P1_Affine *PublicKeyArg::AsAffine()
  *
  *
  */
-PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
+PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
     : BlstBase{env},
       _keys{}
 {

@@ -5,6 +5,7 @@
 #include "napi.h"
 #include "blst.hpp"
 #include "addon.h"
+
 class PublicKey : public BlstBase, public Napi::ObjectWrap<PublicKey>
 {
 public:
@@ -28,7 +29,7 @@ class PublicKeyArg : public BlstBase
 {
 public:
     PublicKeyArg(Napi::Env env);
-    PublicKeyArg(Napi::Env env, Napi::Value raw_arg);
+    PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg);
     PublicKeyArg(const PublicKeyArg &source) = delete;
     PublicKeyArg(PublicKeyArg &&source) = default;
 
@@ -47,7 +48,7 @@ private:
 class PublicKeyArgArray : public BlstBase
 {
 public:
-    PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg);
+    PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg);
     PublicKeyArgArray(const PublicKeyArgArray &source) = delete;
     PublicKeyArgArray(PublicKeyArgArray &&source) = default;
 

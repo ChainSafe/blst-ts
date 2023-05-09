@@ -63,4 +63,5 @@ private:
     std::vector<SignatureArg> _signatures;
 };
 
+
 #endif /* BLST_TS_SIGNATURE_H__ */
