@@ -95,6 +95,73 @@ namespace
     /**
      *
      *
+     * VerifyMultipleAggregateSignatures
+     *
+     *
+     */
+    class VerifyMultipleAggregateSignaturesWorker : public BlstAsyncWorker
+    {
+    public:
+        VerifyMultipleAggregateSignaturesWorker(
+            const Napi::CallbackInfo &info)
+            : BlstAsyncWorker(info),
+              _result{true},
+              _ctx{new blst::Pairing{true, _module->_dst}},
+              _sets{_env, _info[0]} {}
+
+    protected:
+        void Setup() override
+        {
+            if (_sets.HasError())
+            {
+                SetError(_sets.GetError());
+            }
+        };
+
+        void Execute() override
+        {
+            if (_sets.Size() == 0)
+            {
+                _result = false;
+                return;
+            }
+            size_t random_bytes_length{_module->_random_bytes_length};
+            for (size_t i = 0; i < _sets.Size(); i++)
+            {
+                blst::byte rand[random_bytes_length];
+                _module->GetRandomBytes(rand, random_bytes_length);
+                blst::BLST_ERROR err = _ctx->mul_n_aggregate(_sets[i]._publicKey.AsAffine(),
+                                                             _sets[i]._signature.AsAffine(),
+                                                             rand,
+                                                             random_bytes_length,
+                                                             _sets[i]._msg.Data(),
+                                                             _sets[i]._msg.ByteLength());
+                if (err != blst::BLST_ERROR::BLST_SUCCESS)
+                {
+                    std::ostringstream msg;
+                    msg << _module->GetBlstErrorString(err) << ": Invalid aggregation at index " << i;
+                    SetError(msg.str());
+                    return;
+                }
+            }
+            _ctx->commit();
+            _result = _ctx->finalverify();
+        }
+
+        Napi::Value GetReturnValue() override
+        {
+            return Napi::Boolean::New(_env, _result);
+        };
+
+    private:
+        bool _result;
+        std::unique_ptr<blst::Pairing> _ctx;
+        SignatureSetArray _sets;
+    };
+
+    /**
+     *
+     *
      * TestWorker
      *
      *
@@ -293,72 +360,6 @@ namespace
         std::string _return_value;
     };
 
-    /**
-     *
-     *
-     * VerifyMultipleAggregateSignatures
-     *
-     *
-     */
-    class VerifyMultipleAggregateSignaturesWorker : public BlstAsyncWorker
-    {
-    public:
-        VerifyMultipleAggregateSignaturesWorker(
-            const Napi::CallbackInfo &info)
-            : BlstAsyncWorker(info),
-              _result{true},
-              _ctx{new blst::Pairing{true, _module->_dst}},
-              _sets{_env, _info[0]} {}
-
-    protected:
-        void Setup() override
-        {
-            if (_sets.HasError())
-            {
-                SetError(_sets.GetError());
-            }
-        };
-
-        void Execute() override
-        {
-            if (_sets.Size() == 0)
-            {
-                _result = false;
-                return;
-            }
-            size_t random_bytes_length{_module->_random_bytes_length};
-            for (size_t i = 0; i < _sets.Size(); i++)
-            {
-                blst::byte rand[random_bytes_length];
-                _module->GetRandomBytes(rand, random_bytes_length);
-                blst::BLST_ERROR err = _ctx->mul_n_aggregate(_sets[i]._publicKey.AsAffine(),
-                                                             _sets[i]._signature.AsAffine(),
-                                                             rand,
-                                                             random_bytes_length,
-                                                             _sets[i]._msg.Data(),
-                                                             _sets[i]._msg.ByteLength());
-                if (err != blst::BLST_ERROR::BLST_SUCCESS)
-                {
-                    std::ostringstream msg;
-                    msg << _module->GetBlstErrorString(err) << ": Invalid aggregation at index " << i;
-                    SetError(msg.str());
-                    return;
-                }
-            }
-            _ctx->commit();
-            _result = _ctx->finalverify();
-        }
-
-        Napi::Value GetReturnValue() override
-        {
-            return Napi::Boolean::New(_env, _result);
-        };
-
-    private:
-        bool _result;
-        std::unique_ptr<blst::Pairing> _ctx;
-        SignatureSetArray _sets;
-    };
 }
 
 namespace Functions
