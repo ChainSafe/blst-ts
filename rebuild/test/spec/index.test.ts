@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
-import {PublicKey, Signature, verifySync} from "../../lib";
+import {PublicKey, Signature, aggregateVerifySync, verifySync} from "../../lib";
 import {fromHex, normalizeHex} from "../utils";
 
 interface TestData {
@@ -22,7 +22,7 @@ interface TestData {
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
   // aggregate,
-  // aggregate_verify,
+  aggregate_verify,
   // eth_aggregate_pubkeys,
   // eth_fast_aggregate_verify,
   // fast_aggregate_verify,
@@ -127,14 +127,14 @@ for (const forkName of fs.readdirSync(generalTestsDir)) {
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-// function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
-//   const {pubkeys, messages, signature} = input;
-//   return functions.aggregateVerifySync(
-//     messages.map(fromHex),
-//     pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-//     Signature.deserialize(fromHex(signature))
-//   );
-// }
+function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
+  const {pubkeys, messages, signature} = input;
+  return aggregateVerifySync(
+    messages.map(fromHex),
+    pubkeys.map((hex) => fromHex(hex)),
+    fromHex(signature)
+  );
+}
 
 /**
  * ```

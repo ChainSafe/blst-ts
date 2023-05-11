@@ -9,27 +9,37 @@ namespace
      *
      *
      */
-    class VerifyWorker : public BlstAsyncWorker
+    class AggregateVerifyWorker : public BlstAsyncWorker
     {
     public:
-        VerifyWorker(const Napi::CallbackInfo &info)
+        AggregateVerifyWorker(const Napi::CallbackInfo &info)
             : BlstAsyncWorker(info),
               _invalid_args{false},
               _result{false},
               _ctx{new blst::Pairing{true, _module->_dst}},
-              _msg{_env, _info[0], "msg"},
-              _public_key{_env, _info[1]},
+              _msgs{_env, _info[0], "msg", "msgs"},
+              _public_keys{_env, _info[1]},
               _signature{_env, _info[2]} {}
 
     protected:
         void Setup() override
         {
-            if (_msg.HasError())
+            if (_msgs.Size() != _public_keys.Size())
             {
-                SetError(_msg.GetError());
+                SetError("BLST_VERIFY_FAIL: msgs and publicKeys must be the same length");
                 return;
             }
-            if (_public_key.HasError())
+            if (_msgs.HasError())
+            {
+                SetError(_msgs.GetError());
+                return;
+            }
+            if (_public_keys.Size() == 0)
+            {
+                _invalid_args = true;
+                return;
+            }
+            if (_public_keys.HasError())
             {
                 _invalid_args = true;
                 return;
@@ -48,17 +58,20 @@ namespace
                 _result = false;
                 return;
             }
-            blst::BLST_ERROR err = _ctx->aggregate(
-                _public_key.AsAffine(),
-                _signature.AsAffine(),
-                _msg.Data(),
-                _msg.ByteLength());
-            if (err != blst::BLST_ERROR::BLST_SUCCESS)
+            for (size_t i = 0; i < _public_keys.Size(); i++)
             {
-                std::ostringstream msg;
-                msg << "BLST_ERROR::" << _module->GetBlstErrorString(err) << ": Invalid verification";
-                SetError(msg.str());
-                return;
+                blst::BLST_ERROR err = _ctx->aggregate(
+                    _public_keys[i].AsAffine(),
+                    _signature.AsAffine(),
+                    _msgs[i].Data(),
+                    _msgs[i].ByteLength());
+                if (err != blst::BLST_ERROR::BLST_SUCCESS)
+                {
+                    std::ostringstream msg;
+                    msg << "BLST_ERROR::" << _module->GetBlstErrorString(err) << ": Invalid verification";
+                    SetError(msg.str());
+                    return;
+                }
             }
             _ctx->commit();
             blst::PT pt{*_signature.AsAffine()};
@@ -74,8 +87,8 @@ namespace
         bool _invalid_args;
         bool _result;
         std::unique_ptr<blst::Pairing> _ctx;
-        Uint8ArrayArg _msg;
-        PublicKeyArg _public_key;
+        Uint8ArrayArgArray _msgs;
+        PublicKeyArgArray _public_keys;
         SignatureArg _signature;
     };
     /**
@@ -461,15 +474,15 @@ namespace Functions
         return worker->Run();
     }
 
-    Napi::Value Verify(const Napi::CallbackInfo &info)
+    Napi::Value AggregateVerify(const Napi::CallbackInfo &info)
     {
-        VerifyWorker *worker = new VerifyWorker{info};
+        AggregateVerifyWorker *worker = new AggregateVerifyWorker{info};
         return worker->Run();
     };
 
-    Napi::Value VerifySync(const Napi::CallbackInfo &info)
+    Napi::Value AggregateVerifySync(const Napi::CallbackInfo &info)
     {
-        VerifyWorker worker{info};
+        AggregateVerifyWorker worker{info};
         return worker.RunSync();
     };
     Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info)
@@ -487,8 +500,8 @@ namespace Functions
     void Init(const Napi::Env &env, Napi::Object &exports)
     {
         exports.Set(Napi::String::New(env, "runTest"), Napi::Function::New(env, RunTest));
-        exports.Set(Napi::String::New(env, "verify"), Napi::Function::New(env, Verify));
-        exports.Set(Napi::String::New(env, "verifySync"), Napi::Function::New(env, VerifySync));
+        exports.Set(Napi::String::New(env, "aggregateVerify"), Napi::Function::New(env, AggregateVerify));
+        exports.Set(Napi::String::New(env, "aggregateVerifySync"), Napi::Function::New(env, AggregateVerifySync));
         exports.Set(Napi::String::New(env, "verifyMultipleAggregateSignatures"), Napi::Function::New(env, VerifyMultipleAggregateSignatures));
         exports.Set(Napi::String::New(env, "verifyMultipleAggregateSignaturesSync"), Napi::Function::New(env, VerifyMultipleAggregateSignaturesSync));
     };
