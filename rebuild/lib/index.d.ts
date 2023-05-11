@@ -115,3 +115,5 @@ export class Signature implements Serializable {
 
 export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
 export function verifyMultipleAggregateSignaturesSync(signatureSets: SignatureSet[]): boolean;
+export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
+export function verifySync(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;

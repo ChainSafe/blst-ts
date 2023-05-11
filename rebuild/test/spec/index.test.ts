@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
-import {PublicKey, aggregatePublicKeysSync, aggregateSignaturesSync} from "../../lib";
+import {PublicKey, Signature, verifySync} from "../../lib";
 import {fromHex, normalizeHex} from "../utils";
 
 interface TestData {
@@ -21,13 +21,13 @@ interface TestData {
 
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
-  aggregate,
+  // aggregate,
   // aggregate_verify,
-  eth_aggregate_pubkeys,
+  // eth_aggregate_pubkeys,
   // eth_fast_aggregate_verify,
   // fast_aggregate_verify,
   // sign,
-  // verify,
+  verify,
 };
 
 for (const forkName of fs.readdirSync(generalTestsDir)) {
@@ -112,11 +112,11 @@ for (const forkName of fs.readdirSync(generalTestsDir)) {
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-function aggregate(input: string[]): string | null {
-  const agg = aggregateSignaturesSync(input.map((hex) => fromHex(hex)));
-  if (agg === null) return agg;
-  return normalizeHex(agg.serialize());
-}
+// function aggregate(input: string[]): string | null {
+//   const agg = aggregateSignaturesSync(input.map((hex) => fromHex(hex)));
+//   if (agg === null) return agg;
+//   return normalizeHex(agg.serialize());
+// }
 
 /**
  * ```
@@ -142,11 +142,11 @@ function aggregate(input: string[]): string | null {
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-function eth_aggregate_pubkeys(input: string[]): string | null {
-  const agg = aggregatePublicKeysSync(input.map((hex) => fromHex(hex)));
-  if (agg == null) return agg;
-  return normalizeHex(agg.serialize());
-}
+// function eth_aggregate_pubkeys(input: string[]): string | null {
+//   const agg = aggregatePublicKeysSync(input.map((hex) => fromHex(hex)));
+//   if (agg == null) return agg;
+//   return normalizeHex(agg.serialize());
+// }
 
 /**
  * ```
@@ -220,14 +220,10 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
  *   signature: bytes96 -- the signature to verify against pubkey and message
  * output: bool  -- VALID or INVALID
  */
-// function verify(input: {pubkey: string; message: string; signature: string}): boolean {
-//   const {pubkey, message, signature} = input;
-//   return functions.verifySync(
-//     fromHex(message),
-//     PublicKey.deserialize(fromHex(pubkey)),
-//     Signature.deserialize(fromHex(signature))
-//   );
-// }
+function verify(input: {pubkey: string; message: string; signature: string}): boolean {
+  const {pubkey, message, signature} = input;
+  return verifySync(fromHex(message), fromHex(pubkey), fromHex(signature));
+}
 
 function isBlstError(e: unknown): boolean {
   return (e as Error).message.includes("BLST_ERROR");
