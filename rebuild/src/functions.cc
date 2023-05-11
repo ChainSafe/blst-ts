@@ -15,6 +15,7 @@ namespace
         AggregateVerifyWorker(const Napi::CallbackInfo &info)
             : BlstAsyncWorker(info),
               _invalid_args{false},
+              _no_keys{false},
               _result{false},
               _ctx{new blst::Pairing{true, _module->_dst}},
               _msgs{_env, _info[0], "msg", "msgs"},
@@ -24,19 +25,9 @@ namespace
     protected:
         void Setup() override
         {
-            if (_msgs.Size() != _public_keys.Size())
-            {
-                SetError("BLST_VERIFY_FAIL: msgs and publicKeys must be the same length");
-                return;
-            }
             if (_msgs.HasError())
             {
                 SetError(_msgs.GetError());
-                return;
-            }
-            if (_public_keys.Size() == 0)
-            {
-                _invalid_args = true;
                 return;
             }
             if (_public_keys.HasError())
@@ -49,10 +40,28 @@ namespace
                 _invalid_args = true;
                 return;
             }
+            if (_public_keys.Size() == 0)
+            {
+                _no_keys = true;
+            }
+            if (_msgs.Size() == 0)
+            {
+                _no_msgs = true;
+            }
+            if (!_no_keys && _msgs.Size() != _public_keys.Size())
+            {
+                SetError("BLST_VERIFY_FAIL: msgs and publicKeys must be the same length");
+                return;
+            }
         };
 
         void Execute() override
         {
+            if (_no_keys && _signature._signature->AsJacobian()->is_inf())
+            {
+                _result = !_no_msgs;
+                return;
+            }
             if (_invalid_args)
             {
                 _result = false;
@@ -85,6 +94,8 @@ namespace
 
     private:
         bool _invalid_args;
+        bool _no_keys;
+        bool _no_msgs;
         bool _result;
         std::unique_ptr<blst::Pairing> _ctx;
         Uint8ArrayArgArray _msgs;

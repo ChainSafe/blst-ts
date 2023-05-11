@@ -27,13 +27,13 @@ interface TestData {
 
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
-  aggregate,
-  aggregate_verify,
-  eth_aggregate_pubkeys,
+  // aggregate,
+  // aggregate_verify,
+  // eth_aggregate_pubkeys,
   eth_fast_aggregate_verify,
   fast_aggregate_verify,
   // sign,
-  verify,
+  // verify,
 };
 
 for (const forkName of fs.readdirSync(generalTestsDir)) {

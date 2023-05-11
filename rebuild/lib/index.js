@@ -12,12 +12,22 @@ bindings.verifySync = function verifySync(msg, pk, sig) {
   return bindings.aggregateVerifySync([msg], [pk], sig);
 };
 bindings.fastAggregateVerify = async function fastAggregateVerify(msg, pks, sig) {
-  const aggPk = await bindings.aggregatePublicKeys(pks);
-  return bindings.aggregateVerify([msg], [aggPk], sig);
+  try {
+    const aggPk = await bindings.aggregatePublicKeys(pks);
+    return bindings.aggregateVerify([msg], [aggPk], sig);
+  } catch {
+    return false;
+  }
 };
 bindings.fastAggregateVerifySync = function fastAggregateVerifySync(msg, pks, sig) {
-  const aggPk = bindings.aggregatePublicKeysSync(pks);
-  return bindings.aggregateVerifySync([msg], [aggPk], sig);
+  try {
+    const keys = [];
+    const aggPk = bindings.aggregatePublicKeysSync(pks);
+    if (aggPk !== null) keys.push(aggPk);
+    return bindings.aggregateVerifySync([msg], keys, sig);
+  } catch {
+    return false;
+  }
 };
 
 module.exports = exports = bindings;

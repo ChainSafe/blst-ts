@@ -28,6 +28,8 @@ public:
 class SignatureArg : public BlstBase
 {
 public:
+    Signature *_signature;
+    
     SignatureArg(Napi::Env env);
     SignatureArg(Napi::Env env, Napi::Value raw_arg);
     SignatureArg(const SignatureArg &source) = delete;
@@ -40,7 +42,6 @@ public:
     const blst::P2_Affine *AsAffine();
 
 private:
-    Signature *_signature;
     Uint8ArrayArg _bytes;
     Napi::Reference<Napi::Value> _ref;
 };
