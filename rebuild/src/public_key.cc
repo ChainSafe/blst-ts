@@ -149,37 +149,10 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
     return scope.Escape(wrapped);
 }
 
-const blst::P1 *PublicKey::AsJacobian()
-{
-    if (!_has_jacobian && !_has_affine)
-    {
-        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
-    }
-    if (!_has_jacobian)
-    {
-        _jacobian.reset(new blst::P1{_affine->to_jacobian()});
-        _has_jacobian = true;
-    }
-    return _jacobian.get();
-}
-
-const blst::P1_Affine *PublicKey::AsAffine()
-{
-    if (!_has_jacobian && !_has_affine)
-    {
-        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
-    }
-    if (!_has_affine)
-    {
-        _affine.reset(new blst::P1_Affine{_jacobian->to_affine()});
-        _has_affine = true;
-    }
-    return _affine.get();
-}
-
 PublicKey::PublicKey(const Napi::CallbackInfo &info)
     : BlstBase{info.Env()},
       Napi::ObjectWrap<PublicKey>{info},
+      _is_zero_key{false},
       _has_jacobian{false},
       _has_affine{false},
       _jacobian{nullptr},
@@ -247,6 +220,47 @@ Napi::Value PublicKey::KeyValidateSync(const Napi::CallbackInfo &info)
     return scope.Escape(worker.RunSync());
 }
 
+const blst::P1 *PublicKey::AsJacobian()
+{
+    if (!_has_jacobian && !_has_affine)
+    {
+        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
+    }
+    if (!_has_jacobian)
+    {
+        _jacobian.reset(new blst::P1{_affine->to_jacobian()});
+        _has_jacobian = true;
+    }
+    return _jacobian.get();
+}
+
+const blst::P1_Affine *PublicKey::AsAffine()
+{
+    if (!_has_jacobian && !_has_affine)
+    {
+        throw Napi::Error::New(BlstBase::_env, "PublicKey not initialized");
+    }
+    if (!_has_affine)
+    {
+        _affine.reset(new blst::P1_Affine{_jacobian->to_affine()});
+        _has_affine = true;
+    }
+    return _affine.get();
+}
+
+bool PublicKey::NativeValidate()
+{
+    if (_has_jacobian && !_jacobian->is_inf() && _jacobian->in_group())
+    {
+        return true;
+    }
+    else if (_has_affine && !_affine->is_inf() && _affine->in_group())
+    {
+        return true;
+    }
+    return false;
+}
+
 /**
  *
  *
@@ -259,7 +273,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env)
       _public_key{nullptr},
       _bytes{_env} {};
 
-PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     : PublicKeyArg{env}
 {
     Napi::HandleScope scope(_env);
@@ -279,16 +293,24 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg)
         wrapped.TypeTag(&_module->_public_key_tag);
         _ref = Napi::Persistent(wrapped);
         _public_key = PublicKey::Unwrap(wrapped);
-        try
+        if (_bytes.IsZeroBytes())
         {
-            _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+            _public_key->_jacobian.reset(new blst::P1{});
+            _public_key->_is_zero_key = true;
         }
-        catch (blst::BLST_ERROR &err)
+        else
         {
-            std::ostringstream msg;
-            msg << _module->GetBlstErrorString(err) << ": Invalid PublicKey";
-            SetError(msg.str());
-            return;
+            try
+            {
+                _public_key->_jacobian.reset(new blst::P1{_bytes.Data(), _bytes.ByteLength()});
+            }
+            catch (blst::BLST_ERROR &err)
+            {
+                std::ostringstream msg;
+                msg << _module->GetBlstErrorString(err) << ": Invalid PublicKey";
+                SetError(msg.str());
+                return;
+            }
         }
         _public_key->_has_jacobian = true;
         return;
@@ -325,7 +347,7 @@ const blst::P1_Affine *PublicKeyArg::AsAffine()
  *
  *
  */
-PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg)
+PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
     : BlstBase{env},
       _keys{}
 {

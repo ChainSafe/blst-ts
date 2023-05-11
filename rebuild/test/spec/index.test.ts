@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
-import {PublicKey, Signature, aggregateVerifySync, verifySync} from "../../lib";
+import {aggregatePublicKeysSync, aggregateSignaturesSync, aggregateVerifySync, verifySync} from "../../lib";
 import {fromHex, normalizeHex} from "../utils";
 
 interface TestData {
@@ -112,11 +112,11 @@ for (const forkName of fs.readdirSync(generalTestsDir)) {
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-// function aggregate(input: string[]): string | null {
-//   const agg = aggregateSignaturesSync(input.map((hex) => fromHex(hex)));
-//   if (agg === null) return agg;
-//   return normalizeHex(agg.serialize());
-// }
+function aggregate(input: string[]): string | null {
+  const agg = aggregateSignaturesSync(input.map((hex) => fromHex(hex)));
+  if (agg === null) return agg;
+  return normalizeHex(agg.serialize());
+}
 
 /**
  * ```
@@ -142,11 +142,11 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * output: BLS Signature -- expected output, single BLS signature or empty.
  * ```
  */
-// function eth_aggregate_pubkeys(input: string[]): string | null {
-//   const agg = aggregatePublicKeysSync(input.map((hex) => fromHex(hex)));
-//   if (agg == null) return agg;
-//   return normalizeHex(agg.serialize());
-// }
+function eth_aggregate_pubkeys(input: string[]): string | null {
+  const agg = aggregatePublicKeysSync(input.map((hex) => fromHex(hex)));
+  if (agg == null) return agg;
+  return normalizeHex(agg.serialize());
+}
 
 /**
  * ```

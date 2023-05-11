@@ -156,6 +156,17 @@ bool Uint8ArrayArg::ValidateLength(size_t length1, size_t length2)
     }
     return is_valid;
 };
+bool Uint8ArrayArg::IsZeroBytes()
+{
+    for (size_t i = 0; i < ByteLength(); i++)
+    {
+        if (_data[i] != 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
 /**
  *
  *

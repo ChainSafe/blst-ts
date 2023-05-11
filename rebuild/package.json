@@ -47,7 +47,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
+    "node-fetch": "2.6.6",
     "prettier": "^2.8.7",
+    "tar": "^6.1.14",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },

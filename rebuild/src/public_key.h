@@ -9,6 +9,7 @@
 class PublicKey : public BlstBase, public Napi::ObjectWrap<PublicKey>
 {
 public:
+    bool _is_zero_key;
     bool _has_jacobian;
     bool _has_affine;
     std::unique_ptr<blst::P1> _jacobian;
@@ -23,13 +24,14 @@ public:
 
     const blst::P1 *AsJacobian();
     const blst::P1_Affine *AsAffine();
+    bool NativeValidate();
 };
 
 class PublicKeyArg : public BlstBase
 {
 public:
     PublicKeyArg(Napi::Env env);
-    PublicKeyArg(Napi::Env env, const Napi::Value &raw_arg);
+    PublicKeyArg(Napi::Env env, Napi::Value raw_arg);
     PublicKeyArg(const PublicKeyArg &source) = delete;
     PublicKeyArg(PublicKeyArg &&source) = default;
 
@@ -38,6 +40,7 @@ public:
 
     const blst::P1 *AsJacobian();
     const blst::P1_Affine *AsAffine();
+    bool NativeValidate() { return _public_key->NativeValidate(); };
 
 private:
     PublicKey *_public_key;
@@ -48,7 +51,7 @@ private:
 class PublicKeyArgArray : public BlstBase
 {
 public:
-    PublicKeyArgArray(Napi::Env env, const Napi::Value &raw_arg);
+    PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg);
     PublicKeyArgArray(const PublicKeyArgArray &source) = delete;
     PublicKeyArgArray(PublicKeyArgArray &&source) = default;
 
