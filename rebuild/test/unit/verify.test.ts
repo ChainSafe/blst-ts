@@ -86,45 +86,45 @@ describe("Aggregate Verify", () => {
   });
 });
 
-describe.skip("Fast Aggregate Verify", () => {
+describe("Fast Aggregate Verify", () => {
   let testSet: NapiTestSet;
   before(() => {
     testSet = makeNapiTestSets(1)[0];
   });
   describe("fastAggregateVerifySync", () => {
     it("should return a boolean", () => {
-      expect(fastAggregateVerifySync([testSet.msg], testSet.publicKey, testSet.signature)).to.be.a("boolean");
+      expect(fastAggregateVerifySync(testSet.msg, [testSet.publicKey], testSet.signature)).to.be.a("boolean");
     });
     it("should default to false", () => {
-      expect(fastAggregateVerifySync([sullyUint8Array(testSet.msg)], testSet.publicKey, testSet.signature)).to.be.false;
-      expect(fastAggregateVerifySync([testSet.msg], sullyUint8Array(testSet.publicKey.serialize()), testSet.signature))
+      expect(fastAggregateVerifySync(sullyUint8Array(testSet.msg), [testSet.publicKey], testSet.signature)).to.be.false;
+      expect(fastAggregateVerifySync(testSet.msg, [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature))
         .to.be.false;
-      expect(fastAggregateVerifySync([testSet.msg], testSet.publicKey, sullyUint8Array(testSet.signature.serialize())))
+      expect(fastAggregateVerifySync(testSet.msg, [testSet.publicKey], sullyUint8Array(testSet.signature.serialize())))
         .to.be.false;
     });
     it("should return true for valid sets", () => {
-      expect(fastAggregateVerifySync([testSet.msg], testSet.publicKey, testSet.signature)).to.be.true;
+      expect(fastAggregateVerifySync(testSet.msg, [testSet.publicKey], testSet.signature)).to.be.true;
     });
   });
   describe("fastAggregateVerify", () => {
     it("should return Promise<boolean>", async () => {
-      const resPromise = fastAggregateVerify([testSet.msg], testSet.publicKey, testSet.signature);
+      const resPromise = fastAggregateVerify(testSet.msg, [testSet.publicKey], testSet.signature);
       expect(resPromise).to.be.instanceOf(Promise);
       const res = await resPromise;
       expect(res).to.be.a("boolean");
     });
     it("should default to Promise<false>", async () => {
-      expect(await fastAggregateVerify([sullyUint8Array(testSet.msg)], testSet.publicKey, testSet.signature)).to.be
+      expect(await fastAggregateVerify(sullyUint8Array(testSet.msg), [testSet.publicKey], testSet.signature)).to.be
         .false;
       expect(
-        await fastAggregateVerify([testSet.msg], sullyUint8Array(testSet.publicKey.serialize()), testSet.signature)
+        await fastAggregateVerify(testSet.msg, [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)
       ).to.be.false;
       expect(
-        await fastAggregateVerify([testSet.msg], testSet.publicKey, sullyUint8Array(testSet.signature.serialize()))
+        await fastAggregateVerify(testSet.msg, [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))
       ).to.be.false;
     });
     it("should return true for valid sets", async () => {
-      expect(await fastAggregateVerify([testSet.msg], testSet.publicKey, testSet.signature)).to.be.true;
+      expect(await fastAggregateVerify(testSet.msg, [testSet.publicKey], testSet.signature)).to.be.true;
     });
   });
 });

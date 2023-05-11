@@ -120,11 +120,11 @@ export function aggregateSignaturesSync(signatures: SignatureArg[]): Signature |
 export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
 export function verifySync(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
 export function fastAggregateVerify(
-  msg: BlstBuffer[],
-  publicKey: PublicKeyArg,
+  msg: BlstBuffer,
+  publicKey: PublicKeyArg[],
   signature: SignatureArg
 ): Promise<boolean>;
-export function fastAggregateVerifySync(msg: BlstBuffer[], publicKey: PublicKeyArg, signature: SignatureArg): boolean;
+export function fastAggregateVerifySync(msg: BlstBuffer, publicKey: PublicKeyArg[], signature: SignatureArg): boolean;
 export function aggregateVerify(
   msg: BlstBuffer[],
   publicKey: PublicKeyArg[],

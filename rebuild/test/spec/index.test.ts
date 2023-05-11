@@ -3,7 +3,13 @@ import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
-import {aggregatePublicKeysSync, aggregateSignaturesSync, aggregateVerifySync, verifySync} from "../../lib";
+import {
+  aggregatePublicKeysSync,
+  aggregateSignaturesSync,
+  aggregateVerifySync,
+  fastAggregateVerifySync,
+  verifySync,
+} from "../../lib";
 import {fromHex, normalizeHex} from "../utils";
 
 interface TestData {
@@ -21,11 +27,11 @@ interface TestData {
 
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
-  // aggregate,
+  aggregate,
   aggregate_verify,
-  // eth_aggregate_pubkeys,
-  // eth_fast_aggregate_verify,
-  // fast_aggregate_verify,
+  eth_aggregate_pubkeys,
+  eth_fast_aggregate_verify,
+  fast_aggregate_verify,
   // sign,
   verify,
 };
@@ -157,24 +163,24 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-// function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
-//   const {pubkeys, message, signature} = input;
+function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
+  const {pubkeys, message, signature} = input;
 
-//   if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
-//     return true;
-//   }
+  // if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
+  //   return true;
+  // }
 
-//   // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-//   for (const pk of pubkeys) {
-//     if (pk === G1_POINT_AT_INFINITY) return false;
-//   }
+  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
+  // for (const pk of pubkeys) {
+  //   if (pk === G1_POINT_AT_INFINITY) return false;
+  // }
 
-//   return functions.fastAggregateVerifySync(
-//     fromHex(message),
-//     pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-//     Signature.deserialize(fromHex(signature))
-//   );
-// }
+  return fastAggregateVerifySync(
+    fromHex(message),
+    pubkeys.map((hex) => fromHex(hex)),
+    fromHex(signature)
+  );
+}
 
 /**
  * ```
@@ -185,20 +191,20 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-// function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
-//   const {pubkeys, message, signature} = input;
+function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
+  const {pubkeys, message, signature} = input;
 
-//   // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-//   for (const pk of pubkeys) {
-//     if (pk === G1_POINT_AT_INFINITY) return false;
-//   }
+  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
+  // for (const pk of pubkeys) {
+  //   if (pk === G1_POINT_AT_INFINITY) return false;
+  // }
 
-//   return functions.fastAggregateVerifySync(
-//     fromHex(message),
-//     pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-//     Signature.deserialize(fromHex(signature))
-//   );
-// }
+  return fastAggregateVerifySync(
+    fromHex(message),
+    pubkeys.map((hex) => fromHex(hex)),
+    fromHex(signature)
+  );
+}
 
 /**
  * input:
