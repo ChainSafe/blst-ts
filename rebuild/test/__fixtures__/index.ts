@@ -1,4 +1,4 @@
-import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets} from "../utils";
+import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils";
 
 export const invalidInputs: [string, any][] = [
   ["numbers", 2],
@@ -42,12 +42,8 @@ export const validSignature = {
     "a57565542eaa01ef2b910bf0eaba4d98a1e5b8b79cc425db08f8780732d0ea9bc85fc6175f272b2344bb27bc572ebf14022e52689dcedfccf44a00e5bd1aa59db44517217d6b0f21b372169ee761938c28914ddcb9663de54db288e760a8e14f"
   ),
 };
-export const badSignature = Uint8Array.from(
-  Buffer.from([
-    ...Uint8Array.prototype.slice.call(makeNapiTestSet().signature.serialize(false), 8),
-    ...Buffer.from("0123456789abcdef", "hex"),
-  ])
-);
+
+export const badSignature = sullyUint8Array(makeNapiTestSet().signature.serialize(false));
 
 export const validSignatureSet = makeNapiTestSets(1).map((set) => {
   const {msg, secretKey, publicKey, signature} = set;

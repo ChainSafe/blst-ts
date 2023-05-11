@@ -37,6 +37,12 @@ export function getFilledUint8(length: number, fillWith: string | number | Buffe
   return Uint8Array.from(Buffer.alloc(length, fillWith));
 }
 
+export function sullyUint8Array(bytes: Uint8Array): Uint8Array {
+  return Uint8Array.from(
+    Buffer.from([...Uint8Array.prototype.slice.call(bytes, 8), ...Buffer.from("0123456789abcdef", "hex")])
+  );
+}
+
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
 export function makeNapiTestSet(msg: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
