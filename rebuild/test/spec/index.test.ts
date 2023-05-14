@@ -20,20 +20,20 @@ interface TestData {
 // Example full path
 // blst-ts/spec-tests/tests/general/altair/bls/eth_aggregate_pubkeys/small/eth_aggregate_pubkeys_empty_list
 
-// const G2_POINT_AT_INFINITY =
-//   "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+const G2_POINT_AT_INFINITY =
+  "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 // const G1_POINT_AT_INFINITY =
 //   "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 const generalTestsDir = path.join(SPEC_TEST_LOCATION, "tests/general");
 const blsTestToFunctionMap: Record<string, (data: any) => any> = {
-  // aggregate,
-  // aggregate_verify,
-  // eth_aggregate_pubkeys,
+  aggregate,
+  aggregate_verify,
+  eth_aggregate_pubkeys,
   eth_fast_aggregate_verify,
   fast_aggregate_verify,
   // sign,
-  // verify,
+  verify,
 };
 
 for (const forkName of fs.readdirSync(generalTestsDir)) {
@@ -166,9 +166,9 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
 function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
   const {pubkeys, message, signature} = input;
 
-  // if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
-  //   return true;
-  // }
+  if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
+    return true;
+  }
 
   // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
   // for (const pk of pubkeys) {

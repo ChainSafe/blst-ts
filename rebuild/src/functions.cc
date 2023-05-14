@@ -16,6 +16,7 @@ namespace
             : BlstAsyncWorker(info),
               _invalid_args{false},
               _no_keys{false},
+              _no_msgs{false},
               _result{false},
               _ctx{new blst::Pairing{true, _module->_dst}},
               _msgs{_env, _info[0], "msg", "msgs"},
@@ -57,12 +58,9 @@ namespace
 
         void Execute() override
         {
-            if (_no_keys && _signature._signature->AsJacobian()->is_inf())
-            {
-                _result = !_no_msgs;
-                return;
-            }
-            if (_invalid_args)
+            if (_invalid_args ||
+                (_no_keys &&
+                 _signature._signature->AsJacobian()->is_inf()))
             {
                 _result = false;
                 return;
