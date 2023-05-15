@@ -4,6 +4,7 @@ import path from "path";
 import jsYaml from "js-yaml";
 import {SPEC_TEST_LOCATION} from "./specTestVersioning";
 import {
+  SecretKey,
   aggregatePublicKeysSync,
   aggregateSignaturesSync,
   aggregateVerifySync,
@@ -32,7 +33,7 @@ const blsTestToFunctionMap: Record<string, (data: any) => any> = {
   eth_aggregate_pubkeys,
   eth_fast_aggregate_verify,
   fast_aggregate_verify,
-  // sign,
+  sign,
   verify,
 };
 
@@ -212,12 +213,13 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  *   message: bytes32 -- input message to sign (a hash)
  * output: BLS Signature -- expected output, single BLS signature or empty.
  */
-// function sign(input: {privkey: string; message: string}): string | null {
-//   const {privkey, message} = input;
-//   const sk = SecretKey.deserialize(fromHex(privkey));
-//   const signature = sk.signSync(fromHex(message));
-//   return toHex(signature.serialize());
-// }
+function sign(input: {privkey: string; message: string}): string | null {
+  const {privkey, message} = input;
+  const sk = SecretKey.deserialize(fromHex(privkey));
+  const signature = sk.signSync(fromHex(message));
+  if (signature === null) return signature;
+  return normalizeHex(signature.serialize());
+}
 
 /**
  * input:

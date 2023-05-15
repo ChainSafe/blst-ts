@@ -33,7 +33,8 @@ namespace
             : BlstAsyncWorker(info),
               _key{},
               _entropy{_env},
-              _info_str{} {};
+              _info_str{},
+              _is_zero_key{false} {};
 
         void Setup() override
         {
@@ -76,6 +77,12 @@ namespace
                 return;
             }
             _key.keygen(_entropy.Data(), sk_length, _info_str);
+            blst::byte key_bytes[sk_length];
+            _key.to_bendian(key_bytes);
+            if (this->IsZeroBytes(key_bytes, 0, sk_length))
+            {
+                _is_zero_key = true;
+            }
         };
 
         Napi::Value GetReturnValue() override
@@ -85,6 +92,10 @@ namespace
             wrapped.TypeTag(&_module->_secret_key_tag);
             SecretKey *sk = SecretKey::Unwrap(wrapped);
             sk->_key.reset(new blst::SecretKey{_key});
+            if (_is_zero_key)
+            {
+                sk->_is_zero_key = true;
+            }
             return scope.Escape(wrapped);
         };
 
@@ -92,25 +103,37 @@ namespace
         blst::SecretKey _key;
         Uint8ArrayArg _entropy;
         std::string _info_str;
+        bool _is_zero_key;
     };
 
     class SignWorker : public BlstAsyncWorker
     {
     public:
-        SignWorker(const Napi::CallbackInfo &info, const blst::SecretKey &key)
+        SignWorker(
+            const Napi::CallbackInfo &info,
+            const blst::SecretKey &key,
+            const bool is_zero_key)
             : BlstAsyncWorker{info},
               _key{key},
+              _is_zero_key{is_zero_key},
               _point{},
               _msg{_env, info[0], "msg to sign"} {};
         void Setup() override{};
         void Execute() override
         {
+            if (_is_zero_key)
+            {
+                return;
+            }
             _point.hash_to(_msg.Data(), _msg.ByteLength(), _module->_dst);
             _point.sign_with(_key);
         };
         Napi::Value GetReturnValue() override
         {
             Napi::EscapableHandleScope scope(_env);
+            if (_is_zero_key) {
+                return scope.Escape(_env.Null());
+            }
             Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
             wrapped.TypeTag(&_module->_signature_tag);
             Signature *sig = Signature::Unwrap(wrapped);
@@ -121,6 +144,7 @@ namespace
 
     private:
         const blst::SecretKey &_key;
+        const bool _is_zero_key;
         blst::P2 _point;
         Uint8ArrayArg _msg;
     };
@@ -163,12 +187,17 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
         return env.Undefined();
     }
     sk->_key->from_bendian(skBytes.Data());
+    if (skBytes.IsZeroBytes(skBytes.Data(), 0, skBytes.ByteLength()))
+    {
+        sk->_is_zero_key = true;
+    }
     return scope.Escape(wrapped);
 }
 
 SecretKey::SecretKey(const Napi::CallbackInfo &info)
     : Napi::ObjectWrap<SecretKey>{info},
       _key{new blst::SecretKey},
+      _is_zero_key{false},
       _module{reinterpret_cast<BlstTsAddon *>(info.Data())}
 {
     Napi::Env env = info.Env();
@@ -204,7 +233,7 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
-    SignWorker *worker = new SignWorker{info, *_key};
+    SignWorker *worker = new SignWorker{info, *_key, _is_zero_key};
     return scope.Escape(worker->Run());
 }
 
@@ -212,6 +241,6 @@ Napi::Value SecretKey::SignSync(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
-    SignWorker worker{info, *_key};
+    SignWorker worker{info, *_key, _is_zero_key};
     return scope.Escape(worker.RunSync());
 }
