@@ -71,6 +71,7 @@ public:
     bool IsZeroBytes(const uint8_t *data, size_t start_byte, size_t byte_length);
     bool HasError() { return _error.size() > 0; };
     std::string GetError() { return _error; };
+    size_t GetBadIndex() { return _bad_index; };
     void ThrowJsException()
     {
         Napi::Error::New(_env, _error).ThrowAsJavaScriptException();
@@ -80,14 +81,20 @@ protected:
     BlstBase(Napi::Env env)
         : _env{env},
           _module{_env.GetInstanceData<BlstTsAddon>()},
-          _error{} {};
+          _error{},
+          _bad_index{0} {};
 
-    void SetError(const std::string &err) { _error = err; };
+    void SetError(const std::string &err, const size_t bad_index = 0)
+    {
+        _error = err;
+        _bad_index = bad_index;
+    };
 
     // All classes in this library extend BlstBase so store the env/module here
     Napi::Env _env;
     BlstTsAddon *_module;
     std::string _error;
+    size_t _bad_index;
 };
 
 class BlstAsyncWorker : public BlstBase, public Napi::AsyncWorker

@@ -368,6 +368,7 @@ PublicKeyArgArray::PublicKeyArgArray(Napi::Env env, Napi::Value raw_arg)
             std::ostringstream msg;
             msg << _keys[i].GetError() << " at index " << i;
             SetError(msg.str());
+            _bad_index = i;
             return;
         }
     }

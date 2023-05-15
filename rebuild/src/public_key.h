@@ -40,7 +40,9 @@ public:
 
     const blst::P1 *AsJacobian();
     const blst::P1_Affine *AsAffine();
-    bool NativeValidate() { return _public_key->NativeValidate(); };
+    bool NativeValidate() { return _public_key->NativeValidate(); }
+    const uint8_t *GetBytes() { return _bytes.Data(); }
+    size_t GetBytesLength() { return _bytes.ByteLength(); }
 
 private:
     PublicKey *_public_key;

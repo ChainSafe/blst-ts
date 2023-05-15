@@ -282,12 +282,24 @@ namespace
         {
             if (_public_keys.HasError())
             {
+                const uint8_t *key_bytes = _public_keys[_public_keys.GetBadIndex()].GetBytes();
+                if (
+                    key_bytes[0] & 0x40 &&
+                    this->IsZeroBytes(key_bytes, 1, _public_keys[_public_keys.GetBadIndex()].GetBytesLength()))
+                {
+                    _is_valid = false;
+                    return;
+                }
                 SetError(_public_keys.GetError());
             }
         };
 
         void Execute() override
         {
+            if (!_is_valid)
+            {
+                return;
+            }
             if (_public_keys.Size() == 0)
             {
                 _is_valid = false;
@@ -328,8 +340,6 @@ namespace
             pk->_has_jacobian = true;
             return scope.Escape(wrapped);
         };
-
-        blst::P1 &GetAggregate() { return _result; };
 
     private:
         bool _is_valid;
