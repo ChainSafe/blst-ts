@@ -68,6 +68,7 @@ typedef enum
 class BlstBase
 {
 public:
+    bool IsZeroBytes(const uint8_t *data, size_t start_byte, size_t byte_length);
     bool HasError() { return _error.size() > 0; };
     std::string GetError() { return _error; };
     void ThrowJsException()
@@ -203,7 +204,6 @@ public:
     const uint8_t *Data();
     size_t ByteLength();
     bool ValidateLength(size_t length1, size_t length2 = 0);
-    bool IsZeroBytes();
 
 protected:
     std::string _error_prefix;

@@ -3,6 +3,24 @@
 /**
  *
  *
+ * BlstBase
+ *
+ *
+ */
+bool BlstBase::IsZeroBytes(const uint8_t *data, size_t start_byte, size_t byte_length)
+{
+    for (size_t i = start_byte; i < byte_length; i++)
+    {
+        if (data[i] != 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ *
+ *
  * BlstAsyncWorker
  *
  *
@@ -156,17 +174,6 @@ bool Uint8ArrayArg::ValidateLength(size_t length1, size_t length2)
     }
     return is_valid;
 };
-bool Uint8ArrayArg::IsZeroBytes()
-{
-    for (size_t i = 0; i < ByteLength(); i++)
-    {
-        if (_data[i] != 0)
-        {
-            return false;
-        }
-    }
-    return true;
-}
 /**
  *
  *

@@ -293,7 +293,7 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
         wrapped.TypeTag(&_module->_public_key_tag);
         _ref = Napi::Persistent(wrapped);
         _public_key = PublicKey::Unwrap(wrapped);
-        if (_bytes.IsZeroBytes())
+        if (_bytes.IsZeroBytes(_bytes.Data(), 0, _bytes.ByteLength()))
         {
             _public_key->_jacobian.reset(new blst::P1{});
             _public_key->_is_zero_key = true;
