@@ -217,7 +217,6 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
  */
 BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     : _dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"},
-      _random_bytes_length{8},
       _blst_error_strings{
           "BLST_SUCCESS",
           "BLST_BAD_ENCODING",
@@ -242,7 +241,7 @@ std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
 {
     return _blst_error_strings[err];
 }
-bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
+bool BlstTsAddon::GetRandomBytes(blst::byte *bytes, size_t length)
 {
     // [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
     // [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
@@ -252,7 +251,7 @@ bool BlstTsAddon::GetRandomBytes(blst::byte *ikm, size_t length)
     {
         if (1 == RAND_status())
         {
-            if (1 == RAND_bytes(ikm, length))
+            if (1 == RAND_bytes(bytes, length))
             {
                 return true;
             }

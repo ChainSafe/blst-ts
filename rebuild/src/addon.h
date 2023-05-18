@@ -263,7 +263,6 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
 public:
     std::string _dst;
-    size_t _random_bytes_length;
     std::string _blst_error_strings[8];
     Napi::FunctionReference _secret_key_ctr;
     napi_type_tag _secret_key_tag;
