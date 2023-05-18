@@ -123,8 +123,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
         }
     }
     Uint8ArrayArg pk_bytes{env, info[0], "pkBytes"};
-    pk_bytes.ValidateLength(module->_public_key_compressed_length,
-                            module->_public_key_uncompressed_length);
+    pk_bytes.ValidateLength(BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
+                            BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED);
     if (pk_bytes.HasError())
     {
         pk_bytes.ThrowJsException();
@@ -178,8 +178,8 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info)
     Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(
         env,
         compressed
-            ? _module->_public_key_compressed_length
-            : _module->_public_key_uncompressed_length);
+            ? BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED
+            : BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED);
     if (_has_jacobian)
     {
         compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());
@@ -281,8 +281,8 @@ PublicKeyArg::PublicKeyArg(Napi::Env env, Napi::Value raw_arg)
     {
         _bytes = Uint8ArrayArg{_env, raw_arg, "PublicKeyArg"};
         _bytes.ValidateLength(
-            _module->_public_key_compressed_length,
-            _module->_public_key_uncompressed_length);
+            BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
+            BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED);
         if (_bytes.HasError())
         {
             // goto set_error to get more specific error message

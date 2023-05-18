@@ -15,10 +15,10 @@ using std::cout;
 using std::endl;
 
 #define BLST_TS_SECRET_KEY_LENGTH 32U
-#define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 48U
-#define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 96U
-#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 96U
-#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 192U
+#define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 48U
+#define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 96U
+#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
+#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
 #define BLST_TS_SECRET_KEY_LOWER_TAG 0ULL
@@ -263,8 +263,6 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
 public:
     std::string _dst;
-    size_t _public_key_compressed_length;
-    size_t _public_key_uncompressed_length;
     size_t _signature_compressed_length;
     size_t _signature_uncompressed_length;
     size_t _random_bytes_length;
