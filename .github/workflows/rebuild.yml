@@ -1,0 +1,141 @@
+name: Rebuild
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*.*.*"
+
+jobs:
+  # setup:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         submodules: true
+
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: 
+          - ubuntu-20.04
+          # - macos-latest
+          # - windows-latest]
+        # node: [10, 11, 12, 13, 14, 15, 16, 17, 18]
+        node:
+          # - 10
+          # - 11
+          # - 12
+          # - 13
+          # - 14
+          # - 15
+          # - 16
+          # - 17
+          - 18
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Setup Node.js ${{matrix.node}}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{matrix.node}}
+      
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.11.3"
+
+      - name: Install && Build TS + bindings
+        working-directory: rebuild
+        run: |
+          yarn
+
+      # Download spec tests with cache
+      - name: Restore spec tests cache
+        uses: actions/cache@master
+        with:
+          path: spec-tests
+          key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
+      - name: Download spec tests
+        run: yarn download-spec-tests
+        # if: matrix.os != 'windows-latest'
+
+      - name: Test unit
+        run: yarn test:unit
+      - name: Test spec
+        run: yarn test:spec
+        # if: matrix.os != 'windows-latest'
+
+      # - name: Upload binding.node
+      #   uses: actions/upload-artifact@v2
+      #   if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
+      #   with:
+      #     name: binding.node
+      #     path: prebuild/*.node
+      #     if-no-files-found: error
+
+  # benchmark:
+  #   needs: ["build-swig"]
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         submodules: true
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+
+  #     - name: Get SWIG pre-built
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: blst_wrap.cpp
+  #         path: prebuild/
+
+  #     - name: Install && Build TS + bindings
+  #       run: yarn bootstrap
+  #       env:
+  #         SWIG_SKIP_RUN: true
+
+  #     - name: Benchmark
+  #       run: |
+  #         node_modules/.bin/ts-node benchmark/blstOps.ts
+  #         node_modules/.bin/ts-node benchmark/batchVerify.ts
+  #         node_modules/.bin/ts-node benchmark/multithread.ts
+  #         node_modules/.bin/ts-node benchmark/multithreadOverhead.ts
+
+  # publish:
+  #   needs: ["build-swig", "build", "build-arm"]
+  #   if: startsWith(github.ref, 'refs/tags/')
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         submodules: true
+  #     - uses: actions/setup-node@v3 # Necessary for 'yarn publish'
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org
+
+  #     - name: Build .ts source for release
+  #       run: yarn bootstrap
+
+  #     - name: Create Github release with prebuilds
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         files: prebuild/*
+  #         fail_on_unmatched_files: true
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  #     - name: Publish to NPM
+  #       run: yarn publish --access public
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
