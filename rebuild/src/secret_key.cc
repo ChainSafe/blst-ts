@@ -41,7 +41,7 @@ namespace
             if (!_info[0].IsUndefined()) // no entropy passed
             {
                 _entropy = Uint8ArrayArg{_env, _info[0], "ikm"};
-                _entropy.ValidateLength(_module->_secret_key_length);
+                _entropy.ValidateLength(BLST_TS_SECRET_KEY_LENGTH);
                 if (_entropy.HasError())
                 {
                     SetError(_entropy.GetError());
@@ -68,7 +68,7 @@ namespace
          */
         void Execute() override
         {
-            size_t sk_length = _module->_secret_key_length;
+            size_t sk_length = BLST_TS_SECRET_KEY_LENGTH;
             if (_entropy.Data() == nullptr)
             {
                 blst::byte ikm[sk_length];
@@ -180,7 +180,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
     wrapped.TypeTag(&module->_secret_key_tag);
     SecretKey *sk = SecretKey::Unwrap(wrapped);
     Uint8ArrayArg skBytes{env, info[0], "skBytes"};
-    skBytes.ValidateLength(module->_secret_key_length);
+    skBytes.ValidateLength(BLST_TS_SECRET_KEY_LENGTH);
     if (skBytes.HasError())
     {
         skBytes.ThrowJsException();
@@ -212,7 +212,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
-    Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(env, _module->_secret_key_length);
+    Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(env, BLST_TS_SECRET_KEY_LENGTH);
     _key->to_bendian(serialized.Data());
     return scope.Escape(serialized);
 }

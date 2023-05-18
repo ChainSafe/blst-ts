@@ -263,7 +263,6 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon>
 {
 public:
     std::string _dst;
-    size_t _secret_key_length;
     size_t _public_key_compressed_length;
     size_t _public_key_uncompressed_length;
     size_t _signature_compressed_length;
