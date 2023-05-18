@@ -11,7 +11,7 @@ void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     };
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
     module->_public_key_ctr = Napi::Persistent(ctr);
-    module->_public_key_tag = {.lower = BLST_TS_PUBLIC_KEY_LOWER_TAG, .upper = BLST_TS_PUBLIC_KEY_UPPER_TAG};
+    module->_public_key_tag = {BLST_TS_PUBLIC_KEY_LOWER_TAG, BLST_TS_PUBLIC_KEY_UPPER_TAG};
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
 }
 

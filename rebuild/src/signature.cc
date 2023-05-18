@@ -11,7 +11,7 @@ void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     };
     Napi::Function ctr = DefineClass(env, "Signature", proto, module);
     module->_signature_ctr = Napi::Persistent(ctr);
-    module->_signature_tag = {.lower = BLST_TS_SIGNATURE_LOWER_TAG, .upper = BLST_TS_SIGNATURE_UPPER_TAG};
+    module->_signature_tag = {BLST_TS_SIGNATURE_LOWER_TAG, BLST_TS_SIGNATURE_UPPER_TAG};
     exports.Set(Napi::String::New(env, "Signature"), ctr);
 }
 

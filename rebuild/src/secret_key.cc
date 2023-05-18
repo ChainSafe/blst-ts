@@ -13,7 +13,7 @@ void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
         InstanceMethod("signSync", &SecretKey::SignSync, static_cast<napi_property_attributes>(napi_enumerable))};
     Napi::Function ctr = DefineClass(env, "SecretKey", proto, module);
     module->_secret_key_ctr = Napi::Persistent(ctr);
-    module->_secret_key_tag = {.lower = BLST_TS_SECRET_KEY_LOWER_TAG, .upper = BLST_TS_SECRET_KEY_UPPER_TAG};
+    module->_secret_key_tag = {BLST_TS_SECRET_KEY_LOWER_TAG, BLST_TS_SECRET_KEY_UPPER_TAG};
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
 }
 
@@ -130,7 +130,8 @@ namespace
         Napi::Value GetReturnValue() override
         {
             Napi::EscapableHandleScope scope(_env);
-            if (_is_zero_key) {
+            if (_is_zero_key)
+            {
                 return scope.Escape(_env.Null());
             }
             Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
