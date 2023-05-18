@@ -217,8 +217,6 @@ Uint8ArrayArgArray::Uint8ArrayArgArray(
  */
 BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     : _dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"},
-      _signature_compressed_length{96},
-      _signature_uncompressed_length{192},
       _random_bytes_length{8},
       _blst_error_strings{
           "BLST_SUCCESS",

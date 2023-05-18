@@ -109,8 +109,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
     }
     Uint8ArrayArg sig_bytes{env, info[0], "sigBytes"};
     sig_bytes.ValidateLength(
-        module->_signature_compressed_length,
-        module->_signature_uncompressed_length);
+        BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
+        BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED);
     if (sig_bytes.HasError())
     {
         sig_bytes.ThrowJsException();
@@ -191,8 +191,8 @@ Napi::Value Signature::Serialize(const Napi::CallbackInfo &info)
     Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(
         env,
         compressed
-            ? _module->_signature_compressed_length
-            : _module->_signature_uncompressed_length);
+            ? BLST_TS_SIGNATURE_LENGTH_COMPRESSED
+            : BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED);
     if (_has_jacobian)
     {
         compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());
@@ -251,8 +251,8 @@ SignatureArg::SignatureArg(Napi::Env env, Napi::Value raw_arg)
     {
         _bytes = Uint8ArrayArg{_env, raw_arg, "SignatureArg"};
         _bytes.ValidateLength(
-            _module->_signature_compressed_length,
-            _module->_signature_uncompressed_length);
+            BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
+            BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED);
         if (_bytes.HasError())
         {
             // goto set_error to get more specific error message
