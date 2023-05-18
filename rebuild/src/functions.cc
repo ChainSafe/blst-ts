@@ -229,15 +229,14 @@ namespace
                 _result = false;
                 return;
             }
-            size_t random_bytes_length{_module->_random_bytes_length};
             for (size_t i = 0; i < _sets.Size(); i++)
             {
-                blst::byte rand[random_bytes_length];
-                _module->GetRandomBytes(rand, random_bytes_length);
+                blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
+                _module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH);
                 blst::BLST_ERROR err = _ctx->mul_n_aggregate(_sets[i]._publicKey.AsAffine(),
                                                              _sets[i]._signature.AsAffine(),
                                                              rand,
-                                                             random_bytes_length,
+                                                             BLST_TS_RANDOM_BYTES_LENGTH,
                                                              _sets[i]._msg.Data(),
                                                              _sets[i]._msg.ByteLength());
                 if (err != blst::BLST_ERROR::BLST_SUCCESS)

@@ -68,18 +68,17 @@ namespace
          */
         void Execute() override
         {
-            size_t sk_length = BLST_TS_SECRET_KEY_LENGTH;
             if (_entropy.Data() == nullptr)
             {
-                blst::byte ikm[sk_length];
-                _module->GetRandomBytes(ikm, sk_length);
-                _key.keygen(ikm, sk_length, _info_str);
+                blst::byte ikm[BLST_TS_SECRET_KEY_LENGTH];
+                _module->GetRandomBytes(ikm, BLST_TS_SECRET_KEY_LENGTH);
+                _key.keygen(ikm, BLST_TS_SECRET_KEY_LENGTH, _info_str);
                 return;
             }
-            _key.keygen(_entropy.Data(), sk_length, _info_str);
-            blst::byte key_bytes[sk_length];
+            _key.keygen(_entropy.Data(), BLST_TS_SECRET_KEY_LENGTH, _info_str);
+            blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];
             _key.to_bendian(key_bytes);
-            if (this->IsZeroBytes(key_bytes, 0, sk_length))
+            if (this->IsZeroBytes(key_bytes, 0, BLST_TS_SECRET_KEY_LENGTH))
             {
                 _is_zero_key = true;
             }
