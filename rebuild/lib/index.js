@@ -29,5 +29,9 @@ bindings.fastAggregateVerifySync = function fastAggregateVerifySync(msg, pks, si
     return false;
   }
 };
+bindings.CoordType = {
+  affine: 0,
+  jacobian: 1
+};
 
 module.exports = exports = bindings;
