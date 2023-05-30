@@ -10,10 +10,10 @@ Typescript wrapper for [supranational/blst](https://github.com/supranational/bls
 
 | OS / Arch     | binary name | Node                               |
 | ------------- | ----------- | ---------------------------------- |
-| Linux / x64   | linux-x64   | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
-| Linux / arm64 | linux-arm64 | 10, 11, 12, 13, 14, 15, 16, 18     |
-| Windows / x64 | win32-x64   | 12, 14, 16, 17                     |
-| OSX / x64     | darwin-x64  | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
+| Linux / x64   | linux-x64   | 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 |
+| Linux / arm64 | linux-arm64 | 10, 11, 12, 13, 14, 15, 16, 18, 20     |
+| Windows / x64 | win32-x64   | 12, 14, 16, 17, 18, 20                     |
+| OSX / x64     | darwin-x64  | 10, 11, 12, 13, 14, 15, 16, 17, 18, 20 |
 | OSX / M1      | -\*         | -\*                                |
 
 \* No Github nor docker buildx setup to build this environment in CI. Source may compile locally after installation but it's not guaranteed
