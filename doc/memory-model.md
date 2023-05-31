@@ -117,6 +117,14 @@ The second was to store `blst` objects as pointers and not directly as part of t
 
 Smart pointers were used for all data that was natively heap allocated to prevent leakage.
 
+### Allocation and Deallocation
+
+Allocation for all of the PKI Classes is handled through the class constructor function. All class memory is treated as if it was a "normal" JS object. The only exception is the natively allocated `blst` objects which are `new`'d in the context of a smart pointer.
+
+Deallocation happens via the garbage collector.  When an object goes out of scope it is handled the same as any other `JSObject`. When the destructor is called the member data will be freed and when the smart pointers are freed the `blst` objects will be freed as well.
+
+The classes were structured such that no data is un-managed.
+
 ## References
 
 - [The Abstraction: Address Spaces](https://pages.cs.wisc.edu/~remzi/OSTEP/vm-intro.pdf)
