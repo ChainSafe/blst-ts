@@ -71,7 +71,7 @@ enum AllocationSpace {
 };
 ```
 
-As you can see above, while `V8` does manage the memory not all of it is handled by the garbage collector. Portions are used by node and `V8` for the process itself. Each of these spaces is composed of a set of pages allocated by the operating system in large chunks with [`mmap`](https://man7.org/linux/man-pages/man2/mmap.2.html) or [`MapViewOfFile`](https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile) (on Windows). This is to avoid the overhead of calling `malloc` for each allocation.  The pages are then managed by one of the various `V8` allocator classes and, in some instances, the garbage collector.
+As you can see above, while `V8` does manage the memory not all of it is handled by the garbage collector. Portions are used by node and `V8` for the process itself. Each of these [spaces](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/heap/paged-spaces.h#L455) is composed of a set of pages allocated by the operating system in large chunks with [`mmap`](https://man7.org/linux/man-pages/man2/mmap.2.html) or [`MapViewOfFile`](https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile) (on Windows). This is to avoid the overhead of calling `malloc` for each allocation.  The pages are then used by one of the various `V8` [allocator classes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/heap/cppgc/object-allocator.h#L39) and, in some instances, the garbage collector to manage process memory.
 
 ### Garbage Collected Memory
 
@@ -81,19 +81,35 @@ Most things are stored in this part of the heap.  This even includes modules loa
 
 ### Large Object Spaces
 
-The Large Object Space is handled by the GC but objects here are never moved. They are strictly managed with the mark and sweep algorithm. Objects of size greater than 2^16 get stored here.
+The Large Object Space is handled by the GC but objects here are never moved. They are strictly managed with the mark and sweep algorithm. Objects of size [greater than 2^16](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/heap/cppgc/raw-heap.h#L31) get stored here.
 
 ### Code Spaces
 
-This is where compiled code lives.  When code is first `require`d it converted from a `utf-8` string into a JIT complied function object.  The JSFunction object is then stored with the rest of the `HeapObject`s.  When the functions are run they are converted to machine code and stored in the code space as optimized code.  This is where the Turbofan and Torque optimizers come into play.  The code is then executed from this space.
+This is where optimized code lives.  When code is first [`require`d](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/bootstrap/loaders.js#L353) it converted from a `utf-8` string into a [JIT complied](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/src/api/api.cc#L2708) function object.  The JSFunction object is then stored with the rest of the `HeapObject`s.  When the functions are run often they are converted to machine code. This is where the Turbofan and Torque optimizers come into play and the results are stored in here as optimized code. Subsequent calls to the optimized functions are executed from this space.
 
 ### Shared Spaces
 
-This is where objects that can be shared across `Isolate`s are stored.
+This is where objects that can be shared across `Isolate`s are stored. The major drawback for this is that data tied to one `env` is not accessible within the other `env's` without help from `V8`. The code segments for this are quite complex and require further study, however there are some very interesting opportunities here to move data across the worker boundary.
+
+## Node Addon Memory Model
+
+Native node addons must comply with the models above, but give additional flexibility from working at the system level. The main complexity is hidden behind the `N-API` but a deep understanding of how references are counted, and how memory is allocated, helps build more performant code. See the [`values`](./values.md) section for more details.
+
+The major difference between writing JS and writing native node code is that one can create native `C` classes and wrap them in JS objects that can used normally in JS code. The native objects are just plain old `JSObject`s with additional opaque native functionality. When a wrapped JS object is created with `new` the native class constructor is called the same way that any other function is called. A `CallbackInfo` object is passed and can be used by the native code to access the arguments passed to the constructor.  The native code can then properly creates the native object and when the constructor returns,the native object is then wrapped in a JS object and returned to the caller.
+
+Part of creating wrapped objects is [binding the native object](https://github.com/nodejs/node-addon-api/blob/665f4aa845f7191ec729ce3bd68a55f494c53750/napi.h#L2262) to `V8` so the engine knows what constructor function to call.  Similarly, the member methods are also announced to `V8` at the time the module is loaded. Once announced, if the method is called from JS, the native method is called and the `CallbackInfo` object is passed to the native code.  The native code can then use the `CallbackInfo` object to access the `this` object and any arguments passed to the method. In addition to methods that are accessible to JS, it is also possible to add native methods that are opaque to the runtime.
+
+Native classes are stored the same way as every other `V8` object and are subject to the same rules that all `v8::Object`s are governed by. As an example, if the object is larger than 2^16 bytes it will be stored in the large object space which is only garbage collected via the slower mark and sweep algorithm.
+
+There is also one other very important thing to remember.  JS objects are ONLY available while on the JS thread. Any call to [`Value`](https://github.com/nodejs/node-addon-api/blob/665f4aa845f7191ec729ce3bd68a55f494c53750/napi.h#L387) that happens off-thread will result in a hard, unrecoverable, `C` error. If data is needed both on and off thread it is helpful to store it in the heap natively and then store a smart pointer on the wrapped native object.
 
 ## `blst-ts` Memory Model
 
-With the above as background the memory model for `blst-ts` is relatively straight forward. There are serialized and deserialized objects 
+With the above as background the memory model for `blst-ts` is relatively straight forward. There are serialized and deserialized objects. Serialized objects are received over the network as byte arrays and handled as `Uint8Array`s. Deserialized objects are native classes that inherit from `ObjectWrap`. There were a few optimizations that were made when structuring the native classes.
+
+First was to inherit from a base class that handles library errors. All errors are all handled similarly and "gracefully." Every attempt was made to ensure no native stack unwinding. This is both for performance reasons and to make sure `C` errors do not leak. `C` errors are non-recoverable from JS and will cause a hard crash.
+
+The second was to store `blst` objects as pointers and not directly as part of the the class memory layout. This will do a couple of things. First it will reduce the size of the object to help keep it in the new space.  The second, and arguably more important is that data can be accessed off-thread without having to copy it. An example of this is when using the `AsyncWorker` class and needing a `blst::P1` on a `PublicKey` for use during libuv execution. If the point is stored directly in the `PublicKey`, a `Value` is needed to be able to reference that native point. The `Value` will need to be created when the worker is setup and the point will need to be copied before the native function queues the async work. If the point is stored as a pointer on the `PublicKey` then only the pointer needs to be copied. This is also true for `blst::Pairing`s, which are quite large (4kb).
 
 ## References
 
