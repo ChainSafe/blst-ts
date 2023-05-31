@@ -105,7 +105,7 @@ There is also one other very important thing to remember.  JS objects are ONLY a
 
 ## `blst-ts` Memory Model
 
-With the above as background the memory model for `blst-ts` is relatively straight forward. There are the PKI classes and some helper classes. There is also a `BlstAddon` class that holds global data. See [`Context-Awareness`](./structuring-addons.md#context-awareness) for more info on how to manage global data.
+With the above as background the memory model for `blst-ts` is relatively straight forward. There is a `BlstAddon` class that holds global data. See [`Context-Awareness`](./structuring-addons.md#context-awareness) for more info on how to manage global data. There are the PKI classes that are detailed below, but those are extended by some helper classes. See [`Complex Data Types`](./structuring-addons.md#complex-data-types) for more info on why the argument parsing helpers were created. The last helper that was created was the `BlstAsyncWorker`.  See [`Phases of Execution`](./structuring-addons.md#phases-of-execution) for more details on the how's and why's of this class.
 
 ### PKI Classes
 
