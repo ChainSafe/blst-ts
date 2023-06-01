@@ -131,11 +131,15 @@ The classes were structured such that no data is un-managed.
 - [Shared Libraries](https://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html)
 - [Linkers and Loaders](https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf)
 - [Mapping Files into Memory](https://www.oreilly.com/library/view/linux-system-programming/0596009585/ch04.html)
+- [Memory Management Reference](https://www.memorymanagement.org/index.html)
 - [V8 Memory Management](https://deepu.tech/memory-management-in-v8/)
 - [Heap Allocation of Everything](https://stackoverflow.com/questions/74004695/how-v8-handle-stack-allocated-variable-in-closure)
 - [Slack Tracking](https://v8.dev/blog/slack-tracking)
 - [Understanding Worker Threads in Node.js](https://nodesource.com/blog/worker-threads-nodejs/)
 - [v8::ResourceConstraints](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/deps/v8/include/v8-isolate.h#L62)
+- [V8 Perf and GC](https://github.com/thlorenz/v8-perf/blob/master/crankshaft/gc.md)
+- [Worker Threads](https://nodesource.com/blog/worker-threads-nodejs/)
+- [A tour of V8: Garbage Collection](https://jayconrod.com/posts/55/a-tour-of-v8-garbage-collection)
 
 ## Other Code References
 
