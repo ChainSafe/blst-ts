@@ -2,7 +2,7 @@
 
 ![ETH2.0_Spec_Version 0.12.0](https://img.shields.io/badge/ETH2.0_Spec_Version-0.12.0-2e86c1.svg)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
-![Node Version](https://img.shields.io/badge/node-12.x-green)
+![Node Version](https://img.shields.io/badge/node-14.x-green)
 
 Typescript wrapper for [supranational/blst](https://github.com/supranational/blst) native bindings, a highly performant BLS12-381 signature library.
 
