@@ -83,7 +83,7 @@ export class SecretKey implements Serializable {
   sign(msg: BlstBuffer): Signature;
 }
 export class PublicKey implements Serializable {
-  constructor(sk: BlstBuffer | SecretKey);
+  private constructor();
   static deserialize(skBytes: BlstBuffer, coordType?: CoordType): PublicKey;
   serialize(compress?: boolean): Buffer;
   keyValidate(): void;
