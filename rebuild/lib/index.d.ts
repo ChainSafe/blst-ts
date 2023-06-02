@@ -94,24 +94,3 @@ export class Signature implements Serializable {
   serialize(compress?: boolean): Buffer;
   sigValidate(): void;
 }
-
-// export function aggregatePublicKeys(keys: PublicKeyArg[]): Promise<PublicKey>;
-// export function aggregatePublicKeysSync(keys: PublicKeyArg[]): PublicKey;
-// export function aggregateSignatures(signatures: SignatureArg[]): Promise<Signature>;
-// export function aggregateSignaturesSync(signatures: SignatureArg[]): Signature;
-// export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
-// export function verifySync(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
-// export function fastAggregateVerify(
-//   msg: BlstBuffer,
-//   publicKey: PublicKeyArg[],
-//   signature: SignatureArg
-// ): Promise<boolean>;
-// export function fastAggregateVerifySync(msg: BlstBuffer, publicKey: PublicKeyArg[], signature: SignatureArg): boolean;
-// export function aggregateVerify(
-//   msg: BlstBuffer[],
-//   publicKey: PublicKeyArg[],
-//   signature: SignatureArg
-// ): Promise<boolean>;
-// export function aggregateVerifySync(msg: BlstBuffer[], publicKey: PublicKeyArg[], signature: SignatureArg): boolean;
-// export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
-// export function verifyMultipleAggregateSignaturesSync(signatureSets: SignatureSet[]): boolean;
