@@ -12,7 +12,7 @@ export enum CoordType {
   jacobian,
 }
 
-export type BlstBuffer = Uint8Array | Buffer;
+export type BlstBuffer = Uint8Array;
 export type PublicKeyArg = BlstBuffer | PublicKey;
 export type SignatureArg = BlstBuffer | Signature;
 export interface SignatureSet {
