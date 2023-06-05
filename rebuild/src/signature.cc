@@ -31,10 +31,9 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
         return scope.Escape(env.Undefined());
     }
     Napi::Uint8Array sig_bytes = sig_array.As<Napi::TypedArrayOf<uint8_t>>();
-    std::string err_out;
+    std::string err_out{"sigBytes"};
     if (!is_valid_length(
             err_out,
-            "sigBytes",
             sig_bytes.ByteLength(),
             BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
             BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED))

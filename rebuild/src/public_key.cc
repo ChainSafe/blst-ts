@@ -34,10 +34,9 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
     }
     // Convert to final Uint8Array type and check length is valid
     Napi::Uint8Array pk_bytes = pk_array.As<Napi::TypedArrayOf<uint8_t>>();
-    std::string err_out;
+    std::string err_out{"pkBytes"};
     if (!is_valid_length(
             err_out,
-            "pkBytes",
             pk_bytes.ByteLength(),
             BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
             BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED))

@@ -16,7 +16,6 @@ bool is_zero_bytes(const uint8_t *data,
 
 bool is_valid_length(
     std::string &error_out,
-    std::string_view error_prefix,
     size_t byte_length,
     size_t length1,
     size_t length2
@@ -26,7 +25,6 @@ bool is_valid_length(
     {
         return true;
     }
-    error_out.append(error_prefix);
     error_out.append(" is " + std::to_string(byte_length) + " bytes, but must be ");
     if (length1 != 0)
     {

@@ -56,17 +56,15 @@ bool is_zero_bytes(
  * Checks if a byte array is a valid length. If not, sets the error message and
  * returns false.  If valid returns true for use in conditional statements.
  * 
- * @param error_out &std::string - error message to set if invalid
- * @param error_prefix std::string_view - prefix name of what is being checked
- * @param byte_length size_t - length of the byte array to validate
- * @param length1 size_t - first valid length
- * @param length2 size_t - second valid length (optional)
+ * @param[out] error_out &std::string - error message to set if invalid
+ * @param[in] byte_length size_t - length of the byte array to validate
+ * @param[in] length1 size_t - first valid length
+ * @param[in] length2 size_t - second valid length (optional)
  * 
  * @return bool
  */
 bool is_valid_length(
     std::string &error_out,
-    std::string_view error_prefix,
     size_t byte_length,
     size_t length1,
     size_t length2 = 0);
