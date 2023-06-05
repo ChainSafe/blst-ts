@@ -91,7 +91,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
     }
 
     /**
-     * Check for zero key for spec tests
+     * TODO: Check for zero key for spec tests
      */
 
     return scope.Escape(wrapped);
