@@ -18,6 +18,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
+    // Pull Value from info and check type is valid
     Napi::Value pk_value = info[0];
     if (!pk_value.IsTypedArray())
     {
@@ -30,6 +32,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "pkBytes must be a BlstBuffer").ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+    // Convert to final Uint8Array type and check length is valid
     Napi::Uint8Array pk_bytes = pk_array.As<Napi::TypedArrayOf<uint8_t>>();
     std::string err_out;
     if (!is_valid_length(
@@ -42,12 +45,18 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+    // Get module for globals and run PublicKey constructor
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
+    // Pass void External to constructor so can tell if constructor was called
+    // from C or JS to prevent direct calls from JS to ensure proper setup
     Napi::Object wrapped = module->_public_key_ctr.New({Napi::External<void>::New(env, nullptr)});
+    // Setup object correctly.  Start with type tagging wrapper class.
     wrapped.TypeTag(&module->_public_key_tag);
+    // Unwrap object to get native instance
     PublicKey *pk = PublicKey::Unwrap(wrapped);
     // default to jacobian
     pk->_has_jacobian = true;
+
     // but figure out if request for affine
     if (!info[1].IsUndefined())
     {
@@ -63,6 +72,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
             pk->_has_affine = true;
         }
     }
+
     try
     {
         if (pk->_has_jacobian)
@@ -96,6 +106,8 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
+    // Check that constructor was called from C++ and not JS. Externals can only
+    // be created natively.
     if (!info[0].IsExternal())
     {
         Napi::Error::New(env, "PublicKey constructor is private").ThrowAsJavaScriptException();
@@ -107,6 +119,7 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
     bool compressed{true};
     if (!info[0].IsUndefined())
     {
@@ -117,6 +130,7 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info)
         compressed
             ? BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED
             : BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED);
+
     if (_has_jacobian)
     {
         compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());
@@ -130,6 +144,7 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info)
         Napi::Error::New(env, "PublicKey cannot be serialized. No point found!").ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+
     return scope.Escape(serialized);
 }
 
@@ -137,6 +152,7 @@ Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
     if (_has_jacobian)
     {
         if (_jacobian->is_inf())
@@ -163,5 +179,6 @@ Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info)
     {
         Napi::Error::New(env, "blst::BLST_PK_IS_INFINITY").ThrowAsJavaScriptException();
     }
+
     return scope.Escape(info.Env().Undefined());
 }
