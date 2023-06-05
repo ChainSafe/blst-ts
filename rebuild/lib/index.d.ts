@@ -57,9 +57,6 @@ export const BLST_CONSTANTS: {
 export class SecretKey implements Serializable {
   private constructor();
   /**
-   * Section 2.3 KeyGen in BLS-signature draft
-   * https://www.ietf.org/archive/id/draft-irtf-cfrg-bls-signature-05.html#name-keygen
-   *
    * `fromKeygen` takes two parameters. The first parameter is a salt and is
    * required. IKM MUST be at least 32 bytes long, but it MAY be longer. The
    * second parameter, info, is optional and may be used to derive multiple
