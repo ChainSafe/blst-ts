@@ -74,12 +74,14 @@ export class SecretKey implements Serializable {
   toPublicKey(): PublicKey;
   sign(msg: BlstBuffer): Signature;
 }
+
 export class PublicKey implements Serializable {
   private constructor();
   static deserialize(skBytes: BlstBuffer, coordType?: CoordType): PublicKey;
   serialize(compress?: boolean): Buffer;
   keyValidate(): void;
 }
+
 export class Signature implements Serializable {
   private constructor();
   static deserialize(skBytes: BlstBuffer, coordType?: CoordType): Signature;
