@@ -125,8 +125,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
 SecretKey::SecretKey(const Napi::CallbackInfo &info)
     : Napi::ObjectWrap<SecretKey>{info},
       _key{new blst::SecretKey},
-      _is_zero_key{false},
-      _module{reinterpret_cast<BlstTsAddon *>(info.Data())}
+      _is_zero_key{false}
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
@@ -155,11 +154,13 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
+    // Get module for globals and run PublicKey constructor
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
     // Pass void External to constructor so can tell if constructor was called
     // from C or JS to prevent direct calls from JS to ensure proper setup
-    Napi::Object wrapped = _module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
+    Napi::Object wrapped = module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
     // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&_module->_public_key_tag);
+    wrapped.TypeTag(&module->_public_key_tag);
     // Unwrap object to get native instance
     PublicKey *pk = PublicKey::Unwrap(wrapped);
     // Derive public key from secret key. Default to jacobian coordinates
@@ -197,19 +198,21 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
     // Convert to final Uint8Array type
     Napi::Uint8Array msg = msg_array.As<Napi::TypedArrayOf<uint8_t>>();
 
+    // Get module for globals and run Signature constructor
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
     // Pass void External to constructor so can tell if constructor was called
     // from C or JS to prevent direct calls from JS to ensure proper setup
-    Napi::Object wrapped = _module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
+    Napi::Object wrapped = module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
     // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&_module->_signature_tag);
+    wrapped.TypeTag(&module->_signature_tag);
     // Unwrap object to get native instance
     Signature *sig = Signature::Unwrap(wrapped);
     // Default to jacobian coordinates
     sig->_jacobian.reset(new blst::P2);
     sig->_has_jacobian = true;
     // Hash to point and sign message
-    sig->_jacobian->hash_to(msg.Data(), msg.ByteLength(), _module->_dst);
+    sig->_jacobian->hash_to(msg.Data(), msg.ByteLength(), module->_dst);
     sig->_jacobian->sign_with(*_key);
-    
+
     return scope.Escape(wrapped);
 }

@@ -8,6 +8,7 @@ void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
         InstanceMethod("serialize", &Signature::Serialize, static_cast<napi_property_attributes>(napi_enumerable)),
         InstanceMethod("sigValidate", &Signature::SigValidate, static_cast<napi_property_attributes>(napi_enumerable)),
     };
+
     Napi::Function ctr = DefineClass(env, "Signature", proto, module);
     module->_signature_ctr = Napi::Persistent(ctr);
     module->_signature_tag = {BLST_TS_SIGNATURE_LOWER_TAG, BLST_TS_SIGNATURE_UPPER_TAG};
@@ -18,6 +19,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
+    // Pull Value from info and check type is valid
     Napi::Value sig_value = info[0];
     if (!sig_value.IsTypedArray())
     {
@@ -30,6 +33,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, "sigBytes must be a BlstBuffer").ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+    // Convert to final Uint8Array type and check length is valid
     Napi::Uint8Array sig_bytes = sig_array.As<Napi::TypedArrayOf<uint8_t>>();
     std::string err_out{"sigBytes"};
     if (!is_valid_length(
@@ -41,12 +45,18 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+    // Get module for globals and run Signature constructor
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
+    // Pass void External to constructor so can tell if constructor was called
+    // from C or JS to prevent direct calls from JS to ensure proper setup
     Napi::Object wrapped = module->_signature_ctr.New({Napi::External<void>::New(env, nullptr)});
+    // Setup object correctly.  Start with type tagging wrapper class.
     wrapped.TypeTag(&module->_signature_tag);
+    // Unwrap object to get native instance
     Signature *sig = Signature::Unwrap(wrapped);
     // default to jacobian for now
     sig->_has_jacobian = true;
+
     // but figure out if request for affine
     if (!info[1].IsUndefined())
     {
@@ -62,6 +72,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
             sig->_has_affine = true;
         }
     }
+
     try
     {
         if (sig->_has_jacobian)
@@ -78,6 +89,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
         Napi::RangeError::New(env, module->GetBlstErrorString(err)).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+
     return scope.Escape(wrapped);
 }
 
@@ -90,6 +102,8 @@ Signature::Signature(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
+    // Check that constructor was called from C++ and not JS. Externals can only
+    // be created natively.
     if (!info[0].IsExternal())
     {
         Napi::Error::New(env, "Signature constructor is private").ThrowAsJavaScriptException();
@@ -101,6 +115,7 @@ Napi::Value Signature::Serialize(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
     bool compressed{true};
     if (!info[0].IsUndefined())
     {
@@ -111,6 +126,7 @@ Napi::Value Signature::Serialize(const Napi::CallbackInfo &info)
         compressed
             ? BLST_TS_SIGNATURE_LENGTH_COMPRESSED
             : BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED);
+
     if (_has_jacobian)
     {
         compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());
@@ -124,6 +140,7 @@ Napi::Value Signature::Serialize(const Napi::CallbackInfo &info)
         Napi::Error::New(env, "Signature cannot be serialized. No point found!").ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
+
     return scope.Escape(serialized);
 }
 
@@ -131,6 +148,7 @@ Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
+
     if (!_has_jacobian && !_has_affine)
     {
         Napi::Error::New(env, "Signature not initialized").ThrowAsJavaScriptException();
@@ -143,5 +161,6 @@ Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info)
     {
         Napi::Error::New(env, "blst::BLST_POINT_NOT_IN_GROUP").ThrowAsJavaScriptException();
     }
+    
     return scope.Escape(env.Undefined());
 }

@@ -21,9 +21,6 @@ public:
     Napi::Value Serialize(const Napi::CallbackInfo &info);
     Napi::Value ToPublicKey(const Napi::CallbackInfo &info);
     Napi::Value Sign(const Napi::CallbackInfo &info);
-
-private:
-    BlstTsAddon *_module;
 };
 
 #endif /* BLST_TS_SECRET_KEY_H__ */
