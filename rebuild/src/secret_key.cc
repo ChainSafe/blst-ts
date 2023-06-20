@@ -1,5 +1,7 @@
 #include "secret_key.h"
 
+#define BLST_TS_SECRET_KEY_LENGTH 32U
+
 void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to EscapeHandleScope, Persistent will take care of it
@@ -16,6 +18,11 @@ void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     // These tag values must be unique across all classes
     module->_secret_key_tag = {0ULL, 1ULL};
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
+    
+    exports
+        .Get("BLST_CONSTANTS")
+        .As<Napi::Object>()
+        .Set(Napi::String::New(env, "SECRET_KEY_LENGTH"), Napi::Number::New(env, BLST_TS_SECRET_KEY_LENGTH));
 }
 
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info)

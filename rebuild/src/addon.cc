@@ -55,8 +55,10 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
           "BLST_BAD_SCALAR",
       }
 {
+    Napi::Object js_constants = Napi::Object::New(env);
+    js_constants.Set(Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
     DefineAddon(exports, {
-                             InstanceValue("BLST_CONSTANTS", BuildJsConstants(env), napi_enumerable),
+                             InstanceValue("BLST_CONSTANTS", js_constants, napi_enumerable),
                          });
     SecretKey::Init(env, exports, this);
     PublicKey::Init(env, exports, this);
@@ -64,20 +66,10 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     // Functions::Init(env, exports);
     env.SetInstanceData(this);
 }
+
 std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
 {
     return _blst_error_strings[err];
-}
-Napi::Object BlstTsAddon::BuildJsConstants(Napi::Env &env)
-{
-    Napi::Object _js_constants = Napi::Object::New(env);
-    _js_constants.Set(Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
-    _js_constants.Set(Napi::String::New(env, "SECRET_KEY_LENGTH"), Napi::Number::New(env, BLST_TS_SECRET_KEY_LENGTH));
-    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_COMPRESSED"), Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED));
-    _js_constants.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED));
-    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_COMPRESSED"), Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_COMPRESSED));
-    _js_constants.Set(Napi::String::New(env, "SIGNATURE_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED));
-    return _js_constants;
 }
 
 NODE_API_ADDON(BlstTsAddon)

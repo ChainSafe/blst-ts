@@ -1,5 +1,8 @@
 #include "signature.h"
 
+#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
+#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
+
 void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it
@@ -14,6 +17,12 @@ void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     // These tag values must be unique across all classes
     module->_signature_tag = {4ULL, 5ULL};
     exports.Set(Napi::String::New(env, "Signature"), ctr);
+
+    Napi::Object js_exports = exports
+                                  .Get("BLST_CONSTANTS")
+                                  .As<Napi::Object>();
+    js_exports.Set(Napi::String::New(env, "SIGNATURE_LENGTH_COMPRESSED"), Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_COMPRESSED));
+    js_exports.Set(Napi::String::New(env, "SIGNATURE_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED));
 }
 
 Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)

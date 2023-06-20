@@ -1,5 +1,8 @@
 #include "public_key.h"
 
+#define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 48U
+#define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 96U
+
 void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it
@@ -14,6 +17,12 @@ void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     // These tag values must be unique across all classes
     module->_public_key_tag = {2ULL, 3ULL};
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
+
+    Napi::Object js_exports = exports
+                                  .Get("BLST_CONSTANTS")
+                                  .As<Napi::Object>();
+    js_exports.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_COMPRESSED"), Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED));
+    js_exports.Set(Napi::String::New(env, "PUBLIC_KEY_LENGTH_UNCOMPRESSED"), Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED));
 }
 
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
