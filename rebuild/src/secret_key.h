@@ -8,6 +8,8 @@
 #include "public_key.h"
 #include "signature.h"
 
+#define BLST_TS_SECRET_KEY_LENGTH 32U
+
 class SecretKey : public Napi::ObjectWrap<SecretKey>
 {
 public:

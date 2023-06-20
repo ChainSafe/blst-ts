@@ -1,8 +1,5 @@
 #include "signature.h"
 
-#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
-#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
-
 void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it

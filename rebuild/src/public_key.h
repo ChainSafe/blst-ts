@@ -6,6 +6,9 @@
 #include "blst.hpp"
 #include "addon.h"
 
+#define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 48U
+#define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 96U
+
 class PublicKey : public Napi::ObjectWrap<PublicKey>
 {
 public:

@@ -1,8 +1,5 @@
 #include "public_key.h"
 
-#define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 48U
-#define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 96U
-
 void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to Escape, Persistent will take care of it

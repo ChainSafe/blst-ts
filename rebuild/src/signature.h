@@ -6,6 +6,9 @@
 #include "blst.hpp"
 #include "addon.h"
 
+#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
+#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
+
 class Signature : public Napi::ObjectWrap<Signature>
 {
 public:

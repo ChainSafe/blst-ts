@@ -1,7 +1,5 @@
 #include "secret_key.h"
 
-#define BLST_TS_SECRET_KEY_LENGTH 32U
-
 void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 {
     Napi::HandleScope scope(env); // no need to EscapeHandleScope, Persistent will take care of it
