@@ -57,8 +57,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
     }
     // Get module for globals and run Signature constructor
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Pass void External to constructor so can tell if constructor was called
-    // from C or JS to prevent direct calls from JS to ensure proper setup
+    // Allocate object in javascript heap
     Napi::Object wrapped = module->_signature_ctr.New({Napi::External<void>::New(env, nullptr)});
     // Setup object correctly.  Start with type tagging wrapper class.
     wrapped.TypeTag(&module->_signature_tag);

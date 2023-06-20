@@ -18,7 +18,7 @@ void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
     // These tag values must be unique across all classes
     module->_secret_key_tag = {0ULL, 1ULL};
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
-    
+
     exports
         .Get("BLST_CONSTANTS")
         .As<Napi::Object>()
@@ -111,8 +111,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
     }
     // Get module for globals and run SecretKey constructor
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Pass void External to constructor so can tell if constructor was called
-    // from C or JS to prevent direct calls from JS to ensure proper setup
+    // Allocate object in javascript heap
     Napi::Object wrapped = module->_secret_key_ctr.New({Napi::External<void *>::New(env, nullptr)});
     // Setup object correctly.  Start with type tagging wrapper class.
     wrapped.TypeTag(&module->_secret_key_tag);
