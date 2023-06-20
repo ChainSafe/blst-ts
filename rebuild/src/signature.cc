@@ -11,7 +11,8 @@ void Signature::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 
     Napi::Function ctr = DefineClass(env, "Signature", proto, module);
     module->_signature_ctr = Napi::Persistent(ctr);
-    module->_signature_tag = {BLST_TS_SIGNATURE_LOWER_TAG, BLST_TS_SIGNATURE_UPPER_TAG};
+    // These tag values must be unique across all classes
+    module->_signature_tag = {4ULL, 5ULL};
     exports.Set(Napi::String::New(env, "Signature"), ctr);
 }
 
@@ -161,6 +162,6 @@ Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info)
     {
         Napi::Error::New(env, "blst::BLST_POINT_NOT_IN_GROUP").ThrowAsJavaScriptException();
     }
-    
+
     return scope.Escape(env.Undefined());
 }

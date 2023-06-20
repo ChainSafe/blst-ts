@@ -13,7 +13,8 @@ void SecretKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
 
     Napi::Function ctr = DefineClass(env, "SecretKey", proto, module);
     module->_secret_key_ctr = Napi::Persistent(ctr);
-    module->_secret_key_tag = {BLST_TS_SECRET_KEY_LOWER_TAG, BLST_TS_SECRET_KEY_UPPER_TAG};
+    // These tag values must be unique across all classes
+    module->_secret_key_tag = {0ULL, 1ULL};
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
 }
 

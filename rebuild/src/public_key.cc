@@ -8,10 +8,11 @@ void PublicKey::Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module)
         InstanceMethod("serialize", &PublicKey::Serialize, static_cast<napi_property_attributes>(napi_enumerable)),
         InstanceMethod("keyValidate", &PublicKey::KeyValidate, static_cast<napi_property_attributes>(napi_enumerable)),
     };
-    
+
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
     module->_public_key_ctr = Napi::Persistent(ctr);
-    module->_public_key_tag = {BLST_TS_PUBLIC_KEY_LOWER_TAG, BLST_TS_PUBLIC_KEY_UPPER_TAG};
+    // These tag values must be unique across all classes
+    module->_public_key_tag = {2ULL, 3ULL};
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
 }
 
