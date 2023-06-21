@@ -72,7 +72,7 @@ using std::endl;
                                                                                \
     return scope.Escape(serialized);
 
-#define BLST_TS_UNWRAP_PUBLIC_KEY_ARG(val_name, point_name)                    \
+#define BLST_TS_UNWRAP_PUBLIC_KEY_ARG(val_name, point_name, coord_type)        \
     if (val_name.IsTypedArray()) {                                             \
         Napi::TypedArray untyped = val_name.As<Napi::TypedArray>();            \
         if (untyped.TypedArrayType() != napi_uint8_array) {                    \
@@ -95,8 +95,12 @@ using std::endl;
                 .ThrowAsJavaScriptException();                                 \
             return scope.Escape(env.Undefined());                              \
         }                                                                      \
-        /* this can potentially throw. must be in try/catch */                 \
-        point_name = blst::P1{typed.Data(), typed.ByteLength()};               \
+        /* this can potentially throw. macro must be in try/catch */           \
+        if (coord_type == CoordType::Jacobian) {                               \
+            point_name = blst::P1{typed.Data(), typed.ByteLength()};           \
+        } else {                                                               \
+            point_name = blst::P1_Affine{typed.Data(), typed.ByteLength()};    \
+        }                                                                      \
     } else if (val_name.IsObject()) {                                          \
         Napi::Object wrapped = val_name.As<Napi::Object>();                    \
         if (!wrapped.CheckTypeTag(&module->_public_key_tag)) {                 \
@@ -105,19 +109,96 @@ using std::endl;
             return scope.Escape(env.Undefined());                              \
         }                                                                      \
         PublicKey *public_key = PublicKey::Unwrap(wrapped);                    \
-        if (!public_key->_has_jacobian) {                                      \
-            if (!public_key->_has_affine) {                                    \
-                Napi::Error::New(env, "PublicKey not initialized")             \
-                    .ThrowAsJavaScriptException();                             \
-                return scope.Escape(env.Undefined());                          \
+        if (coord_type == CoordType::Jacobian) {                               \
+            if (!public_key->_has_jacobian) {                                  \
+                if (!public_key->_has_affine) {                                \
+                    Napi::Error::New(env, "PublicKey not initialized")         \
+                        .ThrowAsJavaScriptException();                         \
+                    return scope.Escape(env.Undefined());                      \
+                }                                                              \
+                public_key->_jacobian.reset(                                   \
+                    new blst::P1{public_key->_affine->to_jacobian()});         \
+                public_key->_has_jacobian = true;                              \
             }                                                                  \
-            public_key->_jacobian.reset(                                       \
-                new blst::P1{public_key->_affine->to_jacobian()});             \
-            public_key->_has_jacobian = true;                                  \
+            point_name = blst::P1{*public_key->_jacobian.get()};               \
+        } else {                                                               \
+            if (!public_key->_has_affine) {                                    \
+                if (!public_key->_has_jacobian) {                              \
+                    Napi::Error::New(env, "PublicKey not initialized")         \
+                        .ThrowAsJavaScriptException();                         \
+                    return scope.Escape(env.Undefined());                      \
+                }                                                              \
+                public_key->_affine.reset(                                     \
+                    new blst::P1_Affine{public_key->_jacobian->to_affine()});  \
+                public_key->_has_affine = true;                                \
+            }                                                                  \
+            point_name = blst::P1_Affine{*public_key->_affine.get()};          \
         }                                                                      \
-        point_name = blst::P1{*public_key->_jacobian.get()};                   \
     } else {                                                                   \
         Napi::TypeError::New(env, "publicKey must be a PublicKeyArg")          \
+            .ThrowAsJavaScriptException();                                     \
+        return scope.Escape(env.Undefined());                                  \
+    }
+
+#define BLST_TS_UNWRAP_SIGNATURE_ARG(val_name, point_name, coord_type)         \
+    if (val_name.IsTypedArray()) {                                             \
+        Napi::TypedArray untyped = val_name.As<Napi::TypedArray>();            \
+        if (untyped.TypedArrayType() != napi_uint8_array) {                    \
+            Napi::TypeError::New(env, "SignatureArg must be a BlstBuffer")     \
+                .ThrowAsJavaScriptException();                                 \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        Napi::Uint8Array typed = untyped.As<Napi::Uint8Array>();               \
+        std::string err_out{"SignatureArg"};                                   \
+        if (!is_valid_length(                                                  \
+                err_out,                                                       \
+                typed.ByteLength(),                                            \
+                BLST_TS_SIGNATURE_LENGTH_COMPRESSED,                           \
+                BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {                      \
+            Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();   \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        /* this can potentially throw. must be in try/catch */                 \
+        if (coord_type == CoordType::Jacobian) {                               \
+            point_name = blst::P2{typed.Data(), typed.ByteLength()};           \
+        } else {                                                               \
+            point_name = blst::P2_Affine{typed.Data(), typed.ByteLength()};    \
+        }                                                                      \
+    } else if (val_name.IsObject()) {                                          \
+        Napi::Object wrapped = val_name.As<Napi::Object>();                    \
+        if (!wrapped.CheckTypeTag(&module->_signature_tag)) {                  \
+            Napi::TypeError::New(env, "signature must be a SignatureArg")      \
+                .ThrowAsJavaScriptException();                                 \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        Signature *signature = Signature::Unwrap(wrapped);                     \
+        if (coord_type == CoordType::Jacobian) {                               \
+            if (!signature->_has_jacobian) {                                   \
+                if (!signature->_has_affine) {                                 \
+                    Napi::Error::New(env, "Signature not initialized")         \
+                        .ThrowAsJavaScriptException();                         \
+                    return scope.Escape(env.Undefined());                      \
+                }                                                              \
+                signature->_jacobian.reset(                                    \
+                    new blst::P2{signature->_affine->to_jacobian()});          \
+                signature->_has_jacobian = true;                               \
+            }                                                                  \
+            point_name = blst::P2{*signature->_jacobian.get()};                \
+        } else {                                                               \
+            if (!signature->_has_affine) {                                     \
+                if (!signature->_has_jacobian) {                               \
+                    Napi::Error::New(env, "Signature not initialized")         \
+                        .ThrowAsJavaScriptException();                         \
+                    return scope.Escape(env.Undefined());                      \
+                }                                                              \
+                signature->_affine.reset(                                      \
+                    new blst::P2_Affine{signature->_jacobian->to_affine()});   \
+                signature->_has_affine = true;                                 \
+            }                                                                  \
+            point_name = blst::P2_Affine{*signature->_affine.get()};           \
+        }                                                                      \
+    } else {                                                                   \
+        Napi::TypeError::New(env, "signature must be a SignatureArg")          \
             .ThrowAsJavaScriptException();                                     \
         return scope.Escape(env.Undefined());                                  \
     }
