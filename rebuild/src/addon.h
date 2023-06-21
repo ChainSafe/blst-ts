@@ -18,8 +18,8 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(source, arg_num, c_name, js_name)                  \
-    Napi::Value c_name##_value = source[arg_num];                                \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(source, arg_num, c_name, js_name)          \
+    Napi::Value c_name##_value = source[arg_num];                              \
     if (!c_name##_value.IsTypedArray()) {                                      \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
@@ -72,6 +72,56 @@ using std::endl;
                                                                                \
     return scope.Escape(serialized);
 
+#define BLST_TS_UNWRAP_PUBLIC_KEY_ARG(val_name, point_name)                    \
+    if (val_name.IsTypedArray()) {                                             \
+        Napi::TypedArray untyped = val_name.As<Napi::TypedArray>();            \
+        if (untyped.TypedArrayType() != napi_uint8_array) {                    \
+            Napi::TypeError::New(env, "PublicKeyArg must be a BlstBuffer")     \
+                .ThrowAsJavaScriptException();                                 \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        Napi::Uint8Array typed = untyped.As<Napi::Uint8Array>();               \
+        std::string err_out{"PublicKeyArg"};                                   \
+        if (!is_valid_length(                                                  \
+                err_out,                                                       \
+                typed.ByteLength(),                                            \
+                BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,                          \
+                BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {                     \
+            Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();   \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        if (is_zero_bytes(typed.Data(), 0, typed.ByteLength())) {              \
+            Napi::TypeError::New(env, "PublicKeyArg must not be zero key")     \
+                .ThrowAsJavaScriptException();                                 \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        /* this can potentially throw. must be in try/catch */                 \
+        point_name = blst::P1{typed.Data(), typed.ByteLength()};               \
+    } else if (val_name.IsObject()) {                                          \
+        Napi::Object wrapped = val_name.As<Napi::Object>();                    \
+        if (!wrapped.CheckTypeTag(&module->_public_key_tag)) {                 \
+            Napi::TypeError::New(env, "publicKey must be a PublicKeyArg")      \
+                .ThrowAsJavaScriptException();                                 \
+            return scope.Escape(env.Undefined());                              \
+        }                                                                      \
+        PublicKey *public_key = PublicKey::Unwrap(wrapped);                    \
+        if (!public_key->_has_jacobian) {                                      \
+            if (!public_key->_has_affine) {                                    \
+                Napi::Error::New(env, "PublicKey not initialized")             \
+                    .ThrowAsJavaScriptException();                             \
+                return scope.Escape(env.Undefined());                          \
+            }                                                                  \
+            public_key->_jacobian.reset(                                       \
+                new blst::P1{public_key->_affine->to_jacobian()});             \
+            public_key->_has_jacobian = true;                                  \
+        }                                                                      \
+        point_name = blst::P1{*public_key->_jacobian.get()};                   \
+    } else {                                                                   \
+        Napi::TypeError::New(env, "publicKey must be a PublicKeyArg")          \
+            .ThrowAsJavaScriptException();                                     \
+        return scope.Escape(env.Undefined());                                  \
+    }
+
 class BlstTsAddon;
 
 typedef enum { Affine, Jacobian } CoordType;
@@ -110,10 +160,10 @@ bool is_valid_length(
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
+#include "functions.h"
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
-#include "functions.h"
 
 /**
  * BlstTsAddon is the main entry point for the library. It is responsible
