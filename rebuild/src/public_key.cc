@@ -27,21 +27,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    // Pull Value from info and check type is valid
-    Napi::Value pk_value = info[0];
-    if (!pk_value.IsTypedArray())
-    {
-        Napi::TypeError::New(env, "pkBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
-    }
-    Napi::TypedArray pk_array = pk_value.As<Napi::TypedArray>();
-    if (pk_array.TypedArrayType() != napi_uint8_array)
-    {
-        Napi::TypeError::New(env, "pkBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
-    }
-    // Convert to final Uint8Array type and check length is valid
-    Napi::Uint8Array pk_bytes = pk_array.As<Napi::TypedArrayOf<uint8_t>>();
+    BLST_TS_UNWRAP_UINT_8_ARRAY(0, pk_bytes, "pkBytes")
     std::string err_out{"pkBytes"};
     if (!is_valid_length(
             err_out,
@@ -52,14 +38,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
-    // Get module for globals and run PublicKey constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Allocate object in javascript heap
-    Napi::Object wrapped = module->_public_key_ctr.New({Napi::External<void>::New(env, nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_public_key_tag);
-    // Unwrap object to get native instance
-    PublicKey *pk = PublicKey::Unwrap(wrapped);
+
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
     // default to jacobian
     pk->_has_jacobian = true;
 

@@ -28,21 +28,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    // Pull Value from info and check type is valid
-    Napi::Value ikm_value = info[0];
-    if (!ikm_value.IsTypedArray())
-    {
-        Napi::TypeError::New(env, "ikm must be a BlstBuffer").ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    Napi::TypedArray ikm_array = ikm_value.As<Napi::TypedArray>();
-    if (ikm_array.TypedArrayType() != napi_uint8_array)
-    {
-        Napi::TypeError::New(env, "ikm must be a BlstBuffer").ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    // Convert to final Uint8Array type and check length is valid
-    Napi::Uint8Array ikm = ikm_array.As<Napi::TypedArrayOf<uint8_t>>();
+    BLST_TS_UNWRAP_UINT_8_ARRAY(0, ikm, "ikm")
     if (ikm.ByteLength() < BLST_TS_SECRET_KEY_LENGTH)
     {
         std::ostringstream msg;
@@ -51,14 +37,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info)
         return env.Undefined();
     }
 
-    // Get module for globals and run SecretKey constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Pass void External to constructor so can tell if constructor was called
-    // from C or JS to prevent direct calls from JS to ensure proper setup
-    Napi::Object wrapped = module->_secret_key_ctr.New({Napi::External<void *>::New(env, nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_secret_key_tag);
-    SecretKey *sk = SecretKey::Unwrap(wrapped);
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // If `info` string is passed use it otherwise use default without. Is optional
     // parameter from blst library.
     if (info[1].IsString())
@@ -85,21 +64,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    // Pull Value from info and check type is valid
-    Napi::Value sk_bytes_value = info[0];
-    if (!sk_bytes_value.IsTypedArray())
-    {
-        Napi::TypeError::New(env, "skBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    Napi::TypedArray sk_bytes_array = sk_bytes_value.As<Napi::TypedArray>();
-    if (sk_bytes_array.TypedArrayType() != napi_uint8_array)
-    {
-        Napi::TypeError::New(env, "skBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return env.Undefined();
-    }
-    // Convert to final Uint8Array type and check length is valid
-    Napi::Uint8Array sk_bytes = sk_bytes_array.As<Napi::TypedArrayOf<uint8_t>>();
+    BLST_TS_UNWRAP_UINT_8_ARRAY(0, sk_bytes, "skBytes")
     if (sk_bytes.ByteLength() != BLST_TS_SECRET_KEY_LENGTH)
     {
         std::ostringstream msg;
@@ -107,13 +72,8 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
         return env.Undefined();
     }
-    // Get module for globals and run SecretKey constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Allocate object in javascript heap
-    Napi::Object wrapped = module->_secret_key_ctr.New({Napi::External<void *>::New(env, nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_secret_key_tag);
-    SecretKey *sk = SecretKey::Unwrap(wrapped);
+
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // Deserialize key
     sk->_key->from_bendian(sk_bytes.Data());
     // Check if key is zero and set flag if so. Several specs depend on this check
@@ -159,15 +119,7 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    // Get module for globals and run PublicKey constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Pass void External to constructor so can tell if constructor was called
-    // from C or JS to prevent direct calls from JS to ensure proper setup
-    Napi::Object wrapped = module->_public_key_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_public_key_tag);
-    // Unwrap object to get native instance
-    PublicKey *pk = PublicKey::Unwrap(wrapped);
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
     // Derive public key from secret key. Default to jacobian coordinates
     pk->_jacobian.reset(new blst::P1{*_key});
     pk->_has_jacobian = true;
@@ -187,31 +139,8 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info)
         return scope.Escape(info.Env().Undefined());
     }
 
-    // Pull msg Value from info and check type is valid
-    Napi::Value msg_value = info[0];
-    if (!msg_value.IsTypedArray())
-    {
-        Napi::TypeError::New(env, "msg must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(info.Env().Undefined());
-    }
-    Napi::TypedArray msg_array = msg_value.As<Napi::TypedArray>();
-    if (msg_array.TypedArrayType() != napi_uint8_array)
-    {
-        Napi::TypeError::New(env, "msg must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(info.Env().Undefined());
-    }
-    // Convert to final Uint8Array type
-    Napi::Uint8Array msg = msg_array.As<Napi::TypedArrayOf<uint8_t>>();
-
-    // Get module for globals and run Signature constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Pass void External to constructor so can tell if constructor was called
-    // from C or JS to prevent direct calls from JS to ensure proper setup
-    Napi::Object wrapped = module->_signature_ctr.New({Napi::External<void *>::New(Env(), nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_signature_tag);
-    // Unwrap object to get native instance
-    Signature *sig = Signature::Unwrap(wrapped);
+    BLST_TS_UNWRAP_UINT_8_ARRAY(0, msg, "msg")
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(signature, Signature, sig)
     // Default to jacobian coordinates
     sig->_jacobian.reset(new blst::P2);
     sig->_has_jacobian = true;

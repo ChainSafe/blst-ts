@@ -27,21 +27,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    // Pull Value from info and check type is valid
-    Napi::Value sig_value = info[0];
-    if (!sig_value.IsTypedArray())
-    {
-        Napi::TypeError::New(env, "sigBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
-    }
-    Napi::TypedArray sig_array = sig_value.As<Napi::TypedArray>();
-    if (sig_array.TypedArrayType() != napi_uint8_array)
-    {
-        Napi::TypeError::New(env, "sigBytes must be a BlstBuffer").ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
-    }
-    // Convert to final Uint8Array type and check length is valid
-    Napi::Uint8Array sig_bytes = sig_array.As<Napi::TypedArrayOf<uint8_t>>();
+    BLST_TS_UNWRAP_UINT_8_ARRAY(0, sig_bytes, "sigBytes")
     std::string err_out{"sigBytes"};
     if (!is_valid_length(
             err_out,
@@ -52,14 +38,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info)
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
     }
-    // Get module for globals and run Signature constructor
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
-    // Allocate object in javascript heap
-    Napi::Object wrapped = module->_signature_ctr.New({Napi::External<void>::New(env, nullptr)});
-    // Setup object correctly.  Start with type tagging wrapper class.
-    wrapped.TypeTag(&module->_signature_tag);
-    // Unwrap object to get native instance
-    Signature *sig = Signature::Unwrap(wrapped);
+
+    BLST_TS_CREAT_UNWRAPPED_OBJECT(signature, Signature, sig)
     // default to jacobian for now
     sig->_has_jacobian = true;
 

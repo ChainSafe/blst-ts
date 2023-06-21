@@ -16,6 +16,31 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(arg_num, c_name, js_name)                                    \
+    Napi::Value c_name##_value = info[arg_num];                                                  \
+    if (!c_name##_value.IsTypedArray())                                                          \
+    {                                                                                            \
+        Napi::TypeError::New(env, js_name " must be a BlstBuffer").ThrowAsJavaScriptException(); \
+        return env.Undefined();                                                                  \
+    }                                                                                            \
+    Napi::TypedArray c_name##_array = c_name##_value.As<Napi::TypedArray>();                     \
+    if (c_name##_array.TypedArrayType() != napi_uint8_array)                                     \
+    {                                                                                            \
+        Napi::TypeError::New(env, js_name " must be a BlstBuffer").ThrowAsJavaScriptException(); \
+        return env.Undefined();                                                                  \
+    }                                                                                            \
+    Napi::Uint8Array c_name = c_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
+
+#define BLST_TS_CREAT_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)                          \
+    /* Get module for globals and run constructor */                                                 \
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();                                        \
+    /* Allocate object in javascript heap */                                                         \
+    Napi::Object wrapped = module->_##obj_name##_ctr.New({Napi::External<void>::New(env, nullptr)}); \
+    /* Setup object correctly.  Start with type tagging wrapper class. */                            \
+    wrapped.TypeTag(&module->_##obj_name##_tag);                                                     \
+    /* Unwrap object to get native instance */                                                       \
+    class_name *instance_name = class_name::Unwrap(wrapped);
+
 class BlstTsAddon;
 
 typedef enum
@@ -43,12 +68,12 @@ bool is_zero_bytes(
 /**
  * Checks if a byte array is a valid length. If not, sets the error message and
  * returns false.  If valid returns true for use in conditional statements.
- * 
+ *
  * @param[out] error_out &std::string - error message to set if invalid
  * @param[in] byte_length size_t - length of the byte array to validate
  * @param[in] length1 size_t - first valid length
  * @param[in] length2 size_t - second valid length (optional)
- * 
+ *
  * @return bool
  */
 bool is_valid_length(
