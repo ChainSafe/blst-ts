@@ -2,16 +2,16 @@
 #define BLST_TS_PUBLIC_KEY_H__
 
 #include <memory>
-#include "napi.h"
-#include "blst.hpp"
+
 #include "addon.h"
+#include "blst.hpp"
+#include "napi.h"
 
 #define BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED 48U
 #define BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED 96U
 
-class PublicKey : public Napi::ObjectWrap<PublicKey>
-{
-public:
+class PublicKey : public Napi::ObjectWrap<PublicKey> {
+   public:
     bool _has_jacobian;
     bool _has_affine;
     std::shared_ptr<blst::P1> _jacobian;

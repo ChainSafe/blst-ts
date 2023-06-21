@@ -1,13 +1,9 @@
 #include "addon.h"
 
-bool is_zero_bytes(const uint8_t *data,
-                   const size_t start_byte,
-                   const size_t byte_length)
-{
-    for (size_t i = start_byte; i < byte_length; i++)
-    {
-        if (data[i] != 0)
-        {
+bool is_zero_bytes(
+    const uint8_t *data, const size_t start_byte, const size_t byte_length) {
+    for (size_t i = start_byte; i < byte_length; i++) {
+        if (data[i] != 0) {
             return false;
         }
     }
@@ -18,22 +14,17 @@ bool is_valid_length(
     std::string &error_out,
     size_t byte_length,
     size_t length1,
-    size_t length2
-    )
-{
-    if (byte_length == length1 || (length2 != 0 && byte_length == length2))
-    {
+    size_t length2) {
+    if (byte_length == length1 || (length2 != 0 && byte_length == length2)) {
         return true;
     }
-    error_out.append(" is " + std::to_string(byte_length) + " bytes, but must be ");
-    if (length1 != 0)
-    {
+    error_out.append(
+        " is " + std::to_string(byte_length) + " bytes, but must be ");
+    if (length1 != 0) {
         error_out.append(std::to_string(length1));
     };
-    if (length2 != 0)
-    {
-        if (length1 != 0)
-        {
+    if (length2 != 0) {
+        if (length1 != 0) {
             error_out.append(" or ");
         }
         error_out.append(std::to_string(length2));
@@ -53,13 +44,15 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
           "BLST_VERIFY_FAIL",
           "BLST_PK_IS_INFINITY",
           "BLST_BAD_SCALAR",
-      }
-{
+      } {
     Napi::Object js_constants = Napi::Object::New(env);
-    js_constants.Set(Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
-    DefineAddon(exports, {
-                             InstanceValue("BLST_CONSTANTS", js_constants, napi_enumerable),
-                         });
+    js_constants.Set(
+        Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
+    DefineAddon(
+        exports,
+        {
+            InstanceValue("BLST_CONSTANTS", js_constants, napi_enumerable),
+        });
     SecretKey::Init(env, exports, this);
     PublicKey::Init(env, exports, this);
     Signature::Init(env, exports, this);
@@ -67,8 +60,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     env.SetInstanceData(this);
 }
 
-std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err)
-{
+std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err) {
     return _blst_error_strings[err];
 }
 

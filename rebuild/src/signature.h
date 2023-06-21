@@ -2,16 +2,16 @@
 #define BLST_TS_SIGNATURE_H__
 
 #include <memory>
-#include "napi.h"
-#include "blst.hpp"
+
 #include "addon.h"
+#include "blst.hpp"
+#include "napi.h"
 
 #define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
 #define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
 
-class Signature : public Napi::ObjectWrap<Signature>
-{
-public:
+class Signature : public Napi::ObjectWrap<Signature> {
+   public:
     bool _has_jacobian;
     bool _has_affine;
     std::shared_ptr<blst::P2> _jacobian;

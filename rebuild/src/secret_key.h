@@ -2,17 +2,17 @@
 #define BLST_TS_SECRET_KEY_H__
 
 #include <memory>
-#include "napi.h"
-#include "blst.hpp"
+
 #include "addon.h"
+#include "blst.hpp"
+#include "napi.h"
 #include "public_key.h"
 #include "signature.h"
 
 #define BLST_TS_SECRET_KEY_LENGTH 32U
 
-class SecretKey : public Napi::ObjectWrap<SecretKey>
-{
-public:
+class SecretKey : public Napi::ObjectWrap<SecretKey> {
+   public:
     std::shared_ptr<blst::SecretKey> _key;
     bool _is_zero_key;
 
