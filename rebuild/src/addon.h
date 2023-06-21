@@ -41,6 +41,37 @@ using std::endl;
     /* Unwrap object to get native instance */                                                       \
     class_name *instance_name = class_name::Unwrap(wrapped);
 
+#define BLST_TS_SERIALIZE_POINT(macro_name, class_name)                                                          \
+    Napi::Env env = info.Env();                                                                                  \
+    Napi::EscapableHandleScope scope(env);                                                                       \
+                                                                                                                 \
+    bool compressed{true};                                                                                       \
+    if (!info[0].IsUndefined())                                                                                  \
+    {                                                                                                            \
+        compressed = info[0].ToBoolean().Value();                                                                \
+    }                                                                                                            \
+    Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(                                               \
+        env,                                                                                                     \
+        compressed                                                                                               \
+            ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                                                           \
+            : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);                                                       \
+                                                                                                                 \
+    if (_has_jacobian)                                                                                           \
+    {                                                                                                            \
+        compressed ? _jacobian->compress(serialized.Data()) : _jacobian->serialize(serialized.Data());           \
+    }                                                                                                            \
+    else if (_has_affine)                                                                                        \
+    {                                                                                                            \
+        compressed ? _affine->compress(serialized.Data()) : _affine->serialize(serialized.Data());               \
+    }                                                                                                            \
+    else                                                                                                         \
+    {                                                                                                            \
+        Napi::Error::New(env, class_name " cannot be serialized. No point found!").ThrowAsJavaScriptException(); \
+        return scope.Escape(env.Undefined());                                                                    \
+    }                                                                                                            \
+                                                                                                                 \
+    return scope.Escape(serialized);
+
 class BlstTsAddon;
 
 typedef enum
