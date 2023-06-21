@@ -18,8 +18,8 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(arg_num, c_name, js_name)                  \
-    Napi::Value c_name##_value = info[arg_num];                                \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(source, arg_num, c_name, js_name)                  \
+    Napi::Value c_name##_value = source[arg_num];                                \
     if (!c_name##_value.IsTypedArray()) {                                      \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \

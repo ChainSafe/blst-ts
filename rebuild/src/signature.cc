@@ -39,7 +39,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(0, sig_bytes, "sigBytes")
+    BLST_TS_UNWRAP_UINT_8_ARRAY(info, 0, sig_bytes, "sigBytes")
     std::string err_out{"sigBytes"};
     if (!is_valid_length(
             err_out,
