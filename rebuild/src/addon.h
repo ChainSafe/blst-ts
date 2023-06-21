@@ -288,6 +288,11 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      */
     std::string GetBlstErrorString(const blst::BLST_ERROR &err);
 
+    /**
+     * Uses the same openssl method as node to generate random bytes
+     */
+    bool GetRandomBytes(blst::byte *ikm, size_t length);
+
    private:
     /**
      *  Creates a constants objects to pass to JS
