@@ -56,7 +56,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     SecretKey::Init(env, exports, this);
     PublicKey::Init(env, exports, this);
     Signature::Init(env, exports, this);
-    // Functions::Init(env, exports);
+    Functions::Init(env, exports);
     env.SetInstanceData(this);
 }
 

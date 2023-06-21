@@ -113,7 +113,7 @@ bool is_valid_length(
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
-// #include "functions.h"
+#include "functions.h"
 
 /**
  * BlstTsAddon is the main entry point for the library. It is responsible
