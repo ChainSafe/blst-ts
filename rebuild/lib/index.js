@@ -9,9 +9,21 @@ bindings.verify = function verify(msg, pk, sig) {
   return bindings.aggregateVerify([msg], [pk], sig);
 };
 
+bindings.asyncVerify = function asyncVerify(msg, pk, sig) {
+  return bindings.asyncAggregateVerify([msg], [pk], sig);
+};
+
 bindings.fastAggregateVerify = function fastAggregateVerify(msg, pks, sig) {
   try {
     return bindings.aggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
+  } catch {
+    return false;
+  }
+};
+
+bindings.asyncFastAggregateVerify = function asyncFastAggregateVerify(msg, pks, sig) {
+  try {
+    return bindings.asyncAggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
   } catch {
     return false;
   }

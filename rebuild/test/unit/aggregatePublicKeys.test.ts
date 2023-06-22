@@ -6,7 +6,7 @@ describe("Aggregate Public Keys", () => {
   const sets = makeNapiTestSets(10);
   const keys = sets.map(({publicKey}) => publicKey);
 
-  describe("aggregatePublicKeysSync()", () => {
+  describe("aggregatePublicKeys()", () => {
     it("should return the promise of a PublicKey", () => {
       const agg = aggregatePublicKeys(keys);
       expect(agg).to.be.instanceOf(PublicKey);

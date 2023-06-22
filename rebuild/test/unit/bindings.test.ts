@@ -11,9 +11,13 @@ describe("bindings", () => {
       "aggregatePublicKeys",
       "aggregateSignatures",
       "verify",
+      "asyncVerify",
       "fastAggregateVerify",
+      "asyncFastAggregateVerify",
       "aggregateVerify",
+      "asyncAggregateVerify",
       "verifyMultipleAggregateSignatures",
+      "asyncVerifyMultipleAggregateSignatures",
     ];
     const expectedClasses = ["PublicKey", "SecretKey", "Signature"];
     const expectedConstants = ["CoordType", "BLST_CONSTANTS"];
