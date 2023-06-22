@@ -57,7 +57,12 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
 
     // If `info` string is passed use it otherwise use default without. Is
     // optional parameter from blst library.
-    if (info[1].IsString()) {
+    if (!info[1].IsUndefined()) {
+        if (!info[1].IsString()) {
+            Napi::TypeError::New(env, "info must be a string")
+                .ThrowAsJavaScriptException();
+            return env.Undefined();
+        }
         sk->_key->keygen(
             ikm.Data(),
             ikm.ByteLength(),
@@ -81,11 +86,11 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
-    if (sk_bytes.ByteLength() != BLST_TS_SECRET_KEY_LENGTH) {
-        std::ostringstream msg;
-        msg << "skBytes must be " << BLST_TS_SECRET_KEY_LENGTH << " bytes";
-        Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
-        return env.Undefined();
+    std::string err_out{"skBytes"};
+    if (!is_valid_length(
+            err_out, sk_bytes.ByteLength(), BLST_TS_SECRET_KEY_LENGTH)) {
+        Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
+        return scope.Escape(env.Undefined());
     }
 
     BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)

@@ -1,15 +1,27 @@
 import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils";
 
 export const invalidInputs: [string, any][] = [
-  ["numbers", 2],
-  ["strings", "hello world"],
-  ["objects", {testing: 123}],
-  ["arrays", ["foo"]],
+  ["boolean", true],
+  ["number", 2],
+  ["bigint", BigInt("2")],
+  ["symbol", Symbol("foo")],
   ["null", null],
   ["undefined", undefined],
-  ["Symbol", Symbol.for("baz")],
-  ["Proxy", new Proxy({test: "yo"}, {})],
+  ["object", {foo: "bar"}],
+  ["proxy", new Proxy({foo: "bar"}, {})],
+  ["date", new Date("1982-03-24T16:00:00-06:00")],
+  [
+    "function",
+    function () {
+      /* no-op */
+    },
+  ],
+  ["NaN", NaN],
+  ["promise", Promise.resolve()],
   ["Uint16Array", new Uint16Array()],
+  ["Uint32Array", new Uint32Array()],
+  ["Map", new Map()],
+  ["Set", new Set()],
 ];
 
 export const KEY_MATERIAL = getFilledUint8(32, "123");

@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {PublicKey, SecretKey, Signature} from "../../lib";
-import {KEY_MATERIAL, SECRET_KEY_BYTES} from "../__fixtures__";
+import {PublicKey, SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
+import {KEY_MATERIAL, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__";
 import {expectEqualHex, expectNotEqualHex} from "../utils";
 
 describe("SecretKey", () => {
@@ -15,15 +15,7 @@ describe("SecretKey", () => {
       });
     });
     describe("SecretKey.fromKeygen", () => {
-      it("should create an instance", () => {
-        expect(SecretKey.fromKeygen(KEY_MATERIAL)).to.be.instanceOf(SecretKey);
-      });
-      it("should throw incorrect length ikm", () => {
-        expect(() => SecretKey.fromKeygen(Buffer.alloc(12, "*"))).to.throw(
-          "ikm must be greater than or equal to 32 bytes"
-        );
-      });
-      it("should take valid UintArray8 for ikm", () => {
+      it("should create an instance from Uint8Array ikm", () => {
         expect(SecretKey.fromKeygen(KEY_MATERIAL)).to.be.instanceOf(SecretKey);
       });
       it("should create the same key from the same ikm", () => {
@@ -32,10 +24,39 @@ describe("SecretKey", () => {
       it("should take a second 'info' argument", () => {
         expectNotEqualHex(SecretKey.fromKeygen(KEY_MATERIAL, "some fancy info"), SecretKey.fromKeygen(KEY_MATERIAL));
       });
+      describe("argument validation", () => {
+        for (const [type, invalid] of invalidInputs) {
+          it(`should throw on invalid ikm type: ${type}`, () => {
+            expect(() => SecretKey.fromKeygen(invalid)).to.throw("ikm must be a BlstBuffer");
+          });
+          if (type !== "undefined" && type !== "string") {
+            it(`should throw on invalid info type: ${type}`, () => {
+              expect(() => SecretKey.fromKeygen(KEY_MATERIAL, invalid)).to.throw("info must be a string");
+            });
+          }
+        }
+        it("should throw incorrect length ikm", () => {
+          expect(() => SecretKey.fromKeygen(Buffer.alloc(12, "*"))).to.throw(
+            "ikm must be greater than or equal to 32 bytes"
+          );
+        });
+      });
     });
     describe("SecretKey.deserialize", () => {
       it("should create an instance", () => {
         expect(SecretKey.deserialize(SECRET_KEY_BYTES)).to.be.instanceOf(SecretKey);
+      });
+      describe("argument validation", () => {
+        for (const [type, invalid] of invalidInputs) {
+          it(`should throw on invalid ikm type: ${type}`, () => {
+            expect(() => SecretKey.deserialize(invalid)).to.throw("skBytes must be a BlstBuffer");
+          });
+        }
+        it("should throw incorrect length ikm", () => {
+          expect(() => SecretKey.deserialize(Buffer.alloc(12, "*"))).to.throw(
+            "skBytes is 12 bytes, but must be 32 bytes long"
+          );
+        });
       });
     });
   });
@@ -46,10 +67,10 @@ describe("SecretKey", () => {
     });
     describe("serialize", () => {
       it("should serialize the key to Uint8Array", () => {
-        expect(key.serialize()).to.be.instanceof(Uint8Array);
+        expect(key.serialize()).to.be.instanceof(Buffer);
       });
-      it("should be 32 bytes long", () => {
-        expect(key.serialize().length).to.equal(32);
+      it("should be the correct length", () => {
+        expect(key.serialize().length).to.equal(BLST_CONSTANTS.SECRET_KEY_LENGTH);
       });
       it("should reconstruct the same key", () => {
         const serialized = key.serialize();
@@ -57,14 +78,17 @@ describe("SecretKey", () => {
       });
     });
     describe("toPublicKey", () => {
-      it("should create a PublicKey", () => {
-        expect(SecretKey.fromKeygen(KEY_MATERIAL).toPublicKey()).to.be.instanceOf(PublicKey);
+      it("should create a valid PublicKey", () => {
+        const pk = key.toPublicKey();
+        expect(pk).to.be.instanceOf(PublicKey);
+        expect(pk.keyValidate()).to.be.undefined;
       });
     });
     describe("sign", () => {
-      it("should create a Signature", () => {
+      it("should create a valid Signature", () => {
         const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
         expect(sig).to.be.instanceOf(Signature);
+        expect(sig.sigValidate()).to.be.undefined;
       });
     });
   });
