@@ -53,18 +53,19 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
         Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
         return env.Undefined();
     }
-
     BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
+
     // If `info` string is passed use it otherwise use default without. Is
     // optional parameter from blst library.
     if (info[1].IsString()) {
         sk->_key->keygen(
             ikm.Data(),
-            BLST_TS_SECRET_KEY_LENGTH,
+            ikm.ByteLength(),
             info[1].As<Napi::String>().Utf8Value());
     } else {
-        sk->_key->keygen(ikm.Data(), BLST_TS_SECRET_KEY_LENGTH);
+        sk->_key->keygen(ikm.Data(), ikm.ByteLength());
     }
+
     // Check if key is zero and set flag if so. Several specs depend on this
     // check
     blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];
@@ -90,6 +91,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // Deserialize key
     sk->_key->from_bendian(sk_bytes.Data());
+
     // Check if key is zero and set flag if so. Several specs depend on this
     // check
     blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];
@@ -139,6 +141,7 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
 
 Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE
+
     // Check for zero key and throw error to meet spec requirements
     if (_is_zero_key) {
         Napi::TypeError::New(env, "cannot sign message with zero private key")

@@ -164,7 +164,6 @@ using std::endl;
         return scope.Escape(env.Undefined());                                  \
     }
 
-class BlstTsAddon;
 
 typedef enum { Affine, Jacobian } CoordType;
 
@@ -202,6 +201,7 @@ bool is_valid_length(
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
+class BlstTsAddon;
 #include "functions.h"
 #include "public_key.h"
 #include "secret_key.h"
@@ -253,12 +253,6 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      * Uses the same openssl method as node to generate random bytes
      */
     bool GetRandomBytes(blst::byte *ikm, size_t length);
-
-   private:
-    /**
-     *  Creates a constants objects to pass to JS
-     */
-    Napi::Object BuildJsConstants(Napi::Env &env);
 };
 
 #endif /* BLST_TS_ADDON_H__ */
