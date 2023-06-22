@@ -43,9 +43,7 @@ void SecretKey::Init(
 }
 
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
-
+    BLST_TS_FUNCTION_PREAMBLE
     Napi::Value ikm_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(ikm_value, ikm, "ikm")
     if (ikm.ByteLength() < BLST_TS_SECRET_KEY_LENGTH) {
@@ -79,9 +77,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
-
+    BLST_TS_FUNCTION_PREAMBLE
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
     if (sk_bytes.ByteLength() != BLST_TS_SECRET_KEY_LENGTH) {
@@ -132,9 +128,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
-
+    BLST_TS_FUNCTION_PREAMBLE
     BLST_TS_CREAT_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
     // Derive public key from secret key. Default to jacobian coordinates
     pk->_jacobian.reset(new blst::P1{*_key});
@@ -144,9 +138,7 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
-
+    BLST_TS_FUNCTION_PREAMBLE
     // Check for zero key and throw error to meet spec requirements
     if (_is_zero_key) {
         Napi::TypeError::New(env, "cannot sign message with zero private key")

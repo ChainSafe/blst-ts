@@ -18,6 +18,11 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
+#define BLST_TS_FUNCTION_PREAMBLE \
+    Napi::Env env = info.Env();\
+    Napi::EscapableHandleScope scope(env);\
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();\
+
 #define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
@@ -34,8 +39,6 @@ using std::endl;
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
 #define BLST_TS_CREAT_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)    \
-    /* Get module for globals and run constructor */                           \
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();                  \
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped = module->_##obj_name##_ctr.New(                      \
         {Napi::External<void>::New(env, nullptr)});                            \
