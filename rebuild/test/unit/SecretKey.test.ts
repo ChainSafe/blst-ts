@@ -83,6 +83,12 @@ describe("SecretKey", () => {
         expect(pk).to.be.instanceOf(PublicKey);
         expect(pk.keyValidate()).to.be.undefined;
       });
+      it("should return the same PublicKey from the same SecretKey", () => {
+        const sk = SecretKey.deserialize(SECRET_KEY_BYTES);
+        const pk1 = sk.toPublicKey();
+        const pk2 = sk.toPublicKey();
+        expectEqualHex(pk1, pk2);
+      });
     });
     describe("sign", () => {
       it("should create a valid Signature", () => {

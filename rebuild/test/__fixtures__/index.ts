@@ -45,6 +45,9 @@ export const badPublicKey = Uint8Array.from(
   ])
 );
 
+export const G1_POINT_AT_INFINITY =
+  "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 export const validSignature = {
   keygen: "********************************", // Must be at least 32 bytes
   uncompressed: fromHex(
