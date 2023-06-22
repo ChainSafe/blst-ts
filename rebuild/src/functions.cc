@@ -456,87 +456,91 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
           m_is_invalid{false},
           m_result{false} {
         Napi::Env env = Env();
-        if (!info[0].IsArray()) {
-            Napi::TypeError::New(env, "msgs must be of type BlstBuffer[]")
-                .ThrowAsJavaScriptException();
-            m_has_error = true;
-            return;
-        }
-        Napi::Array msgs_array = info[0].As<Napi::Array>();
-        uint32_t msgs_array_length = msgs_array.Length();
-
-        if (!info[1].IsArray()) {
-            Napi::TypeError::New(
-                env, "publicKeys must be of type PublicKeyArg[]")
-                .ThrowAsJavaScriptException();
-            m_has_error = true;
-            return;
-        }
-        Napi::Array pk_array = info[1].As<Napi::Array>();
-        uint32_t pk_array_length = pk_array.Length();
-
-        BLST_TS_ASYNC_UNWRAP_POINT_ARG(
-            info[2],
-            m_sig.uptr_sig,
-            m_sig.sig,
-            signature,
-            Signature,
-            SIGNATURE,
-            "Signature",
-            blst::P2_Affine,
-            2,
-            CoordType::Affine,
-            _affine)
-
-        if (pk_array_length == 0) {
-            if (m_sig.sig->is_inf()) {
-                m_is_invalid = true;
+        try {
+            if (!info[0].IsArray()) {
+                Napi::TypeError::New(env, "msgs must be of type BlstBuffer[]")
+                    .ThrowAsJavaScriptException();
+                m_has_error = true;
                 return;
             }
-            Napi::TypeError::New(env, "publicKeys must have length > 0")
-                .ThrowAsJavaScriptException();
-            m_has_error = true;
-            return;
-        }
-        if (msgs_array_length == 0) {
-            Napi::TypeError::New(env, "msgs must have length > 0")
-                .ThrowAsJavaScriptException();
-            m_has_error = true;
-            return;
-        }
-        if (msgs_array_length != pk_array_length) {
-            Napi::TypeError::New(
-                env, "msgs and publicKeys must be the same length")
-                .ThrowAsJavaScriptException();
-            m_has_error = true;
-            return;
-        }
+            Napi::Array msgs_array = info[0].As<Napi::Array>();
+            uint32_t msgs_array_length = msgs_array.Length();
 
-        m_sets.reserve(pk_array_length);
-        for (uint32_t i = 0; i < pk_array_length; i++) {
-            m_sets.push_back(
-                {nullptr,
-                 std::unique_ptr<blst::P1_Affine>(nullptr),
-                 nullptr,
-                 0});
-
-            Napi::Value msg_value = msgs_array[i];
-            BLST_TS_ASYNC_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
-            m_sets[i].msg = msg.Data();
-            m_sets[i].msg_len = msg.ByteLength();
+            if (!info[1].IsArray()) {
+                Napi::TypeError::New(
+                    env, "publicKeys must be of type PublicKeyArg[]")
+                    .ThrowAsJavaScriptException();
+                m_has_error = true;
+                return;
+            }
+            Napi::Array pk_array = info[1].As<Napi::Array>();
+            uint32_t pk_array_length = pk_array.Length();
 
             BLST_TS_ASYNC_UNWRAP_POINT_ARG(
-                static_cast<Napi::Value>(pk_array[i]),
-                m_sets[i].uptr_pk,
-                m_sets[i].pk,
-                public_key,
-                PublicKey,
-                PUBLIC_KEY,
-                "PublicKey",
-                blst::P1_Affine,
-                1,
+                info[2],
+                m_sig.uptr_sig,
+                m_sig.sig,
+                signature,
+                Signature,
+                SIGNATURE,
+                "Signature",
+                blst::P2_Affine,
+                2,
                 CoordType::Affine,
                 _affine)
+
+            if (pk_array_length == 0) {
+                if (m_sig.sig->is_inf()) {
+                    m_is_invalid = true;
+                    return;
+                }
+                Napi::TypeError::New(env, "publicKeys must have length > 0")
+                    .ThrowAsJavaScriptException();
+                m_has_error = true;
+                return;
+            }
+            if (msgs_array_length == 0) {
+                Napi::TypeError::New(env, "msgs must have length > 0")
+                    .ThrowAsJavaScriptException();
+                m_has_error = true;
+                return;
+            }
+            if (msgs_array_length != pk_array_length) {
+                Napi::TypeError::New(
+                    env, "msgs and publicKeys must be the same length")
+                    .ThrowAsJavaScriptException();
+                m_has_error = true;
+                return;
+            }
+
+            m_sets.reserve(pk_array_length);
+            for (uint32_t i = 0; i < pk_array_length; i++) {
+                m_sets.push_back(
+                    {nullptr,
+                     std::unique_ptr<blst::P1_Affine>(nullptr),
+                     nullptr,
+                     0});
+
+                Napi::Value msg_value = msgs_array[i];
+                BLST_TS_ASYNC_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+                m_sets[i].msg = msg.Data();
+                m_sets[i].msg_len = msg.ByteLength();
+
+                BLST_TS_ASYNC_UNWRAP_POINT_ARG(
+                    static_cast<Napi::Value>(pk_array[i]),
+                    m_sets[i].uptr_pk,
+                    m_sets[i].pk,
+                    public_key,
+                    PublicKey,
+                    PUBLIC_KEY,
+                    "PublicKey",
+                    blst::P1_Affine,
+                    1,
+                    CoordType::Affine,
+                    _affine)
+            }
+        } catch (const blst::BLST_ERROR &err) {
+            m_is_invalid = true;
         }
     }
 

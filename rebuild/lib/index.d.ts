@@ -92,6 +92,18 @@ export class Signature implements Serializable {
 export function aggregatePublicKeys(keys: PublicKeyArg[]): PublicKey;
 export function aggregateSignatures(signatures: SignatureArg[]): Signature;
 export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
+export function asyncVerify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
 export function fastAggregateVerify(msg: BlstBuffer, publicKey: PublicKeyArg[], signature: SignatureArg): boolean;
+export function asyncFastAggregateVerify(
+  msg: BlstBuffer,
+  publicKey: PublicKeyArg[],
+  signature: SignatureArg
+): Promise<boolean>;
 export function aggregateVerify(msg: BlstBuffer[], publicKey: PublicKeyArg[], signature: SignatureArg): boolean;
+export function asyncAggregateVerify(
+  msg: BlstBuffer[],
+  publicKey: PublicKeyArg[],
+  signature: SignatureArg
+): Promise<boolean>;
 export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean;
+export function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
