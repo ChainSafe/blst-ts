@@ -130,7 +130,8 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     std::unique_ptr<blst::Pairing> ctx{new blst::Pairing(true, module->_dst)};
     for (uint32_t i = 0; i < pk_array_length; i++) {
         blst::P1_Affine pk;
-        BLST_TS_UNWRAP_UINT_8_ARRAY(msgs_array, i, msg, "msg")
+        Napi::Value msg_value = msgs_array[i];
+        BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
         BLST_TS_UNWRAP_PUBLIC_KEY_ARG(
             static_cast<Napi::Value>(pk_array[i]), pk, CoordType::Affine)
 
@@ -150,7 +151,15 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     return Napi::Boolean::New(env, ctx->finalverify(&pt));
 }
 
+typedef struct {
+    blst::P1_Affine *pk;
+    blst::P2_Affine *sig;
+    uint8_t *msg;
+    size_t msg_len;
+} SignatureSet;
+
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
+    
     return info.Env().Undefined();
 }
 }  // anonymous namespace

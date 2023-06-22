@@ -46,7 +46,8 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(info, 0, ikm, "ikm")
+    Napi::Value ikm_value = info[0];
+    BLST_TS_UNWRAP_UINT_8_ARRAY(ikm_value, ikm, "ikm")
     if (ikm.ByteLength() < BLST_TS_SECRET_KEY_LENGTH) {
         std::ostringstream msg;
         msg << "ikm must be greater than or equal to "
@@ -81,7 +82,8 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(info, 0, sk_bytes, "skBytes")
+    Napi::Value sk_bytes_value = info[0];
+    BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
     if (sk_bytes.ByteLength() != BLST_TS_SECRET_KEY_LENGTH) {
         std::ostringstream msg;
         msg << "skBytes must be " << BLST_TS_SECRET_KEY_LENGTH << " bytes";
@@ -152,7 +154,8 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
         return scope.Escape(info.Env().Undefined());
     }
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(info, 0, msg, "msg")
+    Napi::Value msg_value = info[0];
+    BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
     BLST_TS_CREAT_UNWRAPPED_OBJECT(signature, Signature, sig)
     // Default to jacobian coordinates
     sig->_jacobian.reset(new blst::P2);

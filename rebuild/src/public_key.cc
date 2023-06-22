@@ -39,7 +39,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(info, 0, pk_bytes, "pkBytes")
+    Napi::Value pk_bytes_value = info[0];
+    BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_value, pk_bytes, "pkBytes")
     std::string err_out{"pkBytes"};
     if (!is_valid_length(
             err_out,

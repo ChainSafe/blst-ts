@@ -18,20 +18,20 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(source, arg_num, c_name, js_name)          \
-    Napi::Value c_name##_value = source[arg_num];                              \
-    if (!c_name##_value.IsTypedArray()) {                                      \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
+    if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
         return env.Undefined();                                                \
     }                                                                          \
-    Napi::TypedArray c_name##_array = c_name##_value.As<Napi::TypedArray>();   \
-    if (c_name##_array.TypedArrayType() != napi_uint8_array) {                 \
+    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
+    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
         return env.Undefined();                                                \
     }                                                                          \
-    Napi::Uint8Array c_name = c_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
+    Napi::Uint8Array arr_name =                                                \
+        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
 #define BLST_TS_CREAT_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)    \
     /* Get module for globals and run constructor */                           \
