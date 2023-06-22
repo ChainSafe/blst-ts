@@ -23,9 +23,21 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
 
     for (uint32_t i = 0; i < length; i++) {
         Napi::Value val = arr[i];
-        blst::P1 pk;
+        std::unique_ptr<blst::P1> p_pk{nullptr};
+        blst::P1 *pk = nullptr;
         try {
-            BLST_TS_UNWRAP_PUBLIC_KEY_ARG(val, pk, CoordType::Jacobian)
+            BLST_TS_UNWRAP_POINT_ARG(
+                val,
+                p_pk,
+                pk,
+                public_key,
+                PublicKey,
+                PUBLIC_KEY,
+                "PublicKey",
+                blst::P1,
+                1,
+                CoordType::Jacobian,
+                _jacobian)
             // TODO: Do we still need to check for 0x40 key?
             // if (key_bytes[0] & 0x40 &&
             //     this->IsZeroBytes(
@@ -36,7 +48,7 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
             //     _is_valid = false;
             //     return;
             // }
-            result->_jacobian->add(pk);
+            result->_jacobian->add(*pk);
         } catch (const blst::BLST_ERROR &err) {
             std::ostringstream msg;
             msg << "BLST_ERROR::" << module->GetBlstErrorString(err)
@@ -71,10 +83,22 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
 
     for (uint32_t i = 0; i < arr.Length(); i++) {
         Napi::Value val = arr[i];
-        blst::P2 sig;
+        std::unique_ptr<blst::P2> p_sig{nullptr};
+        blst::P2 *sig = nullptr;
         try {
-            BLST_TS_UNWRAP_SIGNATURE_ARG(val, sig, CoordType::Jacobian)
-            result->_jacobian->add(sig);
+            BLST_TS_UNWRAP_POINT_ARG(
+                val,
+                p_sig,
+                sig,
+                signature,
+                Signature,
+                SIGNATURE,
+                "Signature",
+                blst::P2,
+                2,
+                CoordType::Jacobian,
+                _jacobian)
+            result->_jacobian->add(*sig);
         } catch (const blst::BLST_ERROR &err) {
             std::ostringstream msg;
             msg << "BLST_ERROR::" << module->GetBlstErrorString(err)
@@ -105,11 +129,24 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     }
     Napi::Array pk_array = info[1].As<Napi::Array>();
     uint32_t pk_array_length = pk_array.Length();
-    blst::P2_Affine sig;
-    BLST_TS_UNWRAP_SIGNATURE_ARG(info[2], sig, CoordType::Affine)
+    blst::P2_Affine *sig;
+    std::unique_ptr<blst::P2_Affine> p_sig{nullptr};
+
+    BLST_TS_UNWRAP_POINT_ARG(
+        info[2],
+        p_sig,
+        sig,
+        signature,
+        Signature,
+        SIGNATURE,
+        "Signature",
+        blst::P2_Affine,
+        2,
+        CoordType::Affine,
+        _affine)
 
     if (pk_array_length == 0) {
-        if (sig.is_inf()) {
+        if (sig->is_inf()) {
             return scope.Escape(Napi::Boolean::New(env, false));
         }
         Napi::TypeError::New(env, "publicKeys must have length > 0")
@@ -129,14 +166,24 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
 
     std::unique_ptr<blst::Pairing> ctx{new blst::Pairing(true, module->_dst)};
     for (uint32_t i = 0; i < pk_array_length; i++) {
-        blst::P1_Affine pk;
         Napi::Value msg_value = msgs_array[i];
         BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
-        BLST_TS_UNWRAP_PUBLIC_KEY_ARG(
-            static_cast<Napi::Value>(pk_array[i]), pk, CoordType::Affine)
-
+        blst::P1_Affine *pk;
+        std::unique_ptr<blst::P1_Affine> p_pk{nullptr};
+        BLST_TS_UNWRAP_POINT_ARG(
+            static_cast<Napi::Value>(pk_array[i]),
+            p_pk,
+            pk,
+            public_key,
+            PublicKey,
+            PUBLIC_KEY,
+            "PublicKey",
+            blst::P1_Affine,
+            1,
+            CoordType::Affine,
+            _affine)
         blst::BLST_ERROR err =
-            ctx->aggregate(&pk, &sig, msg.Data(), msg.ByteLength());
+            ctx->aggregate(pk, sig, msg.Data(), msg.ByteLength());
         if (err != blst::BLST_ERROR::BLST_SUCCESS) {
             std::ostringstream msg;
             msg << "BLST_ERROR::" << module->GetBlstErrorString(err)
@@ -147,7 +194,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     }
 
     ctx->commit();
-    blst::PT pt{sig};
+    blst::PT pt{*sig};
     return Napi::Boolean::New(env, ctx->finalverify(&pt));
 }
 
@@ -159,7 +206,53 @@ typedef struct {
 } SignatureSet;
 
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
-    
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
+
+    if (!info[0].IsArray()) {
+        Napi::TypeError::New(
+            env, "signatureSets must be of type SignatureSet[]")
+            .ThrowAsJavaScriptException();
+        return scope.Escape(env.Undefined());
+    }
+    Napi::Array sets_array = info[1].As<Napi::Array>();
+    uint32_t sets_array_length = sets_array.Length();
+    std::unique_ptr<blst::Pairing> ctx{new blst::Pairing(true, module->_dst)};
+
+    for (uint32_t i = 0; i < sets_array_length; i++) {
+        blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
+        module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH);
+        blst::P1_Affine pk;
+        blst::P2_Affine sig;
+
+        Napi::Value set_value = sets_array[i];
+        if (!set_value.IsObject()) {
+            Napi::TypeError::New(env, "signatureSet must be an object")
+                .ThrowAsJavaScriptException();
+            return scope.Escape(env.Undefined());
+        }
+        Napi::Object set = set_value.As<Napi::Object>();
+        Napi::Value msg_value = set.Get("msg");
+        BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+        // Napi::Value pk_value = set.Get("publicKey");
+
+        blst::BLST_ERROR err = ctx->mul_n_aggregate(
+            &pk,
+            &sig,
+            rand,
+            BLST_TS_RANDOM_BYTES_LENGTH,
+            msg.Data(),
+            msg.ByteLength());
+        if (err != blst::BLST_ERROR::BLST_SUCCESS) {
+            std::ostringstream msg;
+            msg << module->GetBlstErrorString(err)
+                << ": Invalid batch aggregation at index " << i;
+            Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+            return scope.Escape(env.Undefined());
+        }
+    }
+
     return info.Env().Undefined();
 }
 }  // anonymous namespace
