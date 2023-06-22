@@ -83,7 +83,8 @@ using std::endl;
     blst_point,                                                                \
     group_num,                                                                 \
     coord_type,                                                                \
-    key_member)                                                                \
+    member_name)                                                               \
+    /* Arg is a serialized point */                                            \
     if (val_name.IsTypedArray()) {                                             \
         Napi::TypedArray untyped = val_name.As<Napi::TypedArray>();            \
         if (untyped.TypedArrayType() != napi_uint8_array) {                    \
@@ -104,23 +105,30 @@ using std::endl;
         }                                                                      \
         if (strcmp(js_class_name, "PublicKey") == 0 &&                         \
             is_zero_bytes(typed.Data(), 0, typed.ByteLength())) {              \
-            Napi::TypeError::New(                                              \
-                env, js_class_name "Arg must not be zero key")                 \
+            Napi::TypeError::New(env, "PublicKeyArg must not be zero key")     \
                 .ThrowAsJavaScriptException();                                 \
             return scope.Escape(env.Undefined());                              \
         }                                                                      \
-        /* this can potentially throw. macro must be in try/catch */           \
+        /** this can potentially throw. macro must be in try/catch. Leave in   \
+         *  outer context so that loop counter can be used in error message    \
+         *                                                                     \
+         *  Only need to create this ptr to hold the blst::point and make sure \
+         *  its deleted. Deserialized objects have a member smart pointer      \
+         */                                                                    \
         unique_ptr.reset(new blst_point{typed.Data(), typed.ByteLength()});    \
         raw_pointer = unique_ptr.get();                                        \
+                                                                               \
+        /* Arg is a deserialized point */                                      \
     } else if (val_name.IsObject()) {                                          \
         Napi::Object wrapped = val_name.As<Napi::Object>();                    \
-        if (!wrapped.CheckTypeTag(&module->_public_key_tag)) {                 \
+        if (!wrapped.CheckTypeTag(&module->_##instance_name##_tag)) {          \
             Napi::TypeError::New(                                              \
                 env, js_class_name " must be a " js_class_name "Arg")          \
                 .ThrowAsJavaScriptException();                                 \
             return scope.Escape(env.Undefined());                              \
         }                                                                      \
         class_name *instance_name = class_name::Unwrap(wrapped);               \
+        /* Check that the required point type has been created */              \
         if (coord_type == CoordType::Jacobian) {                               \
             if (!instance_name->_has_jacobian) {                               \
                 if (!instance_name->_has_affine) {                             \
@@ -144,7 +152,8 @@ using std::endl;
                 instance_name->_has_affine = true;                             \
             }                                                                  \
         }                                                                      \
-        raw_pointer = instance_name->key_member.get();                         \
+        /* copy raw_pointer to context outside of macro */                     \
+        raw_pointer = instance_name->member_name.get();                        \
     } else {                                                                   \
         Napi::TypeError::New(                                                  \
             env, js_class_name " must be a " js_class_name "Arg")              \
