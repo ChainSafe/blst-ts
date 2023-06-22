@@ -115,6 +115,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
+
     if (!info[0].IsArray()) {
         Napi::TypeError::New(env, "msgs must be of type BlstBuffer[]")
             .ThrowAsJavaScriptException();
@@ -122,6 +123,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     }
     Napi::Array msgs_array = info[1].As<Napi::Array>();
     uint32_t msgs_array_length = msgs_array.Length();
+
     if (!info[1].IsArray()) {
         Napi::TypeError::New(env, "publicKeys must be of type PublicKeyArg[]")
             .ThrowAsJavaScriptException();
@@ -129,9 +131,9 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     }
     Napi::Array pk_array = info[1].As<Napi::Array>();
     uint32_t pk_array_length = pk_array.Length();
+
     blst::P2_Affine *sig;
     std::unique_ptr<blst::P2_Affine> p_sig{nullptr};
-
     BLST_TS_UNWRAP_POINT_ARG(
         info[2],
         p_sig,
@@ -223,8 +225,6 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
     for (uint32_t i = 0; i < sets_array_length; i++) {
         blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
         module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH);
-        blst::P1_Affine pk;
-        blst::P2_Affine sig;
 
         Napi::Value set_value = sets_array[i];
         if (!set_value.IsObject()) {
@@ -233,13 +233,43 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             return scope.Escape(env.Undefined());
         }
         Napi::Object set = set_value.As<Napi::Object>();
+
         Napi::Value msg_value = set.Get("msg");
         BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
-        // Napi::Value pk_value = set.Get("publicKey");
+
+        blst::P1_Affine *pk;
+        std::unique_ptr<blst::P1_Affine> p_pk{nullptr};
+        BLST_TS_UNWRAP_POINT_ARG(
+            static_cast<Napi::Value>(set.Get("publicKey")),
+            p_pk,
+            pk,
+            public_key,
+            PublicKey,
+            PUBLIC_KEY,
+            "PublicKey",
+            blst::P1_Affine,
+            1,
+            CoordType::Affine,
+            _affine)
+
+        blst::P2_Affine *sig;
+        std::unique_ptr<blst::P2_Affine> p_sig{nullptr};
+        BLST_TS_UNWRAP_POINT_ARG(
+            static_cast<Napi::Value>(set.Get("signature")),
+            p_sig,
+            sig,
+            signature,
+            Signature,
+            SIGNATURE,
+            "Signature",
+            blst::P2_Affine,
+            2,
+            CoordType::Affine,
+            _affine)
 
         blst::BLST_ERROR err = ctx->mul_n_aggregate(
-            &pk,
-            &sig,
+            pk,
+            sig,
             rand,
             BLST_TS_RANDOM_BYTES_LENGTH,
             msg.Data(),
@@ -252,8 +282,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             return scope.Escape(env.Undefined());
         }
     }
-
-    return info.Env().Undefined();
+    ctx->commit();
+    return Napi::Boolean::New(env, ctx->finalverify());
 }
 }  // anonymous namespace
 
