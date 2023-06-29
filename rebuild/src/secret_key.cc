@@ -72,6 +72,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     } else {
         sk->_key->keygen(ikm.Data(), ikm.ByteLength());
     }
+
     // Check if key is zero and set flag if so. Several specs depend on this
     // check
     blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];
@@ -99,6 +100,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_CREATE_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // Deserialize key
     sk->_key->from_bendian(sk_bytes.Data());
+
     // Check if key is zero and set flag if so. Several specs depend on this
     // check
     blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];

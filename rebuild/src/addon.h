@@ -38,7 +38,7 @@ using std::endl;
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define BLST_TS_CREATE_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)    \
+#define BLST_TS_CREATE_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)   \
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped = module->_##obj_name##_ctr.New(                      \
         {Napi::External<void>::New(env, nullptr)});                            \
