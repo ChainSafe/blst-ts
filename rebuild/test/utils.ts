@@ -1,10 +1,7 @@
 import {expect} from "chai";
 import {randomFillSync} from "crypto";
 import * as bindings from "../lib";
-import {BufferLike, BindingsWithTestRig, TestSyncOrAsync, TestPhase, TestCase, NapiTestSet} from "./types";
-
-const {runTest} = bindings as unknown as BindingsWithTestRig;
-export {runTest, TestSyncOrAsync, TestPhase, TestCase};
+import {BufferLike, NapiTestSet} from "./types";
 
 function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;

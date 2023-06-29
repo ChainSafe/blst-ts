@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {Signature} from "../../lib";
-import {expectEqualHex} from "../utils";
-import {validSignature} from "../__fixtures__";
+import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib";
+import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
+import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
 
 describe("Signature", () => {
   it("should exist", () => {
@@ -13,14 +13,6 @@ describe("Signature", () => {
       expect(() => new (Signature as any)()).to.throw("Signature constructor is private");
     });
     describe("Signature.deserialize()", () => {
-      it("should only take Uint8Array or Buffer", () => {
-        expect(() => Signature.deserialize(3 as any)).to.throw("sigBytes must be a BlstBuffer");
-      });
-      it("should only take 48 or 96 bytes", () => {
-        expect(() => Signature.deserialize(Buffer.alloc(32, "*"))).to.throw(
-          "sigBytes is 32 bytes, but must be 96 or 192 bytes long"
-        );
-      });
       it("should take uncompressed byte arrays", () => {
         expectEqualHex(
           Signature.deserialize(validSignature.uncompressed).serialize(false),
@@ -28,19 +20,46 @@ describe("Signature", () => {
         );
       });
       it("should take compressed byte arrays", () => {
-        expectEqualHex(Signature.deserialize(validSignature.compressed).serialize(), validSignature.compressed);
+        expectEqualHex(Signature.deserialize(validSignature.compressed), validSignature.compressed);
+      });
+      it("should create jacobian or affine points", () => {
+        expectEqualHex(Signature.deserialize(validSignature.compressed, CoordType.affine), validSignature.compressed);
+        expectEqualHex(Signature.deserialize(validSignature.compressed, CoordType.jacobian), validSignature.compressed);
+      });
+      describe("argument validation", () => {
+        for (const [type, invalid] of invalidInputs) {
+          it(`should throw on invalid pkBytes type: ${type}`, () => {
+            expect(() => Signature.deserialize(invalid)).to.throw("sigBytes must be a BlstBuffer");
+          });
+        }
+        it("should only take 96 or 192 bytes", () => {
+          expect(() => Signature.deserialize(Buffer.alloc(32, "*"))).to.throw(
+            "sigBytes is 32 bytes, but must be 96 or 192 bytes long"
+          );
+        });
+      });
+      it("should throw on invalid key", () => {
+        expect(() => Signature.deserialize(sullyUint8Array(validSignature.compressed))).to.throw("BLST_BAD_ENCODING");
       });
     });
     describe("methods", () => {
       describe("serialize", () => {
-        it("should return uncompressed", () => {
-          expectEqualHex(
-            Signature.deserialize(validSignature.uncompressed).serialize(false),
-            validSignature.uncompressed
-          );
+        const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
+        it("should default to compressed serialization", () => {
+          expectEqualHex(sig, sig.serialize(true));
+          expectNotEqualHex(sig, sig.serialize(false));
         });
-        it("should return compressed", () => {
-          expectEqualHex(Signature.deserialize(validSignature.compressed).serialize(), validSignature.compressed);
+        it("should serialize compressed to the correct length", () => {
+          expect(sig.serialize(true)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_COMPRESSED);
+        });
+        it("should serialize uncompressed to the correct length", () => {
+          expect(sig.serialize(false)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_UNCOMPRESSED);
+        });
+        it("should serialize affine and jacobian points to the same value", () => {
+          const jacobian = Signature.deserialize(sig.serialize(), CoordType.jacobian);
+          const affine = Signature.deserialize(sig.serialize(), CoordType.affine);
+          expectEqualHex(jacobian.serialize(true), affine.serialize(true));
+          expectEqualHex(jacobian.serialize(false), affine.serialize(false));
         });
       });
       describe("sigValidate()", () => {
