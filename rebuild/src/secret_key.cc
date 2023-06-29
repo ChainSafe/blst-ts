@@ -56,7 +56,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // If `info` string is passed use it otherwise use default without. Is
     // optional parameter from blst library.
     if (!info[1].IsUndefined()) {
@@ -96,7 +96,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(secret_key, SecretKey, sk)
     // Deserialize key
     sk->_key->from_bendian(sk_bytes.Data());
     // Check if key is zero and set flag if so. Several specs depend on this
@@ -139,7 +139,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE
 
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
     // Derive public key from secret key. Default to jacobian coordinates
     pk->_jacobian.reset(new blst::P1{*_key});
     pk->_has_jacobian = true;
@@ -160,7 +160,7 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
     Napi::Value msg_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(
         msg_value, msg, "msg", scope.Escape(env.Undefined()))
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(signature, Signature, sig)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(signature, Signature, sig)
     // Default to jacobian coordinates
     sig->_jacobian.reset(new blst::P2);
     sig->_has_jacobian = true;

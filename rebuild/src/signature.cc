@@ -51,7 +51,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(signature, Signature, sig)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(signature, Signature, sig)
     // default to jacobian for now
     sig->_has_jacobian = true;
 

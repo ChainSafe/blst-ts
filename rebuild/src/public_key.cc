@@ -51,7 +51,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREAT_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
+    BLST_TS_CREATE_UNWRAPPED_OBJECT(public_key, PublicKey, pk)
     // default to jacobian
     pk->_has_jacobian = true;
 
