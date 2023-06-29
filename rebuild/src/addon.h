@@ -18,24 +18,27 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(arg_num, c_name, js_name)                  \
-    Napi::Value c_name##_value = info[arg_num];                                \
-    if (!c_name##_value.IsTypedArray()) {                                      \
+#define BLST_TS_FUNCTION_PREAMBLE                                              \
+    Napi::Env env = info.Env();                                                \
+    Napi::EscapableHandleScope scope(env);                                     \
+    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
+
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
+    if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
+        return ret_val;                                                        \
     }                                                                          \
-    Napi::TypedArray c_name##_array = c_name##_value.As<Napi::TypedArray>();   \
-    if (c_name##_array.TypedArrayType() != napi_uint8_array) {                 \
+    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
+    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
+        return ret_val;                                                        \
     }                                                                          \
-    Napi::Uint8Array c_name = c_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
+    Napi::Uint8Array arr_name =                                                \
+        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
 #define BLST_TS_CREAT_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)    \
-    /* Get module for globals and run constructor */                           \
-    BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();                  \
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped = module->_##obj_name##_ctr.New(                      \
         {Napi::External<void>::New(env, nullptr)});                            \
@@ -113,7 +116,6 @@ bool is_valid_length(
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
-// #include "functions.h"
 
 /**
  * BlstTsAddon is the main entry point for the library. It is responsible

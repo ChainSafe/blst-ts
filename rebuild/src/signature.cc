@@ -36,10 +36,11 @@ void Signature::Init(
 }
 
 Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
-    Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
+    BLST_TS_FUNCTION_PREAMBLE
+    Napi::Value sig_bytes_value = info[0];
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(0, sig_bytes, "sigBytes")
+    BLST_TS_UNWRAP_UINT_8_ARRAY(
+        sig_bytes_value, sig_bytes, "sigBytes", scope.Escape(env.Undefined()))
     std::string err_out{"sigBytes"};
     if (!is_valid_length(
             err_out,
