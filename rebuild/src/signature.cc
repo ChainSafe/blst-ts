@@ -1,4 +1,4 @@
-#include "addon.h"
+#include "signature.h"
 
 void Signature::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {

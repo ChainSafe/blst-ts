@@ -1,4 +1,4 @@
-#include "addon.h"
+#include "secret_key.h"
 
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {

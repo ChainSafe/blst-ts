@@ -1,4 +1,4 @@
-#include "addon.h"
+#include "public_key.h"
 
 void PublicKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
