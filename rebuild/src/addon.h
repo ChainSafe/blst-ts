@@ -158,12 +158,6 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      * Converts a blst error to an error string
      */
     std::string GetBlstErrorString(const blst::BLST_ERROR &err);
-
-   private:
-    /**
-     *  Creates a constants objects to pass to JS
-     */
-    Napi::Object BuildJsConstants(Napi::Env &env);
 };
 
 #endif /* BLST_TS_ADDON_H__ */
