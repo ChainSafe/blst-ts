@@ -28,30 +28,17 @@ using std::endl;
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
+        return ret_val;                                                        \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
     if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
         Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
-    }                                                                          \
-    Napi::Uint8Array arr_name =                                                \
-        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
-
-#define BLST_TS_ASYNC_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
-    if (!value_name.IsTypedArray()) {                                          \
-        SetError(js_name " must be a BlstBuffer");                             \
-        return;                                                                \
-    }                                                                          \
-    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
-    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
-        SetError(js_name " must be a BlstBuffer");                             \
-        return;                                                                \
+        return ret_val;                                                        \
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();

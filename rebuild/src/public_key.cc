@@ -38,7 +38,7 @@ void PublicKey::Init(
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE
     Napi::Value pk_bytes_value = info[0];
-    BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_value, pk_bytes, "pkBytes")
+    BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_value, pk_bytes, "pkBytes", scope.Escape(env.Undefined()))
     std::string err_out{"pkBytes"};
     if (!is_valid_length(
             err_out,

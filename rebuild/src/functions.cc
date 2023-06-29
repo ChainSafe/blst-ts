@@ -160,7 +160,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
 
         for (uint32_t i = 0; i < pk_array_length; i++) {
             Napi::Value msg_value = msgs_array[i];
-            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", scope.Escape(env.Undefined()))
             PointerGroup<blst::P1_Affine> pk_ptr_group;
             if (unwrap_point_arg(
                     pk_ptr_group,
@@ -224,7 +224,7 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             Napi::Object set = set_value.As<Napi::Object>();
 
             Napi::Value msg_value = set.Get("msg");
-            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", scope.Escape(env.Undefined()))
 
             PointerGroup<blst::P1_Affine> pk_ptr_group;
             if (unwrap_point_arg(
@@ -312,7 +312,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 Napi::Object set = set_value.As<Napi::Object>();
 
                 Napi::Value msg_value = set.Get("msg");
-                BLST_TS_ASYNC_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+                BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", )
 
                 m_sets.push_back(
                     {PointerGroup<blst::P1_Affine>(),
@@ -481,7 +481,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                 m_sets.push_back({PointerGroup<blst::P1_Affine>(), nullptr, 0});
 
                 Napi::Value msg_value = msgs_array[i];
-                BLST_TS_ASYNC_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
+                BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", )
                 m_sets[i].msg = msg.Data();
                 m_sets[i].msg_len = msg.ByteLength();
 
