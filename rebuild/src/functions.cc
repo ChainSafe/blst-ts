@@ -160,7 +160,8 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
 
         for (uint32_t i = 0; i < pk_array_length; i++) {
             Napi::Value msg_value = msgs_array[i];
-            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", scope.Escape(env.Undefined()))
+            BLST_TS_UNWRAP_UINT_8_ARRAY(
+                msg_value, msg, "msg", scope.Escape(env.Undefined()))
             PointerGroup<blst::P1_Affine> pk_ptr_group;
             if (unwrap_point_arg(
                     pk_ptr_group,
@@ -224,7 +225,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             Napi::Object set = set_value.As<Napi::Object>();
 
             Napi::Value msg_value = set.Get("msg");
-            BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg", scope.Escape(env.Undefined()))
+            BLST_TS_UNWRAP_UINT_8_ARRAY(
+                msg_value, msg, "msg", scope.Escape(env.Undefined()))
 
             PointerGroup<blst::P1_Affine> pk_ptr_group;
             if (unwrap_point_arg(
@@ -396,6 +398,7 @@ Napi::Value AsyncVerifyMultipleAggregateSignatures(
     VerifyMultipleAggregateSignaturesWorker *worker =
         new VerifyMultipleAggregateSignaturesWorker(info);
     if (worker->m_has_error) {
+        delete worker;
         return info.Env().Undefined();
     }
     worker->Queue();
@@ -548,6 +551,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
 Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info) {
     AggregateVerifyWorker *worker = new AggregateVerifyWorker(info);
     if (worker->m_has_error) {
+        delete worker;
         return info.Env().Undefined();
     }
     worker->Queue();
