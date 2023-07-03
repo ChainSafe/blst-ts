@@ -1,7 +1,6 @@
 import {expect} from "chai";
 import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../lib";
 import {makeNapiTestSets} from "../utils";
-import {invalidInputs, validSignatureSet} from "../__fixtures__";
 
 // describe("SignatureSet", () => {
 //   it("should only accept a valid SignatureSet object", () => {
