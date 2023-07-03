@@ -5,3 +5,4 @@ AllowAllParametersOfDeclarationOnNextLine: True
 AlignEscapedNewlines: Right
 BinPackArguments: False
 BinPackParameters: False
+InsertNewlineAtEOF: True
