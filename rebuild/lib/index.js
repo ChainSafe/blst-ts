@@ -14,19 +14,11 @@ bindings.asyncVerify = function asyncVerify(msg, pk, sig) {
 };
 
 bindings.fastAggregateVerify = function fastAggregateVerify(msg, pks, sig) {
-  try {
-    return bindings.aggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
-  } catch {
-    return false;
-  }
+  return bindings.aggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
 };
 
 bindings.asyncFastAggregateVerify = function asyncFastAggregateVerify(msg, pks, sig) {
-  try {
-    return bindings.asyncAggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
-  } catch {
-    return false;
-  }
+  return bindings.asyncAggregateVerify([msg], [bindings.aggregatePublicKeys(pks)], sig);
 };
 
 bindings.CoordType = {
