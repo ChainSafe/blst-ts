@@ -7,7 +7,6 @@ function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;
   if (bytes instanceof Buffer) return bytes.toString("hex");
   if (bytes instanceof Uint8Array) return Buffer.from(bytes).toString("hex");
-  if (typeof bytes.serialize === "function") return Buffer.from(bytes.serialize()).toString("hex");
   throw Error("toHexString only accepts BufferLike types");
 }
 

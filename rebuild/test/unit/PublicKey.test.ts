@@ -27,11 +27,17 @@ describe("PublicKey", () => {
         );
       });
       it("should take compressed byte arrays", () => {
-        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed), validPublicKey.compressed);
+        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed).serialize(), validPublicKey.compressed);
       });
       it("should create jacobian or affine points", () => {
-        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed, CoordType.affine), validPublicKey.compressed);
-        expectEqualHex(PublicKey.deserialize(validPublicKey.compressed, CoordType.jacobian), validPublicKey.compressed);
+        expectEqualHex(
+          PublicKey.deserialize(validPublicKey.compressed, CoordType.affine).serialize(),
+          validPublicKey.compressed
+        );
+        expectEqualHex(
+          PublicKey.deserialize(validPublicKey.compressed, CoordType.jacobian).serialize(),
+          validPublicKey.compressed
+        );
       });
       describe("argument validation", () => {
         for (const [type, invalid] of invalidInputs) {
@@ -55,8 +61,8 @@ describe("PublicKey", () => {
       const sk = SecretKey.deserialize(SECRET_KEY_BYTES);
       const pk = sk.toPublicKey();
       it("should default to compressed serialization", () => {
-        expectEqualHex(pk, pk.serialize(true));
-        expectNotEqualHex(pk, pk.serialize(false));
+        expectEqualHex(pk.serialize(), pk.serialize(true));
+        expectNotEqualHex(pk.serialize(), pk.serialize(false));
       });
       it("should serialize compressed to the correct length", () => {
         expect(pk.serialize(true)).to.have.lengthOf(BLST_CONSTANTS.PUBLIC_KEY_LENGTH_COMPRESSED);
