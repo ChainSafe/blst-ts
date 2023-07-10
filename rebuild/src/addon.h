@@ -38,14 +38,15 @@ using std::endl;
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define BLST_TS_CREATE_UNWRAPPED_OBJECT(obj_name, class_name, instance_name)   \
+#define BLST_TS_CREATE_JHEAP_OBJECT(                                           \
+    wrapped_name, obj_name, class_name, instance_name)                         \
     /* Allocate object in javascript heap */                                   \
-    Napi::Object wrapped = module->_##obj_name##_ctr.New(                      \
+    Napi::Object wrapped_name = module->_##obj_name##_ctr.New(                 \
         {Napi::External<void>::New(env, nullptr)});                            \
     /* Setup object correctly.  Start with type tagging wrapper class. */      \
-    wrapped.TypeTag(&module->_##obj_name##_tag);                               \
+    wrapped_name.TypeTag(&module->_##obj_name##_tag);                          \
     /* Unwrap object to get native instance */                                 \
-    class_name *instance_name = class_name::Unwrap(wrapped);
+    class_name *instance_name = class_name::Unwrap(wrapped_name);
 
 #define BLST_TS_SERIALIZE_POINT(macro_name, class_name)                        \
     Napi::Env env = info.Env();                                                \

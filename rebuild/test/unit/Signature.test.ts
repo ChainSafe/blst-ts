@@ -20,11 +20,17 @@ describe("Signature", () => {
         );
       });
       it("should take compressed byte arrays", () => {
-        expectEqualHex(Signature.deserialize(validSignature.compressed), validSignature.compressed);
+        expectEqualHex(Signature.deserialize(validSignature.compressed).serialize(), validSignature.compressed);
       });
       it("should create jacobian or affine points", () => {
-        expectEqualHex(Signature.deserialize(validSignature.compressed, CoordType.affine), validSignature.compressed);
-        expectEqualHex(Signature.deserialize(validSignature.compressed, CoordType.jacobian), validSignature.compressed);
+        expectEqualHex(
+          Signature.deserialize(validSignature.compressed, CoordType.affine).serialize(),
+          validSignature.compressed
+        );
+        expectEqualHex(
+          Signature.deserialize(validSignature.compressed, CoordType.jacobian).serialize(),
+          validSignature.compressed
+        );
       });
       describe("argument validation", () => {
         for (const [type, invalid] of invalidInputs) {
@@ -46,8 +52,8 @@ describe("Signature", () => {
       describe("serialize", () => {
         const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
         it("should default to compressed serialization", () => {
-          expectEqualHex(sig, sig.serialize(true));
-          expectNotEqualHex(sig, sig.serialize(false));
+          expectEqualHex(sig.serialize(), sig.serialize(true));
+          expectNotEqualHex(sig.serialize(), sig.serialize(false));
         });
         it("should serialize compressed to the correct length", () => {
           expect(sig.serialize(true)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_COMPRESSED);

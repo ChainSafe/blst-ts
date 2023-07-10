@@ -19,10 +19,13 @@ describe("SecretKey", () => {
         expect(SecretKey.fromKeygen(KEY_MATERIAL)).to.be.instanceOf(SecretKey);
       });
       it("should create the same key from the same ikm", () => {
-        expectEqualHex(SecretKey.fromKeygen(KEY_MATERIAL), SecretKey.fromKeygen(KEY_MATERIAL));
+        expectEqualHex(SecretKey.fromKeygen(KEY_MATERIAL).serialize(), SecretKey.fromKeygen(KEY_MATERIAL).serialize());
       });
       it("should take a second 'info' argument", () => {
-        expectNotEqualHex(SecretKey.fromKeygen(KEY_MATERIAL, "some fancy info"), SecretKey.fromKeygen(KEY_MATERIAL));
+        expectNotEqualHex(
+          SecretKey.fromKeygen(KEY_MATERIAL, "some fancy info").serialize(),
+          SecretKey.fromKeygen(KEY_MATERIAL).serialize()
+        );
       });
       describe("argument validation", () => {
         for (const [type, invalid] of invalidInputs) {
@@ -74,7 +77,7 @@ describe("SecretKey", () => {
       });
       it("should reconstruct the same key", () => {
         const serialized = key.serialize();
-        expectEqualHex(SecretKey.deserialize(serialized), serialized);
+        expectEqualHex(SecretKey.deserialize(serialized).serialize(), serialized);
       });
     });
     describe("toPublicKey", () => {
@@ -85,8 +88,8 @@ describe("SecretKey", () => {
       });
       it("should return the same PublicKey from the same SecretKey", () => {
         const sk = SecretKey.deserialize(SECRET_KEY_BYTES);
-        const pk1 = sk.toPublicKey();
-        const pk2 = sk.toPublicKey();
+        const pk1 = sk.toPublicKey().serialize();
+        const pk2 = sk.toPublicKey().serialize();
         expectEqualHex(pk1, pk2);
       });
     });

@@ -1,6 +1,6 @@
 import * as bindings from "../lib";
 
-export type BufferLike = string | bindings.BlstBuffer | bindings.Serializable;
+export type BufferLike = string | bindings.BlstBuffer;
 
 export interface NapiTestSet {
   msg: Uint8Array;
