@@ -101,7 +101,7 @@ Signature::Signature(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return;
     }
-};
+}
 
 Napi::Value Signature::Serialize(const Napi::CallbackInfo &info){
     BLST_TS_SERIALIZE_POINT(SIGNATURE, "Signature")}
