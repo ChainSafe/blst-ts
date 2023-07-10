@@ -54,6 +54,8 @@ describe("PublicKey", () => {
       it("should throw on invalid key", () => {
         expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw("BLST_BAD_ENCODING");
         expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_BAD_ENCODING");
+      });
+      it("should throw on zero key", () => {
         expect(() => PublicKey.deserialize(Buffer.from(G1_POINT_AT_INFINITY))).to.throw("BLST_BAD_ENCODING");
       });
     });
