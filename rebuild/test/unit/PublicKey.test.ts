@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {BLST_CONSTANTS, CoordType, PublicKey, SecretKey} from "../../lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, badPublicKey} from "../__fixtures__";
+import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, badPublicKey, G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("PublicKey", () => {
   it("should exist", () => {
@@ -54,6 +54,7 @@ describe("PublicKey", () => {
       it("should throw on invalid key", () => {
         expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw("BLST_BAD_ENCODING");
         expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_BAD_ENCODING");
+        expect(() => PublicKey.deserialize(Buffer.from(G1_POINT_AT_INFINITY))).to.throw("BLST_BAD_ENCODING");
       });
     });
   });
@@ -83,18 +84,6 @@ describe("PublicKey", () => {
         const pk = PublicKey.deserialize(validPublicKey.uncompressed);
         expect(pk.keyValidate()).to.be.undefined;
       });
-      // TODO: I cannot create an invalid public key to test with
-      // it("should throw for invalid", () => {
-      //   const pkSeed = PublicKey.deserialize(validPublicKey.uncompressed);
-      //   const pk = PublicKey.deserialize(
-      //     Uint8Array.from([...pkSeed.serialize(false).subarray(0, 94), ...Buffer.from("a1")])
-      //   );
-      //   expect(() => pk.keyValidate()).to.throw("blst::BLST_POINT_NOT_IN_GROUP");
-      // });
-      // it("should throw on invalid public key", () => {
-      //   const pk = PublicKey.deserialize(Buffer.from(G1_POINT_AT_INFINITY));
-      //   expect(() => pk.keyValidate()).to.throw("BLST_POINT_NOT_ON_CURVE");
-      // });
     });
   });
 });
