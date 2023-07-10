@@ -16,7 +16,7 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREATE_UNWRAPPED_OBJECT(public_key, PublicKey, result)
+    BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, result)
     result->_has_jacobian = true;
     result->_jacobian.reset(new blst::P1);
 
@@ -71,7 +71,7 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
         return scope.Escape(env.Undefined());
     }
 
-    BLST_TS_CREATE_UNWRAPPED_OBJECT(signature, Signature, result)
+    BLST_TS_CREATE_JHEAP_OBJECT(wrapped, signature, Signature, result)
     result->_has_jacobian = true;
     result->_jacobian.reset(new blst::P2);
 
