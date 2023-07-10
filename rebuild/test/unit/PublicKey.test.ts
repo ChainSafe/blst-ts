@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {BLST_CONSTANTS, CoordType, PublicKey, SecretKey} from "../../lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {validPublicKey, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__";
+import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, badPublicKey} from "../__fixtures__";
 
 describe("PublicKey", () => {
   it("should exist", () => {
@@ -53,6 +53,7 @@ describe("PublicKey", () => {
       });
       it("should throw on invalid key", () => {
         expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw("BLST_BAD_ENCODING");
+        expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_BAD_ENCODING");
       });
     });
   });
