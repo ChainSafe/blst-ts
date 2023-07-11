@@ -58,6 +58,13 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     Signature::Init(env, exports, this);
     Functions::Init(env, exports);
     env.SetInstanceData(this);
+
+    // Check that openssl PRNG is seeded
+    blst::byte seed{0};
+    if (!this->GetRandomBytes(&seed, 0)) {
+        Napi::Error::New(env, "Error seeding pseudo-random number generator")
+            .ThrowAsJavaScriptException();
+    }
 }
 
 std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err) {

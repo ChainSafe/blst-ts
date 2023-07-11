@@ -162,6 +162,12 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
 
     /**
      * Uses the same openssl method as node to generate random bytes
+     * 
+     * Either succeeds with exactly |length| bytes of cryptographically
+     * strong pseudo-random data, or fails. This function may block.
+     * Don't assume anything about the contents of |buffer| on error.
+     * As a special case, |length == 0| can be used to check if the
+     * GetRandomBytes is properly seeded without consuming entropy.
      */
     bool GetRandomBytes(blst::byte *ikm, size_t length);
 };

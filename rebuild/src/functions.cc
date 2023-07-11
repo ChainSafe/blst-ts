@@ -214,7 +214,11 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
 
         for (uint32_t i = 0; i < sets_array_length; i++) {
             blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
-            module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH);
+            if (!module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
+                Napi::Error::New(env, "Failed to generate random bytes")
+                    .ThrowAsJavaScriptException();
+                return scope.Escape(env.Undefined());
+            }
 
             Napi::Value set_value = sets_array[i];
             if (!set_value.IsObject()) {
@@ -360,7 +364,11 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
     void Execute() {
         for (uint32_t i = 0; i < m_sets.size(); i++) {
             blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
-            m_module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH);
+            if (!m_module->GetRandomBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
+                SetError("Failed to generate random bytes");
+                return;
+            }
+
             blst::BLST_ERROR err = m_ctx->mul_n_aggregate(
                 m_sets[i].pk_ptr_group.raw_pointer,
                 m_sets[i].sig_ptr_group.raw_pointer,
