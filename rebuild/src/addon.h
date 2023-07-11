@@ -166,6 +166,8 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      * Either succeeds with exactly |length| bytes of cryptographically
      * strong pseudo-random data, or fails. This function may block.
      * Don't assume anything about the contents of |buffer| on error.
+     * MUST check the return value for success!
+     * 
      * As a special case, |length == 0| can be used to check if the
      * GetRandomBytes is properly seeded without consuming entropy.
      */
