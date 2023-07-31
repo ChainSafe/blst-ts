@@ -1,15 +1,19 @@
 {
-  "name": "@chainsafe/blst",
+  "name": "@chainsafe/blst-ts",
   "version": "1.0.0",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "gypfile": true,
+  "private": false,
   "files": [
+    "binding.gyp",
     "deps",
     "lib",
     "src"
   ],
   "scripts": {
+    "preinstall": "mkdir -p deps && cp -r ../blst deps",
     "clean": "npm run clean:dist; npm run clean:build",
     "clean:dist": "rm -rf dist",
     "clean:build": "node-gyp clean && node-gyp configure",
@@ -17,9 +21,13 @@
     "build": "node-gyp build",
     "build:clean": "npm run clean && npm run build",
     "build:debug": "node-gyp build --debug",
-    "lint": "eslint --color --ext .ts lib/ test/",
+    "lint:ts": "eslint --color --ext .ts lib/ test/",
+    "lint:c": "clang-format -i ./src/*",
+    "lint": "npm run lint:c && npm run lint:ts",
     "test": "yarn test:unit",
-    "test:unit": "mocha test/unit/**/*.test.ts"
+    "test:unit": "mocha test/unit/**/*.test.ts",
+    "test:spec": "mocha 'test/spec/**/*.test.ts'",
+    "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
   },
   "repository": {
     "type": "git",
@@ -45,13 +53,15 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.2.0",
+    "node-fetch": "2.6.6",
     "prettier": "^2.8.7",
+    "tar": "^6.1.14",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "node-addon-api": "^6.0.0",
+    "node-addon-api": "^6.1.0",
     "node-gyp": "^9.3.1"
   }
 }
