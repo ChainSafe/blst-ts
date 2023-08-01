@@ -16,6 +16,10 @@ export function normalizeHex(bytes: BufferLike): string {
   return "0x" + hex;
 }
 
+export function isEqualBytes(value: BufferLike, expected: BufferLike): boolean {
+  return normalizeHex(value) === normalizeHex(expected);
+}
+
 export function expectEqualHex(value: BufferLike, expected: BufferLike): void {
   expect(normalizeHex(value)).to.equal(normalizeHex(expected));
 }

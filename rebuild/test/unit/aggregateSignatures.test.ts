@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import {aggregateSignatures, Signature} from "../../lib";
-import {makeNapiTestSets} from "../utils";
+import {isEqualBytes, makeNapiTestSets} from "../utils";
+import {badSignature} from "../__fixtures__";
 
 describe("Aggregate Signatures", () => {
   const sets = makeNapiTestSets(10);
@@ -15,10 +16,15 @@ describe("Aggregate Signatures", () => {
       const agg = aggregateSignatures(signatures);
       expect(agg.sigValidate()).to.be.undefined;
     });
+    it("should throw for invalid Signature", () => {
+      expect(() => aggregateSignatures(signatures.concat(badSignature as unknown as Signature))).to.throw(
+        "BLST_ERROR::BLST_BAD_ENCODING - Invalid signature at index 10"
+      );
+    });
     it("should return a key that is not in the keys array", () => {
       const agg = aggregateSignatures(signatures);
       const serialized = agg.serialize();
-      expect(signatures.find((key) => key.serialize() == serialized)).to.be.undefined;
+      expect(signatures.find((sig) => isEqualBytes(sig.serialize(), serialized))).to.be.undefined;
     });
   });
 });
