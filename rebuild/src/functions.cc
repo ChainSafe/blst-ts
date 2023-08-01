@@ -2,7 +2,7 @@
 
 namespace {
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     if (!info[0].IsArray()) {
         Napi::TypeError::New(env, "publicKeys must be of type PublicKeyArg[]")
             .ThrowAsJavaScriptException();
@@ -57,7 +57,7 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     if (!info[0].IsArray()) {
         Napi::TypeError::New(env, "signatures must be of type SignatureArg[]")
             .ThrowAsJavaScriptException();

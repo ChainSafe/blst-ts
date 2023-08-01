@@ -43,7 +43,7 @@ void SecretKey::Init(
 }
 
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value ikm_value = info[0];
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(
@@ -85,7 +85,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(
@@ -139,7 +139,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, pk)
     // Derive public key from secret key. Default to jacobian coordinates
@@ -150,7 +150,7 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     // Check for zero key and throw error to meet spec requirements
     if (_is_zero_key) {

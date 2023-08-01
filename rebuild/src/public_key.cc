@@ -36,7 +36,7 @@ void PublicKey::Init(
 }
 
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value pk_bytes_value = info[0];
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(

@@ -18,7 +18,7 @@ using std::endl;
 
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
-#define BLST_TS_FUNCTION_PREAMBLE                                              \
+#define BLST_TS_FUNCTION_PREAMBLE(info, env, module)                           \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
@@ -162,12 +162,12 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
 
     /**
      * Uses the same openssl method as node to generate random bytes
-     * 
+     *
      * Either succeeds with exactly |length| bytes of cryptographically
      * strong pseudo-random data, or fails. This function may block.
      * Don't assume anything about the contents of |buffer| on error.
      * MUST check the return value for success!
-     * 
+     *
      * As a special case, |length == 0| can be used to check if the
      * GetRandomBytes is properly seeded without consuming entropy.
      */
