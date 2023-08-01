@@ -43,6 +43,8 @@ bool unwrap_point_arg(
     const Napi::Value &value,
     const std::string &js_class_name,
     CoordType coord_type) {
+    bool is_public_key_arg = js_class_name[0] == 'P';
+
     if (value.IsTypedArray()) {
         Napi::TypedArray untyped = value.As<Napi::TypedArray>();
         if (untyped.TypedArrayType() != napi_uint8_array) {
@@ -53,7 +55,7 @@ bool unwrap_point_arg(
         Napi::Uint8Array typed = untyped.As<Napi::Uint8Array>();
 
         std::string err_out{js_class_name};
-        if (strcmp(js_class_name.c_str(), "PublicKeyArg") == 0) {
+        if (is_public_key_arg) {
             if (!is_valid_length(
                     err_out,
                     typed.ByteLength(),
@@ -77,6 +79,7 @@ bool unwrap_point_arg(
                 return true;
             }
         }
+
         ptr_group.unique_ptr.reset(new T{typed.Data(), typed.ByteLength()});
         ptr_group.raw_pointer = ptr_group.unique_ptr.get();
 
@@ -84,7 +87,7 @@ bool unwrap_point_arg(
     } else if (value.IsObject()) {
         Napi::Object wrapped = value.As<Napi::Object>();
 
-        if (strcmp(js_class_name.c_str(), "PublicKeyArg") == 0) {
+        if (is_public_key_arg) {
             if (!wrapped.CheckTypeTag(&module->_public_key_tag)) {
                 Napi::TypeError::New(env, "publicKey must be a PublicKeyArg")
                     .ThrowAsJavaScriptException();
@@ -118,6 +121,7 @@ bool unwrap_point_arg(
                 }
                 ptr_group.raw_pointer = (T *)pk->_affine.get();
             }
+
         } else {
             if (!wrapped.CheckTypeTag(&module->_signature_tag)) {
                 Napi::TypeError::New(env, "signature must be a SignatureArg")
@@ -154,7 +158,7 @@ bool unwrap_point_arg(
             }
         }
     } else {
-        std::string err = strcmp(js_class_name.c_str(), "PublicKeyArg") == 0
+        std::string err = is_public_key_arg
                               ? "publicKey must be a PublicKeyArg"
                               : "signature must be a SignatureArg";
         Napi::TypeError::New(env, err).ThrowAsJavaScriptException();
