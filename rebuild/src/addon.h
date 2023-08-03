@@ -25,13 +25,15 @@ using std::endl;
 
 #define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
     if (!value_name.IsTypedArray()) {                                          \
-        Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
         return ret_val;                                                        \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
     if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
-        Napi::TypeError::New(env, js_name " must be a BlstBuffer")             \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
         return ret_val;                                                        \
     }                                                                          \
@@ -69,7 +71,9 @@ using std::endl;
                    : _affine->serialize(serialized.Data());                    \
     } else {                                                                   \
         Napi::Error::New(                                                      \
-            env, class_name " cannot be serialized. No point found!")          \
+            env,                                                               \
+            "BLST_ERROR: " class_name                                          \
+            " cannot be serialized. No point found!")                          \
             .ThrowAsJavaScriptException();                                     \
         return scope.Escape(env.Undefined());                                  \
     }                                                                          \
@@ -95,12 +99,13 @@ using std::endl;
         Napi::TypedArray untyped = val_name.As<Napi::TypedArray>();            \
         if (untyped.TypedArrayType() != napi_uint8_array) {                    \
             Napi::TypeError::New(                                              \
-                env, pascal_case_string "Arg must be a BlstBuffer")            \
+                env,                                                           \
+                "BLST_ERROR: " pascal_case_string "Arg must be a BlstBuffer")  \
                 .ThrowAsJavaScriptException();                                 \
             has_error = true;                                                  \
         }                                                                      \
         Napi::Uint8Array typed = untyped.As<Napi::Uint8Array>();               \
-        std::string err_out{pascal_case_string "Arg"};                         \
+        std::string err_out{"BLST_ERROR: " pascal_case_string "Arg"};          \
         if (!is_valid_length(                                                  \
                 err_out,                                                       \
                 typed.ByteLength(),                                            \
@@ -111,7 +116,8 @@ using std::endl;
         }                                                                      \
         if (pascal_case_string[0] == 'P' &&                                    \
             is_zero_bytes(typed.Data(), 0, typed.ByteLength())) {              \
-            Napi::TypeError::New(env, "PublicKeyArg must not be zero key")     \
+            Napi::TypeError::New(                                              \
+                env, "BLST_ERROR: PublicKeyArg must not be zero key")          \
                 .ThrowAsJavaScriptException();                                 \
             has_error = true;                                                  \
         }                                                                      \
@@ -131,7 +137,8 @@ using std::endl;
         if (!wrapped.CheckTypeTag(&module->_##snake_case_name##_tag)) {        \
             Napi::TypeError::New(                                              \
                 env,                                                           \
-                pascal_case_string " must be a " pascal_case_string "Arg")     \
+                "BLST_ERROR: " pascal_case_string                              \
+                " must be a " pascal_case_string "Arg")                        \
                 .ThrowAsJavaScriptException();                                 \
             has_error = true;                                                  \
         }                                                                      \
@@ -141,7 +148,8 @@ using std::endl;
             if (!snake_case_name->_has_jacobian) {                             \
                 if (!snake_case_name->_has_affine) {                           \
                     Napi::Error::New(                                          \
-                        env, pascal_case_string " not initialized")            \
+                        env,                                                   \
+                        "BLST_ERROR: " pascal_case_string " not initialized")  \
                         .ThrowAsJavaScriptException();                         \
                     has_error = true;                                          \
                 }                                                              \
@@ -153,7 +161,8 @@ using std::endl;
             if (!snake_case_name->_has_affine) {                               \
                 if (!snake_case_name->_has_jacobian) {                         \
                     Napi::Error::New(                                          \
-                        env, pascal_case_string " not initialized")            \
+                        env,                                                   \
+                        "BLST_ERROR: " pascal_case_string " not initialized")  \
                         .ThrowAsJavaScriptException();                         \
                     has_error = true;                                          \
                 }                                                              \
@@ -167,7 +176,9 @@ using std::endl;
         ptr_group.raw_pointer = snake_case_name->member_name.get();            \
     } else {                                                                   \
         Napi::TypeError::New(                                                  \
-            env, pascal_case_string " must be a " pascal_case_string "Arg")    \
+            env,                                                               \
+            "BLST_ERROR: " pascal_case_string " must be a " pascal_case_string \
+            "Arg")                                                             \
             .ThrowAsJavaScriptException();                                     \
         has_error = true;                                                      \
     }
@@ -210,10 +221,10 @@ bool is_valid_length(
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
+#include "functions.h"
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
-#include "functions.h"
 
 /**
  * BlstTsAddon is the main entry point for the library. It is responsible
