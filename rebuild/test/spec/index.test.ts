@@ -19,6 +19,8 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
   // fork = "phase0" | "altair"
   const testRootDirFork = path.join(testRootDirByFork, fork, "bls");
 
+  if (!fs.existsSync(testRootDirFork)) continue;
+
   for (const testType of fs.readdirSync(testRootDirFork)) {
     // testType = "eth_aggregate_pubkeys" | "fast_aggregate_verify" | ...
     const testTypeDir = path.join(testRootDirFork, testType);
@@ -103,8 +105,8 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.fromBytes(fromHex(hex))));
-  return toHex(agg.toBytes());
+  const agg = blst.aggregateSignatures(input.map((hex) => blst.Signature.deserialize(fromHex(hex))));
+  return toHex(agg.serialize());
 }
 
 /**
@@ -120,8 +122,8 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
   const {pubkeys, messages, signature} = input;
   return blst.aggregateVerify(
     messages.map(fromHex),
-    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-    blst.Signature.fromBytes(fromHex(signature))
+    pubkeys.map((hex) => blst.PublicKey.deserialize(fromHex(hex))),
+    blst.Signature.deserialize(fromHex(signature))
   );
 }
 
@@ -137,8 +139,8 @@ function eth_aggregate_pubkeys(input: string[]): string | null {
     if (pk === G1_POINT_AT_INFINITY) return null;
   }
 
-  const agg = blst.aggregatePubkeys(input.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))));
-  return toHex(agg.toBytes());
+  const agg = blst.aggregatePublicKeys(input.map((hex) => blst.PublicKey.deserialize(fromHex(hex))));
+  return toHex(agg.serialize());
 }
 
 /**
@@ -164,8 +166,8 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
 
   return blst.fastAggregateVerify(
     fromHex(message),
-    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-    blst.Signature.fromBytes(fromHex(signature))
+    pubkeys.map((hex) => blst.PublicKey.deserialize(fromHex(hex))),
+    blst.Signature.deserialize(fromHex(signature))
   );
 }
 
@@ -188,8 +190,8 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
 
   return blst.fastAggregateVerify(
     fromHex(message),
-    pubkeys.map((hex) => blst.PublicKey.fromBytes(fromHex(hex))),
-    blst.Signature.fromBytes(fromHex(signature))
+    pubkeys.map((hex) => blst.PublicKey.deserialize(fromHex(hex))),
+    blst.Signature.deserialize(fromHex(signature))
   );
 }
 
@@ -201,9 +203,9 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  */
 function sign(input: {privkey: string; message: string}): string | null {
   const {privkey, message} = input;
-  const sk = blst.SecretKey.fromBytes(fromHex(privkey));
+  const sk = blst.SecretKey.deserialize(fromHex(privkey));
   const signature = sk.sign(fromHex(message));
-  return toHex(signature.toBytes());
+  return toHex(signature.serialize());
 }
 
 /**
@@ -217,11 +219,11 @@ function verify(input: {pubkey: string; message: string; signature: string}): bo
   const {pubkey, message, signature} = input;
   return blst.verify(
     fromHex(message),
-    blst.PublicKey.fromBytes(fromHex(pubkey)),
-    blst.Signature.fromBytes(fromHex(signature))
+    blst.PublicKey.deserialize(fromHex(pubkey)),
+    blst.Signature.deserialize(fromHex(signature))
   );
 }
 
 function isBlstError(e: unknown): boolean {
-  return (e as Error).message.includes("BLST_ERROR") || e instanceof blst.ErrorBLST;
+  return (e as Error).message.includes("BLST_ERROR");
 }
