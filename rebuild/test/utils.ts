@@ -10,22 +10,22 @@ function toHexString(bytes: BufferLike): string {
   throw Error("toHexString only accepts BufferLike types");
 }
 
-export function normalizeHex(bytes: BufferLike): string {
+export function toHex(bytes: BufferLike): string {
   const hex = toHexString(bytes);
   if (hex.startsWith("0x")) return hex;
   return "0x" + hex;
 }
 
 export function isEqualBytes(value: BufferLike, expected: BufferLike): boolean {
-  return normalizeHex(value) === normalizeHex(expected);
+  return toHex(value) === toHex(expected);
 }
 
 export function expectEqualHex(value: BufferLike, expected: BufferLike): void {
-  expect(normalizeHex(value)).to.equal(normalizeHex(expected));
+  expect(toHex(value)).to.equal(toHex(expected));
 }
 
 export function expectNotEqualHex(value: BufferLike, expected: BufferLike): void {
-  expect(normalizeHex(value)).to.not.equal(normalizeHex(expected));
+  expect(toHex(value)).to.not.equal(toHex(expected));
 }
 
 export function fromHex(hexString: string): Uint8Array {
