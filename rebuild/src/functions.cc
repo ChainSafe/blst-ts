@@ -42,16 +42,6 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
             if (has_error) {
                 return scope.Escape(env.Undefined());
             }
-            // TODO: Do we still need to check for 0x40 key?
-            // if (key_bytes[0] & 0x40 &&
-            //     this->IsZeroBytes(
-            //         key_bytes,
-            //         1,
-            //         _public_keys[_public_keys.GetBadIndex()]
-            //             .GetBytesLength())) {
-            //     _is_valid = false;
-            //     return;
-            // }
             result->_jacobian->add(*ptr_group.raw_pointer);
         } catch (const blst::BLST_ERROR &err) {
             std::ostringstream msg;
