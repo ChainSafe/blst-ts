@@ -1,4 +1,4 @@
-import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils";
+import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils.js";
 
 export const invalidInputs: [string, any][] = [
   ["boolean", true],

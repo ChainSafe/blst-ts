@@ -1,4 +1,4 @@
-import * as bindings from "../lib";
+import * as bindings from "../lib/index.js";
 
 export type BufferLike = string | bindings.BlstBuffer;
 

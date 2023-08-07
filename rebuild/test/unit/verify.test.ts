@@ -6,9 +6,9 @@ import {
   asyncVerify,
   fastAggregateVerify,
   verify,
-} from "../../lib";
-import {sullyUint8Array, makeNapiTestSets} from "../utils";
-import {NapiTestSet} from "../types";
+} from "../../lib/index.js";
+import {sullyUint8Array, makeNapiTestSets} from "../utils.js";
+import {NapiTestSet} from "../types.js";
 
 describe("Verify", () => {
   let testSet: NapiTestSet;
@@ -37,10 +37,10 @@ describe("Verify", () => {
     });
     it("should default to Promise<false>", async () => {
       expect(await asyncVerify(sullyUint8Array(testSet.message), testSet.publicKey, testSet.signature)).to.be.false;
-      expect(await asyncVerify(testSet.message, sullyUint8Array(testSet.publicKey.serialize()), testSet.signature)).to.be
-        .false;
-      expect(await asyncVerify(testSet.message, testSet.publicKey, sullyUint8Array(testSet.signature.serialize()))).to.be
-        .false;
+      expect(await asyncVerify(testSet.message, sullyUint8Array(testSet.publicKey.serialize()), testSet.signature)).to
+        .be.false;
+      expect(await asyncVerify(testSet.message, testSet.publicKey, sullyUint8Array(testSet.signature.serialize()))).to
+        .be.false;
     });
     it("should return true for valid sets", async () => {
       expect(await asyncVerify(testSet.message, testSet.publicKey, testSet.signature)).to.be.true;
@@ -59,10 +59,10 @@ describe("Aggregate Verify", () => {
     });
     it("should default to false", () => {
       expect(aggregateVerify([sullyUint8Array(testSet.message)], [testSet.publicKey], testSet.signature)).to.be.false;
-      expect(aggregateVerify([testSet.message], [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)).to.be
-        .false;
-      expect(aggregateVerify([testSet.message], [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))).to.be
-        .false;
+      expect(aggregateVerify([testSet.message], [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)).to
+        .be.false;
+      expect(aggregateVerify([testSet.message], [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))).to
+        .be.false;
     });
     it("should return true for valid sets", () => {
       expect(aggregateVerify([testSet.message], [testSet.publicKey], testSet.signature)).to.be.true;
@@ -76,13 +76,21 @@ describe("Aggregate Verify", () => {
       expect(res).to.be.a("boolean");
     });
     it("should default to Promise<false>", async () => {
-      expect(await asyncAggregateVerify([sullyUint8Array(testSet.message)], [testSet.publicKey], testSet.signature)).to.be
-        .false;
+      expect(await asyncAggregateVerify([sullyUint8Array(testSet.message)], [testSet.publicKey], testSet.signature)).to
+        .be.false;
       expect(
-        await asyncAggregateVerify([testSet.message], [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)
+        await asyncAggregateVerify(
+          [testSet.message],
+          [sullyUint8Array(testSet.publicKey.serialize())],
+          testSet.signature
+        )
       ).to.be.false;
       expect(
-        await asyncAggregateVerify([testSet.message], [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))
+        await asyncAggregateVerify(
+          [testSet.message],
+          [testSet.publicKey],
+          sullyUint8Array(testSet.signature.serialize())
+        )
       ).to.be.false;
     });
     it("should return true for valid sets", async () => {
@@ -102,10 +110,10 @@ describe("Fast Aggregate Verify", () => {
     });
     it("should default to false", () => {
       expect(fastAggregateVerify(sullyUint8Array(testSet.message), [testSet.publicKey], testSet.signature)).to.be.false;
-      expect(fastAggregateVerify(testSet.message, [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)).to
-        .be.false;
-      expect(fastAggregateVerify(testSet.message, [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))).to
-        .be.false;
+      expect(fastAggregateVerify(testSet.message, [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature))
+        .to.be.false;
+      expect(fastAggregateVerify(testSet.message, [testSet.publicKey], sullyUint8Array(testSet.signature.serialize())))
+        .to.be.false;
     });
     it("should return true for valid sets", () => {
       expect(fastAggregateVerify(testSet.message, [testSet.publicKey], testSet.signature)).to.be.true;
@@ -119,13 +127,21 @@ describe("Fast Aggregate Verify", () => {
       expect(res).to.be.a("boolean");
     });
     it("should default to Promise<false>", async () => {
-      expect(await asyncFastAggregateVerify(sullyUint8Array(testSet.message), [testSet.publicKey], testSet.signature)).to.be
-        .false;
+      expect(await asyncFastAggregateVerify(sullyUint8Array(testSet.message), [testSet.publicKey], testSet.signature))
+        .to.be.false;
       expect(
-        await asyncFastAggregateVerify(testSet.message, [sullyUint8Array(testSet.publicKey.serialize())], testSet.signature)
+        await asyncFastAggregateVerify(
+          testSet.message,
+          [sullyUint8Array(testSet.publicKey.serialize())],
+          testSet.signature
+        )
       ).to.be.false;
       expect(
-        await asyncFastAggregateVerify(testSet.message, [testSet.publicKey], sullyUint8Array(testSet.signature.serialize()))
+        await asyncFastAggregateVerify(
+          testSet.message,
+          [testSet.publicKey],
+          sullyUint8Array(testSet.signature.serialize())
+        )
       ).to.be.false;
     });
     it("should return true for valid sets", async () => {

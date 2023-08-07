@@ -4,8 +4,12 @@ import path from "node:path";
 import {execSync} from "node:child_process";
 import tar from "tar";
 import fetch from "node-fetch";
-import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
-
+import {
+  SPEC_TEST_LOCATION,
+  SPEC_TEST_VERSION,
+  SPEC_TEST_REPO_URL,
+  SPEC_TEST_TO_DOWNLOAD,
+} from "./specTestVersioning.js";
 
 const specVersion = SPEC_TEST_VERSION;
 const outputDir = SPEC_TEST_LOCATION;
