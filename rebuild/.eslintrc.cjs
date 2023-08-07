@@ -11,8 +11,12 @@ module.exports = {
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 10,
+    ecmaVersion: 12,
     project: "./tsconfig.json",
+    sourceType: "module",
+    ecmaFeatures:{
+      modules: true
+    }
   },
   plugins: ["@typescript-eslint", "eslint-plugin-import", "eslint-plugin-node", "prettier"],
   extends: [
@@ -51,6 +55,7 @@ module.exports = {
     "@typescript-eslint/explicit-member-accessibility": ["error", {accessibility: "no-public"}],
     "@typescript-eslint/no-unsafe-call": "error",
     "@typescript-eslint/no-unsafe-return": "error",
+    "import/no-unresolved": "off",
     "import/no-extraneous-dependencies": [
       "error",
       {
@@ -79,6 +84,12 @@ module.exports = {
   },
   settings: {
     "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"],
+    'import/resolver': {
+      node: {
+        extensions: [".js", ".ts"],
+        moduleDirectory: ["lib/", "test/", "node_modules/"]
+      }
+    },
   },
   overrides: [
     {
