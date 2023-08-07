@@ -3,41 +3,78 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-const bindings = require("bindings")("blst_ts_addon");
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+const {default: getBindings} = await import("bindings");
+const bindings = getBindings("blst_ts_addon");
+const {
+  BLST_CONSTANTS,
+  SecretKey,
+  PublicKey,
+  Signature,
+  aggregatePublicKeys,
+  aggregateSignatures,
+  aggregateVerify,
+  verifyMultipleAggregateSignatures,
+  asyncAggregateVerify,
+  asyncVerifyMultipleAggregateSignatures,
+} = bindings;
 
-bindings.verify = function verify(msg, pk, sig) {
-  return bindings.aggregateVerify([msg], [pk], sig);
+SecretKey.prototype.toHex = function () {
+  return `0x${this.serialize().toString("hex")}`;
 };
 
-bindings.asyncVerify = function asyncVerify(msg, pk, sig) {
-  return bindings.asyncAggregateVerify([msg], [pk], sig);
+PublicKey.prototype.toHex = function (compress) {
+  return `0x${this.serialize(compress).toString("hex")}`;
 };
 
-bindings.fastAggregateVerify = function fastAggregateVerify(msg, pks, sig) {
+Signature.prototype.toHex = function (compress) {
+  return `0x${this.serialize(compress).toString("hex")}`;
+};
+
+export {
+  BLST_CONSTANTS,
+  SecretKey,
+  PublicKey,
+  Signature,
+  aggregatePublicKeys,
+  aggregateSignatures,
+  aggregateVerify,
+  verifyMultipleAggregateSignatures,
+  asyncAggregateVerify,
+  asyncVerifyMultipleAggregateSignatures,
+};
+
+export function verify(msg, pk, sig) {
+  return aggregateVerify([msg], [pk], sig);
+}
+
+export function asyncVerify(msg, pk, sig) {
+  return asyncAggregateVerify([msg], [pk], sig);
+}
+
+export function fastAggregateVerify(msg, pks, sig) {
   let key;
   try {
     // this throws for invalid key, catch and return false
-    key = bindings.aggregatePublicKeys(pks);
+    key = aggregatePublicKeys(pks);
   } catch {
     return false;
   }
-  return bindings.aggregateVerify([msg], [key], sig);
-};
+  return aggregateVerify([msg], [key], sig);
+}
 
-bindings.asyncFastAggregateVerify = function asyncFastAggregateVerify(msg, pks, sig) {
+export function asyncFastAggregateVerify(msg, pks, sig) {
   let key;
   try {
     // this throws for invalid key, catch and return false
-    key = bindings.aggregatePublicKeys(pks);
+    key = aggregatePublicKeys(pks);
   } catch {
     return false;
   }
-  return bindings.asyncAggregateVerify([msg], [key], sig);
-};
+  return asyncAggregateVerify([msg], [key], sig);
+}
 
-bindings.CoordType = {
+export const CoordType = {
   affine: 0,
   jacobian: 1,
 };
-
-module.exports = exports = bindings;
