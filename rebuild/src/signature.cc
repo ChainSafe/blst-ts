@@ -59,7 +59,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     if (!info[1].IsUndefined()) {
         Napi::Value type_val = info[1].As<Napi::Value>();
         if (!type_val.IsNumber()) {
-            Napi::TypeError::New(env, "BLST_ERROR: type must be of enum CoordType (number)")
+            Napi::TypeError::New(
+                env, "BLST_ERROR: type must be of enum CoordType (number)")
                 .ThrowAsJavaScriptException();
             return scope.Escape(env.Undefined());
         }

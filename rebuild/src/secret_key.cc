@@ -154,7 +154,8 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
 
     // Check for zero key and throw error to meet spec requirements
     if (_is_zero_key) {
-        Napi::TypeError::New(env, "BLST_ERROR: cannot sign message with zero private key")
+        Napi::TypeError::New(
+            env, "BLST_ERROR: cannot sign message with zero private key")
             .ThrowAsJavaScriptException();
         return scope.Escape(info.Env().Undefined());
     }
