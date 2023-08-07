@@ -45,22 +45,22 @@ export function sullyUint8Array(bytes: Uint8Array): Uint8Array {
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
-export function makeNapiTestSet(msg: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
+export function makeNapiTestSet(message: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
   const secretKey = bindings.SecretKey.fromKeygen(randomFillSync(Buffer.alloc(32)));
   const publicKey = secretKey.toPublicKey();
-  const signature = secretKey.sign(msg);
+  const signature = secretKey.sign(message);
   return {
-    msg,
+    message,
     secretKey,
     publicKey,
     signature,
   };
 }
 
-export function makeNapiTestSets(numSets: number, msg = DEFAULT_TEST_MESSAGE): NapiTestSet[] {
+export function makeNapiTestSets(numSets: number, message = DEFAULT_TEST_MESSAGE): NapiTestSet[] {
   const sets: NapiTestSet[] = [];
   for (let i = 0; i < numSets; i++) {
-    sets.push(makeNapiTestSet(msg));
+    sets.push(makeNapiTestSet(message));
   }
   return sets;
 }
