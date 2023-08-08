@@ -78,3 +78,21 @@ export const CoordType = {
   affine: 0,
   jacobian: 1,
 };
+
+export default {
+  CoordType,
+  BLST_CONSTANTS,
+  SecretKey,
+  PublicKey,
+  Signature,
+  aggregatePublicKeys,
+  aggregateSignatures,
+  verify,
+  aggregateVerify,
+  fastAggregateVerify,
+  verifyMultipleAggregateSignatures,
+  asyncVerify,
+  asyncAggregateVerify,
+  asyncFastAggregateVerify,
+  asyncVerifyMultipleAggregateSignatures,
+};
