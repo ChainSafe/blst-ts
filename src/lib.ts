@@ -64,7 +64,7 @@ export class SecretKey {
     if (skBytes.length !== SECRET_KEY_LENGTH) {
       throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
     }
-    if (isZeroBytes(skBytes)) {
+    if (crypto.timingSafeEqual(skBytes, new Uint8Array(SECRET_KEY_LENGTH))) {
       throw new ErrorBLST(BLST_ERROR.ZERO_SECRET_KEY);
     }
     const sk = new SkConstructor();
@@ -307,13 +307,4 @@ function randomBytesNonZero(BYTES_COUNT: number): Buffer {
   }
   rand[0] = 1;
   return rand;
-}
-
-function isZeroBytes(bytes: Uint8Array): boolean {
-  for (let i = 0; i < bytes.length; i++) {
-    if (bytes[i] !== 0) {
-      return false;
-    }
-  }
-  return true;
 }
