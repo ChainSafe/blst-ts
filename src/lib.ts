@@ -10,6 +10,7 @@ const PUBLIC_KEY_LENGTH_COMPRESSED = 48;
 const PUBLIC_KEY_LENGTH_UNCOMPRESSED = 48 * 2;
 const SIGNATURE_LENGTH_COMPRESSED = 96;
 const SIGNATURE_LENGTH_UNCOMPRESSED = 96 * 2;
+const SECRET_KEY_ZERO_BYTES = new Uint8Array(SECRET_KEY_LENGTH);
 
 export {BLST_ERROR};
 export class ErrorBLST extends Error {
@@ -64,7 +65,7 @@ export class SecretKey {
     if (skBytes.length !== SECRET_KEY_LENGTH) {
       throw new ErrorBLST(BLST_ERROR.BLST_INVALID_SIZE);
     }
-    if (isZeroBytes(skBytes)) {
+    if (crypto.timingSafeEqual(skBytes, SECRET_KEY_ZERO_BYTES)) {
       throw new ErrorBLST(BLST_ERROR.ZERO_SECRET_KEY);
     }
     const sk = new SkConstructor();
@@ -307,13 +308,4 @@ function randomBytesNonZero(BYTES_COUNT: number): Buffer {
   }
   rand[0] = 1;
   return rand;
-}
-
-function isZeroBytes(bytes: Uint8Array): boolean {
-  for (let i = 0; i < bytes.length; i++) {
-    if (bytes[i] !== 0) {
-      return false;
-    }
-  }
-  return true;
 }
