@@ -1,10 +1,23 @@
+/* eslint-disable import/no-named-as-default-member */
+import crypto from "crypto";
 import {expect} from "chai";
+import * as swig from "../src";
+import * as napi from "../rebuild/lib";
 
-interface BaseSerializable {
-  serialize(): Uint8Array;
+type Bufferish = string | Uint8Array | Buffer | napi.Serializable;
+interface SwigSet {
+  msg: Uint8Array;
+  sk: swig.SecretKey;
+  pk: swig.PublicKey;
+  sig: swig.Signature;
 }
-
-type Bufferish = string | Uint8Array | Buffer | BaseSerializable;
+interface NapiSet {
+  message: Uint8Array;
+  secretKey: napi.SecretKey;
+  publicKey: napi.PublicKey;
+  signature: napi.Signature;
+}
+type SerializedSet = Record<keyof NapiSet, Uint8Array>;
 
 export function toHex(bytes: Bufferish): string {
   const hex = toHexNoPrefix(bytes);
@@ -50,10 +63,10 @@ export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
   for (const [key, testCases] of Object.entries(instanceTestCases)) {
     const methodKey = key as keyof InstanceType;
     for (const testCase of testCases) {
-      it(`${methodKey}: ${testCase.id || ""}`, () => {
+      it(`${String(methodKey)}: ${testCase.id || ""}`, () => {
         // Get a new fresh instance for this test
         const instance = testCase.instance || getInstance();
-        if (typeof instance[methodKey] !== "function") throw Error(`Method ${methodKey} does not exist`);
+        if (typeof instance[methodKey] !== "function") throw Error(`Method ${String(methodKey)} does not exist`);
         const res = (instance[methodKey] as (...args: any) => any)(...testCase.args);
         if (!res) {
           // OK
@@ -66,3 +79,94 @@ export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
     }
   }
 }
+
+export function arrayOfIndexes(start: number, end: number): number[] {
+  const arr: number[] = [];
+  for (let i = start; i <= end; i++) arr.push(i);
+  return arr;
+}
+
+// Create and cache (on demand) crypto data to benchmark
+const napiSets = new Map<number, NapiSet>();
+function buildNapiSet(i: number): NapiSet {
+  const bytes = new Uint8Array(32);
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  dataView.setUint32(0, i + 1, true);
+
+  const message = Buffer.alloc(32, i + 1);
+  const secretKey = napi.SecretKey.deserialize(bytes);
+  const set = {
+    message,
+    secretKey,
+    publicKey: secretKey.toPublicKey(),
+    signature: secretKey.sign(message),
+  };
+  napiSets.set(i, set);
+  return set;
+}
+
+const swigSets = new Map<number, SwigSet>();
+function buildSwigSet(i: number): SwigSet {
+  const bytes = new Uint8Array(32);
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  dataView.setUint32(0, i + 1, true);
+
+  const message = Buffer.alloc(32, i + 1);
+  const secretKey = swig.SecretKey.fromBytes(bytes);
+  const set = {
+    msg: message,
+    sk: secretKey,
+    pk: secretKey.toPublicKey(),
+    sig: secretKey.sign(message),
+  };
+  swigSets.set(i, set);
+  return set;
+}
+
+export function getNapiSet(i: number): NapiSet {
+  const set = napiSets.get(i);
+  if (set) {
+    return set;
+  }
+  return buildNapiSet(i);
+}
+
+export const commonMessage = crypto.randomBytes(32);
+export function getNapiSetSameMessage(i: number): NapiSet {
+  const set = getNapiSet(i);
+  set.message = commonMessage;
+  return set;
+}
+
+export function getSwigSet(i: number): SwigSet {
+  const set = swigSets.get(i);
+  if (set) {
+    return set;
+  }
+  return buildSwigSet(i);
+}
+
+export function getSwigSetSameMessage(i: number): SwigSet {
+  const set = getSwigSet(i);
+  set.msg = commonMessage;
+  return set;
+}
+
+const serializedSets = new Map<number, SerializedSet>();
+export function getSerializedSet(i: number): SerializedSet {
+  const set = serializedSets.get(i);
+  if (set) {
+    return set;
+  }
+  const deserialized = buildNapiSet(i);
+  const serialized = {
+    message: deserialized.message,
+    secretKey: deserialized.secretKey.serialize(),
+    publicKey: deserialized.publicKey.serialize(),
+    signature: deserialized.signature.serialize(),
+  };
+  serializedSets.set(i, serialized);
+  return serialized;
+}
+
+export const keygenMaterial = crypto.randomBytes(32);
