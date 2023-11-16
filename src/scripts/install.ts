@@ -39,11 +39,13 @@ async function install(): Promise<void> {
     console.log(`Successfully retrieved ${libName} ${binaryPath}`);
     return;
   } catch (e) {
-    if (e.statusCode === 404) {
-      console.error(`${libName} not available: ${e.message}`);
-    } else {
-      e.message = `Error importing ${libName}: ${e.message}`;
-      console.error(e);
+    if (e instanceof Error) {
+      if ("statusCode" in e && e.statusCode === 404) {
+        console.error(`${libName} not available: ${e.message}`);
+      } else {
+        e.message = `Error importing ${libName}: ${e.message}`;
+        console.error(e);
+      }
     }
   }
 
@@ -55,8 +57,10 @@ async function install(): Promise<void> {
     console.log(`Successfully built ${libName} from source`);
     return;
   } catch (e) {
-    e.message = `Error building ${libName}: ${e.message}`;
-    console.error(e);
+    if (e instanceof Error) {
+      e.message = `Error building ${libName}: ${e.message}`;
+      console.error(e);
+    }
   }
 
   // Fallback?
