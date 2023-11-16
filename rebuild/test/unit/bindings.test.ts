@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import * as bindings from "../../lib/index.js";
+import * as bindings from "../../lib";
 
 describe("bindings", () => {
   describe("exports", () => {

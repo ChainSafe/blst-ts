@@ -6,9 +6,9 @@ import {
   asyncVerify,
   fastAggregateVerify,
   verify,
-} from "../../lib/index.js";
-import {sullyUint8Array, makeNapiTestSets} from "../utils.js";
-import {NapiTestSet} from "../types.js";
+} from "../../lib";
+import {sullyUint8Array, makeNapiTestSets} from "../utils";
+import {NapiTestSet} from "../types";
 
 describe("Verify", () => {
   let testSet: NapiTestSet;

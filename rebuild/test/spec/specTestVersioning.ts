@@ -1,7 +1,6 @@
-import {join, dirname} from "path";
-import {fileURLToPath} from "url";
+import { join } from "path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+// const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // WARNING! Don't move or rename this file !!!
 //

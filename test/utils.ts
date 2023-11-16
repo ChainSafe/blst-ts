@@ -86,6 +86,8 @@ export function arrayOfIndexes(start: number, end: number): number[] {
   return arr;
 }
 
+export const commonMessage = crypto.randomBytes(32);
+
 // Create and cache (on demand) crypto data to benchmark
 const napiSets = new Map<number, NapiSet>();
 function buildNapiSet(i: number): NapiSet {
@@ -105,6 +107,29 @@ function buildNapiSet(i: number): NapiSet {
   return set;
 }
 
+export function getNapiSet(i: number): NapiSet {
+  const set = napiSets.get(i);
+  if (set) {
+    return set;
+  }
+  return buildNapiSet(i);
+}
+
+const commonNapiMessageSignatures = new Map<number, napi.Signature>();
+export function getNapiSetSameMessage(i: number): NapiSet {
+  const set = getNapiSet(i);
+  set.message = commonMessage;
+  let signature = commonNapiMessageSignatures.get(i);
+  if (signature) {
+    set.signature = signature;
+  } else {
+    set.signature = set.secretKey.sign(commonMessage);
+    commonNapiMessageSignatures.set(i, set.signature);
+  }
+  return set;
+}
+
+
 const swigSets = new Map<number, SwigSet>();
 function buildSwigSet(i: number): SwigSet {
   const bytes = new Uint8Array(32);
@@ -123,21 +148,6 @@ function buildSwigSet(i: number): SwigSet {
   return set;
 }
 
-export function getNapiSet(i: number): NapiSet {
-  const set = napiSets.get(i);
-  if (set) {
-    return set;
-  }
-  return buildNapiSet(i);
-}
-
-export const commonMessage = crypto.randomBytes(32);
-export function getNapiSetSameMessage(i: number): NapiSet {
-  const set = getNapiSet(i);
-  set.message = commonMessage;
-  return set;
-}
-
 export function getSwigSet(i: number): SwigSet {
   const set = swigSets.get(i);
   if (set) {
@@ -146,9 +156,17 @@ export function getSwigSet(i: number): SwigSet {
   return buildSwigSet(i);
 }
 
+const commonSwigMessageSignatures = new Map<number, swig.Signature>();
 export function getSwigSetSameMessage(i: number): SwigSet {
   const set = getSwigSet(i);
   set.msg = commonMessage;
+  let signature = commonSwigMessageSignatures.get(i);
+  if (signature) {
+    set.sig = signature;
+  } else {
+    set.sig = set.sk.sign(commonMessage);
+    commonSwigMessageSignatures.set(i, set.sig);
+  }
   return set;
 }
 

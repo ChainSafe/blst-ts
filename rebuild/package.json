@@ -10,17 +10,21 @@
     "lib",
     "src"
   ],
-  "type": "module",
-  "main": "./import/index.js",
-  "module": "./import/index.js",
-  "types": "./import/index.d.ts",
+  "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
   "exports": {
-    ".": "./import/index.js"
+    ".": {
+      "require": "./lib/index.js",
+      "import": "./lib/index.mjs",
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
   },
   "typesVersions": {
     "*": {
       "*": [
-        "./import/index.d.ts"
+        "./lib/index.d.ts"
       ]
     }
   },

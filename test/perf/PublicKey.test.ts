@@ -29,7 +29,7 @@ describe("PublicKey", () => {
     },
   });
 
-  for (const count of [1, 10_000, 100_000, 1_000_000]) {
+  for (const count of [1, 100, 10_000]) {
     itBench({
       id: `PublicKey deserialize and validate - Napi - ${count} keys`,
       beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedSet(i % 256).publicKey),
