@@ -91,12 +91,8 @@ export const commonMessage = crypto.randomBytes(32);
 // Create and cache (on demand) crypto data to benchmark
 const napiSets = new Map<number, NapiSet>();
 function buildNapiSet(i: number): NapiSet {
-  const bytes = new Uint8Array(32);
-  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  dataView.setUint32(0, i + 1, true);
-
-  const message = Buffer.alloc(32, i + 1);
-  const secretKey = napi.SecretKey.deserialize(bytes);
+  const message = crypto.randomBytes(32);
+  const secretKey = napi.SecretKey.fromKeygen(crypto.randomBytes(32));
   const set = {
     message,
     secretKey,
@@ -132,12 +128,8 @@ export function getNapiSetSameMessage(i: number): NapiSet {
 
 const swigSets = new Map<number, SwigSet>();
 function buildSwigSet(i: number): SwigSet {
-  const bytes = new Uint8Array(32);
-  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  dataView.setUint32(0, i + 1, true);
-
-  const message = Buffer.alloc(32, i + 1);
-  const secretKey = swig.SecretKey.fromBytes(bytes);
+  const message = crypto.randomBytes(32);
+  const secretKey = swig.SecretKey.fromKeygen(crypto.randomBytes(32));
   const set = {
     msg: message,
     sk: secretKey,
