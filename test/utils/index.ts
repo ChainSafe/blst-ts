@@ -1,8 +1,10 @@
 /* eslint-disable import/no-named-as-default-member */
 import crypto from "crypto";
 import {expect} from "chai";
-import * as swig from "../src";
-import * as napi from "../rebuild/lib";
+import * as swig from "../../src";
+import * as napi from "../../rebuild/lib";
+
+export {BlsMultiThreadWorkerPool} from "./multithreading";
 
 type Bufferish = string | Uint8Array | Buffer | napi.Serializable;
 interface SwigSet {
@@ -115,7 +117,7 @@ const commonNapiMessageSignatures = new Map<number, napi.Signature>();
 export function getNapiSetSameMessage(i: number): NapiSet {
   const set = getNapiSet(i);
   set.message = commonMessage;
-  let signature = commonNapiMessageSignatures.get(i);
+  const signature = commonNapiMessageSignatures.get(i);
   if (signature) {
     set.signature = signature;
   } else {
@@ -124,7 +126,6 @@ export function getNapiSetSameMessage(i: number): NapiSet {
   }
   return set;
 }
-
 
 const swigSets = new Map<number, SwigSet>();
 function buildSwigSet(i: number): SwigSet {
@@ -152,7 +153,7 @@ const commonSwigMessageSignatures = new Map<number, swig.Signature>();
 export function getSwigSetSameMessage(i: number): SwigSet {
   const set = getSwigSet(i);
   set.msg = commonMessage;
-  let signature = commonSwigMessageSignatures.get(i);
+  const signature = commonSwigMessageSignatures.get(i);
   if (signature) {
     set.sig = signature;
   } else {
