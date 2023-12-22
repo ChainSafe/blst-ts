@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import path from "path";
 import {spawn, Worker} from "@chainsafe/threads";
 // `threads` library creates self global variable which breaks `timeout-abort-controller` https://github.com/jacobheun/timeout-abort-controller/issues/9
 // Don't add an eslint disable here as a reminder that this has to be fixed eventually
@@ -37,8 +36,6 @@ import {defaultPoolSize} from "./poolSize";
 import {runNapiWorkRequests} from "./runWorkRequests";
 import {chunkifyMaximizeChunkSize, countSignatures, getJobResultError} from "./utils";
 import {verifySignatureSets} from "./verify";
-
-// Worker constructor consider the path relative to the current working directory
 
 const MAX_SIGNATURE_SETS_PER_JOB = 128;
 const MAX_BUFFERED_SIGS = 32;
@@ -168,7 +165,7 @@ export class BlsMultiThreadWorkerPool {
 
     for (let i = 0; i < poolSize; i++) {
       const workerData: WorkerData = {workerId: i};
-      const worker = new Worker(path.join(__dirname, "worker.js"), {
+      const worker = new Worker("worker.js", {
         workerData,
       } as ConstructorParameters<typeof Worker>[1]);
 
