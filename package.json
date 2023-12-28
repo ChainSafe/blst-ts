@@ -18,7 +18,8 @@
     "test": "yarn test:unit && yarn test:spec",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "test:spec": "mocha 'test/spec/**/*.test.ts'",
-    "test:perf": "NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
+    "test:memory": "node -r ts-node/register --expose-gc test/memory/publicKeySize.ts",
+    "test:perf": "NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/multithreading.test.ts",
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
   },
   "repository": {
