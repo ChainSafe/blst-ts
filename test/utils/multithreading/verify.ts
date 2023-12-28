@@ -1,6 +1,7 @@
 import * as swig from "../../../src";
 import napi from "../../../rebuild/lib";
-import {ISignatureSet, PublicKey, SignatureSetType} from "./types";
+import {PublicKey} from "../types";
+import {ISignatureSet, SignatureSetType} from "./types";
 
 const MIN_SET_COUNT_TO_BATCH = 2;
 

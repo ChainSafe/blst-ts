@@ -1,26 +1,55 @@
 import {Worker} from "@chainsafe/threads";
 import * as swig from "../../../src";
 import * as napi from "../../../rebuild/lib";
+import {SignatureSetArray} from "../types";
 
-export type Bufferish = string | Uint8Array | Buffer | napi.Serializable;
-
-export interface SwigSet {
-  msg: Uint8Array;
-  sk: swig.SecretKey;
-  pk: swig.PublicKey;
-  sig: swig.Signature;
+export enum SignatureSetType {
+  single = "single",
+  aggregate = "aggregate",
 }
 
-export interface NapiSet {
-  message: Uint8Array;
-  secretKey: napi.SecretKey;
-  publicKey: napi.PublicKey;
-  signature: napi.Signature;
-}
+export type SwigSingleSignatureSet = {
+  type: SignatureSetType.single;
+  pubkey: swig.PublicKey;
+  signingRoot: Uint8Array;
+  signature: Uint8Array;
+};
 
-export type SerializedSet = Record<keyof NapiSet, Uint8Array>;
+export type NapiSingleSignatureSet = {
+  type: SignatureSetType.single;
+  pubkey: napi.PublicKey;
+  signingRoot: Uint8Array;
+  signature: Uint8Array;
+};
 
-export type PublicKey = swig.PublicKey | napi.PublicKey;
+export type SingleSignatureSet = {
+  type: SignatureSetType.single;
+  pubkey: swig.PublicKey | napi.PublicKey;
+  signingRoot: Uint8Array;
+  signature: Uint8Array;
+};
+
+export type SwigAggregatedSignatureSet = {
+  type: SignatureSetType.aggregate;
+  pubkeys: swig.PublicKey[];
+  signingRoot: Uint8Array;
+  signature: Uint8Array;
+};
+
+export type NapiAggregatedSignatureSet = {
+  type: SignatureSetType.aggregate;
+  pubkeys: napi.PublicKey[];
+  signingRoot: Uint8Array;
+  signature: Uint8Array;
+};
+
+export type AggregatedSignatureSet = NapiAggregatedSignatureSet | SwigAggregatedSignatureSet;
+
+export type NapiSignatureSetGroups = (NapiSingleSignatureSet[] | NapiAggregatedSignatureSet[])[];
+
+export type SwigSignatureSetGroups = (SwigSingleSignatureSet[] | SwigAggregatedSignatureSet[])[];
+
+export type ISignatureSet = SingleSignatureSet | AggregatedSignatureSet;
 
 export enum BlsPoolType {
   workers = "workers",
@@ -39,47 +68,6 @@ export interface VerifySignatureOpts {
   verifyOnMainThread?: boolean;
   priority?: boolean;
 }
-
-export enum SignatureSetType {
-  single = "single",
-  aggregate = "aggregate",
-}
-export type SwigSingleSignatureSet = {
-  type: SignatureSetType.single;
-  pubkey: swig.PublicKey;
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-export type NapiSingleSignatureSet = {
-  type: SignatureSetType.single;
-  pubkey: napi.PublicKey;
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-export type SingleSignatureSet = {
-  type: SignatureSetType.single;
-  pubkey: swig.PublicKey | napi.PublicKey;
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-
-export type SwigAggregatedSignatureSet = {
-  type: SignatureSetType.aggregate;
-  pubkeys: swig.PublicKey[];
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-export type NapiAggregatedSignatureSet = {
-  type: SignatureSetType.aggregate;
-  pubkeys: napi.PublicKey[];
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-export type AggregatedSignatureSet = NapiAggregatedSignatureSet | SwigAggregatedSignatureSet;
-
-export type ISignatureSet = SingleSignatureSet | AggregatedSignatureSet;
-
-export type SignatureSetArray = swig.SignatureSet[] | napi.SignatureSet[];
 
 export interface BlsWorkRequest {
   opts: VerifySignatureOpts;

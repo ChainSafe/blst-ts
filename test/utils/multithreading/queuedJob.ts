@@ -1,7 +1,8 @@
 import * as swig from "../../../src";
 import napi from "../../../rebuild/lib";
+import {PublicKey} from "../types";
+import {BlsWorkRequest, ISignatureSet, SignatureSetType, VerifySignatureOpts} from "./types";
 import {LinkedList} from "./array";
-import {BlsWorkRequest, ISignatureSet, PublicKey, SignatureSetType, VerifySignatureOpts} from "./types";
 import {getAggregatePublicKey} from "./verify";
 
 export enum QueuedJobType {

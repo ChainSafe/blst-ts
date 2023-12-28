@@ -1,9 +1,9 @@
 import {SignatureSet as SwigSignatureSet} from "../../../src";
 import {SignatureSet as NapiSignatureSet} from "../../../rebuild/lib";
 
-import {chunkifyMaximizeChunkSize} from "./utils";
-import {asyncVerifyNapiSignatureSets, verifySwigSignatureSets} from "./verify";
 import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
+import {chunkifyMaximizeChunkSize} from "./helpers";
+import {asyncVerifyNapiSignatureSets, verifySwigSignatureSets} from "./verify";
 
 const BATCHABLE_MIN_PER_CHUNK = 16;
 
