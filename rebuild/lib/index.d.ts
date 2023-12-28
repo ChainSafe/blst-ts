@@ -78,7 +78,7 @@ export class SecretKey implements Serializable {
 
 export class PublicKey implements Serializable {
   private constructor();
-  static deserialize(skBytes: BlstBuffer, coordType?: CoordType): PublicKey;
+  static deserialize(pkBytes: BlstBuffer, coordType?: CoordType): PublicKey;
   serialize(compress?: boolean): Buffer;
   toHex(compress?: boolean): string;
   keyValidate(): void;
@@ -86,7 +86,7 @@ export class PublicKey implements Serializable {
 
 export class Signature implements Serializable {
   private constructor();
-  static deserialize(skBytes: BlstBuffer, coordType?: CoordType): Signature;
+  static deserialize(sigBytes: BlstBuffer, coordType?: CoordType): Signature;
   serialize(compress?: boolean): Buffer;
   toHex(compress?: boolean): string;
   sigValidate(): void;
