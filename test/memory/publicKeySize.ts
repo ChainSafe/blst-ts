@@ -22,7 +22,7 @@ const pk = napi.SecretKey.fromKeygen(Buffer.alloc(32, "*&@#")).toPublicKey().ser
       gcDelay: 50,
       displayRunInfo: true,
       sampleEvery: 1000,
-      maxInstances: 10_000,
+      maxInstances: 1_000_000,
       computeUsedMemory: (usage) => usage.heapUsed + usage.external + usage.arrayBuffers,
     }
   );

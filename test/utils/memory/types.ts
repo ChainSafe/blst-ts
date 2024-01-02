@@ -16,6 +16,7 @@ export interface MemoryTestResult {
   instancesCreated: number;
   totalMemoryAllocated: number;
   numberOfSamples: number;
+  rssAllocated: number;
 }
 
 export type MemoryTestOptions<T> = {
@@ -93,5 +94,5 @@ export type MemoryTestOptions<T> = {
  * Used for linear regression calculation. MemoryAtInstance[0] is the instance
  * count and MemoryAtInstance[1] is the memory usage at that instance count.
  */
-export type MemoryAtInstance = [number, number];
+export type MemoryAtInstance = [number, number, number];
 export type MemoryUsageResults = MemoryAtInstance[];

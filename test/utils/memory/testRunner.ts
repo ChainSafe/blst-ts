@@ -1,4 +1,4 @@
-import {MemoryAtInstance, MemoryTestOptions, MemoryTestResult, RegressionResults} from "./types";
+import {MemoryAtInstance, MemoryTestOptions, MemoryTestResult, MemoryUsageResults, RegressionResults} from "./types";
 
 if (global.gc === undefined) {
   throw Error("Must enable global.gc with --expose-gc flag when starting node");
@@ -18,7 +18,7 @@ if (global.gc === undefined) {
  * @example
  * linearRegression([[0, 0], [1, 1]]); // => { slope: 1, yIntercept: 0 }
  */
-export function linearRegression(coordinates: [number, number][]): RegressionResults {
+function linearRegression(coordinates: MemoryUsageResults): RegressionResults {
   // Store data length in a local variable to reduce
   // repeated object property lookups
   const dataLength = coordinates.length;
@@ -101,10 +101,15 @@ async function memoryTestRunner<T>({
 }: MemoryTestOptions<T>): Promise<MemoryTestResult> {
   // Array to store references to created instances (to prevent garbage collection)
   const refs: T[] = [];
+
   // Pre-Allocate array to store memory data at each sample point
-  const memoryData: MemoryAtInstance[] = new Array(MAX_SAMPLES).fill([0, 0]);
-  let nextSampleIndex = 0;
+  const memoryData: MemoryAtInstance[] = new Array(MAX_SAMPLES);
+  for (let k = 0; k < MAX_SAMPLES; k++) {
+    memoryData[k] = [0, 0, 0];
+  }
+
   // Preallocations to not skew memory usage
+  let sampleIndex = 0;
   let i = 0;
 
   // Previous slope values for convergence calculation (2 prior and prior to current)
@@ -116,7 +121,9 @@ async function memoryTestRunner<T>({
     getInstance();
   }
   await runGarbageCollector(gcDelay);
-  const startingUsage = computeUsedMemory(process.memoryUsage());
+  let memoryUsage = process.memoryUsage();
+  const startingUsage = computeUsedMemory(memoryUsage);
+  const startingRss = memoryUsage.rss;
 
   // All variable beyond here must be pre-allocated or temporary to not affect
   // results
@@ -125,14 +132,15 @@ async function memoryTestRunner<T>({
 
     if (i % sampleEvery === 0) {
       await runGarbageCollector(gcDelay);
-      const memoryUsage = process.memoryUsage();
+      memoryUsage = process.memoryUsage();
       // do not create new tuple array, just reset inner tuple values
-      memoryData[nextSampleIndex][0] = i;
-      memoryData[nextSampleIndex][1] = computeUsedMemory(memoryUsage);
-      nextSampleIndex++;
+      memoryData[sampleIndex][0] = i;
+      memoryData[sampleIndex][1] = computeUsedMemory(memoryUsage);
+      memoryData[sampleIndex][2] = memoryUsage.rss;
+      sampleIndex++;
 
       if (
-        nextSampleIndex >= MAX_SAMPLES ||
+        sampleIndex >= MAX_SAMPLES ||
         (maxRssBytes && memoryUsage.rss > maxRssBytes) ||
         (maxHeapBytes && memoryUsage.heapTotal > maxHeapBytes)
       ) {
@@ -140,7 +148,7 @@ async function memoryTestRunner<T>({
       }
 
       if (memoryData.length > 1) {
-        const {slope} = linearRegression(memoryData);
+        const {slope} = linearRegression(memoryData.slice(0, sampleIndex));
 
         // Compute convergence (1st order + 2nd order)
         const a = prevM0;
@@ -182,24 +190,26 @@ async function memoryTestRunner<T>({
     }
   }
 
-  const numberOfSamples = nextSampleIndex - 1;
-  const [instancesCreated, endingUsage] = memoryData[numberOfSamples];
+  const numberOfSamples = sampleIndex - 1;
+  const [instancesCreated, endingUsage, endingRss] = memoryData[numberOfSamples];
+
   return {
-    averageBytesPerInstance: linearRegression(memoryData).slope,
+    averageBytesPerInstance: linearRegression(memoryData.slice(0, sampleIndex)).slope,
     numberOfSamples,
     instancesCreated,
     totalMemoryAllocated: endingUsage - startingUsage,
+    rssAllocated: endingRss - startingRss,
   };
 }
 
 function stringifyResultByOrderOfMagnitude(bytes: number): string {
-  let val = (bytes / 2) ^ 9;
+  let val = bytes / 1e9;
   if (val > 1) return `${val.toFixed(2)} gb`;
-  val = (bytes / 2) ^ 6;
+  val = bytes / 1e6;
   if (val > 1) return `${val.toFixed(2)} mb`;
-  val = (bytes / 2) ^ 3;
+  val = bytes / 1e3;
   if (val > 1) return `${val.toFixed(2)} kb`;
-  return `${val.toFixed(2)}  b`;
+  return `${Math.ceil(bytes)}  b`;
 }
 
 function formatRunResult(test: MemoryTestOptions<unknown>, result: MemoryTestResult, titlePadding?: number): string {
