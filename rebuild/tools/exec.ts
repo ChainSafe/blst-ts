@@ -1,4 +1,4 @@
-import {ExecOptions, exec as EXEC, ChildProcess, PromiseWithChild, ExecFileOptions} from "child_process";
+import {ExecOptions, exec as EXEC, ChildProcess, PromiseWithChild, ExecException} from "child_process";
 
 const timeout = 3 * 60 * 1000; // ms
 const maxBuffer = 10e6; // bytes
@@ -24,6 +24,16 @@ export function cmdStringExec(
       // console.error(data);
       process.stderr.write(data);
     }
+    function exitHandler(err: ExecException | null): void {
+      child.stdout?.removeAllListeners("data");
+      child.stderr?.removeAllListeners("data");
+      child.removeAllListeners("exit");
+      const output = Buffer.concat(chunks).toString("utf8");
+      if (err) {
+        return logToConsole ? reject(err) : reject(output);
+      }
+      return logToConsole ? resolve("") : resolve(output);
+    }
 
     child = EXEC(
       command,
@@ -32,15 +42,7 @@ export function cmdStringExec(
         maxBuffer,
         ...options,
       },
-      (err) => {
-        child.stdout?.removeListener("data", logToConsole ? stdoutHandler : bufferOutput);
-        child.stderr?.removeListener("data", logToConsole ? stderrHandler : bufferOutput);
-        const output = Buffer.concat(chunks).toString("utf8");
-        if (err) {
-          return logToConsole ? reject(err) : reject(output);
-        }
-        return logToConsole ? resolve("") : resolve(output);
-      }
+      exitHandler
     );
 
     if (child.stdin) {
@@ -48,6 +50,7 @@ export function cmdStringExec(
     }
     child.stdout?.on("data", logToConsole ? stdoutHandler : bufferOutput);
     child.stderr?.on("data", logToConsole ? stderrHandler : bufferOutput);
+    child.on("exit", exitHandler);
   }) as PromiseWithChild<string>;
 
   promise.child = child;

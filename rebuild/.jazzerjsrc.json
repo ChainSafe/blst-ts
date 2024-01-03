@@ -1,0 +1,15 @@
+{
+    "includes": [
+        "build",
+        "deps",
+        "lib",
+        "src"
+    ],
+    "excludes": [
+        "node_modules"
+    ],
+    "customHooks": [],
+    "fuzzerOptions": [],
+    "sync": false,
+    "timeout": 1000
+}
