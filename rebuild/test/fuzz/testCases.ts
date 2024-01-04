@@ -1,9 +1,17 @@
 import {SecretKey} from "../../lib";
-import {FuzzTestCase} from "./types";
+
+export interface FuzzTestCase {
+  name: string;
+  target: (data: Buffer) => any;
+  expectedErrors: string[];
+}
 
 export const testCases: FuzzTestCase[] = [
   {
     name: "SecretKey.fromKeygen",
-    target: (data: Buffer) => SecretKey.fromKeygen(data),
+    target: (data: Buffer) => {
+      return SecretKey.fromKeygen(data);
+    },
+    expectedErrors: ["ikm must be greater than or equal to 32 bytes"],
   },
 ];

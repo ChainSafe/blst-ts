@@ -45,9 +45,9 @@ export function cmdStringExec(
       exitHandler
     );
 
-    if (child.stdin) {
-      process.stdin.pipe(child.stdin);
-    }
+    // if (child.stdin) {
+    //   process.stdin.pipe(child.stdin);
+    // }
     child.stdout?.on("data", logToConsole ? stdoutHandler : bufferOutput);
     child.stderr?.on("data", logToConsole ? stderrHandler : bufferOutput);
     child.on("exit", exitHandler);
