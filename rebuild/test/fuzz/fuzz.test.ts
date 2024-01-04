@@ -15,7 +15,7 @@ process.on("exit", exit);
 process.on("SIGINT", exit);
 
 const testingProcesses: PromiseWithChild<string>[] = [];
-function exit(): void {
+async function exit(): Promise<void> {
   for (const testProcess of testingProcesses) {
     if (testProcess.child) {
       testProcess.child.kill("SIGINT");
@@ -55,15 +55,20 @@ for (const testCase of testCases) {
     "--sync false",
     "--coverage true",
     `--coverage_directory ${coverageDir}`,
-    "--coverage_reporters text",
     "--coverage_reporters lcov",
-    "--coverage_reporters json",
-    "--coverage_reporters clover",
   ].join(" ");
 
-  testingProcesses.push(cmdStringExec(cmd, true, {cwd: ROOT_DIR}));
+  console.log(`Running fuzz test: ${testCase.name}`);
+  testingProcesses.push(cmdStringExec(cmd, false, {cwd: ROOT_DIR}));
 }
 
 Promise.allSettled(testingProcesses)
-  .then(() => console.log("All fuzz tests completed"))
-  .catch(() => console.log("Some fuzz tests failed"));
+  .then((results) => {
+    console.log("All fuzz tests completed");
+    for (const result of results) {
+      if (result.status === "rejected") {
+        console.error(result.reason);
+      }
+    }
+  })
+  .finally(() => process.exit());

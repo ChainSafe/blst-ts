@@ -18,8 +18,7 @@ bool is_valid_length(
     if (byte_length == length1 || (length2 != 0 && byte_length == length2)) {
         return true;
     }
-    error_out.append(
-        " is " + std::to_string(byte_length) + " bytes, but must be ");
+    error_out.append(" must be ");
     if (length1 != 0) {
         error_out.append(std::to_string(length1));
     };
