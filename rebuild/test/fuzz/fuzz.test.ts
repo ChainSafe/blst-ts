@@ -42,7 +42,7 @@ for (const testCase of testCases) {
   const cmd = [
     `FUZZ_TEST_CASE=${testCase.name}`,
     "node_modules/.bin/jazzer",
-    "dist/fuzz/test/fuzz/fuzzTarget",
+    "fuzz-tests/test/fuzz/fuzzTarget",
     corpusDir,
     "--includes build",
     "--includes deps",
@@ -59,7 +59,7 @@ for (const testCase of testCases) {
   ].join(" ");
 
   console.log(`Running fuzz test: ${testCase.name}`);
-  testingProcesses.push(cmdStringExec(cmd, false, {cwd: ROOT_DIR}));
+  testingProcesses.push(cmdStringExec(cmd, true, {cwd: ROOT_DIR}));
 }
 
 Promise.allSettled(testingProcesses)
