@@ -1,7 +1,5 @@
 import { join } from "path";
 
-// const __dirname = dirname(fileURLToPath(import.meta.url));
-
 // WARNING! Don't move or rename this file !!!
 //
 // This file is used to generate the cache ID for spec tests download in Github Actions CI
