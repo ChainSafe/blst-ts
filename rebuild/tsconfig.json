@@ -1,12 +1,12 @@
 {
-  "include": ["lib", "test", "tools"],
   "compilerOptions": {
     "noEmit": true,
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ESNext"],
-
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": [
+      "ESNext"
+    ],
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
@@ -16,7 +16,6 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-
     "declaration": true,
     "sourceMap": true,
     "declarationMap": true,

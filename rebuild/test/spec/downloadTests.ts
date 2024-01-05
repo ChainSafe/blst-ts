@@ -9,7 +9,7 @@ import {
   SPEC_TEST_VERSION,
   SPEC_TEST_REPO_URL,
   SPEC_TEST_TO_DOWNLOAD,
-} from "./specTestVersioning.js";
+} from "./specTestVersioning";
 
 const specVersion = SPEC_TEST_VERSION;
 const outputDir = SPEC_TEST_LOCATION;

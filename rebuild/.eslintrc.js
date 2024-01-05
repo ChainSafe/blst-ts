@@ -13,11 +13,25 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 12,
     project: "./tsconfig.json",
-    sourceType: "module",
-    ecmaFeatures:{
-      modules: true
-    }
   },
+  settings: {
+    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"],
+    'import/resolver': {
+      node: {
+        extensions: [".js", ".ts"],
+        moduleDirectory: ["lib/", "test/", "node_modules/"]
+      }
+    },
+  },
+  overrides: [
+    {
+      files: ["*.ts", "*.js", "*.mjs"],
+      rules: {
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+      },
+    },
+  ],
   plugins: ["@typescript-eslint", "eslint-plugin-import", "eslint-plugin-node", "prettier"],
   extends: [
     "eslint:recommended",
@@ -82,22 +96,4 @@ module.exports = {
     quotes: ["error", "double"],
     semi: "off",
   },
-  settings: {
-    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"],
-    'import/resolver': {
-      node: {
-        extensions: [".js", ".ts"],
-        moduleDirectory: ["lib/", "test/", "node_modules/"]
-      }
-    },
-  },
-  overrides: [
-    {
-      files: ["**/test/**/*.ts"],
-      rules: {
-        "import/no-extraneous-dependencies": "off",
-        "@typescript-eslint/no-explicit-any": "off",
-      },
-    },
-  ],
 };
