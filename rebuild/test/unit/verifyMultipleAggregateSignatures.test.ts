@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../lib";
-import {makeNapiTestSets} from "../utils";
+import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../lib/index.js";
+import {makeNapiTestSets} from "../utils.js";
 
 describe("Verify Multiple Aggregate Signatures", () => {
   describe("verifyMultipleAggregateSignatures", () => {

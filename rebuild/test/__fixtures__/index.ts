@@ -1,4 +1,4 @@
-import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils";
+import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils.js";
 
 export const invalidInputs: [string, any][] = [
   ["boolean", true],
@@ -61,9 +61,9 @@ export const validSignature = {
 export const badSignature = sullyUint8Array(makeNapiTestSet().signature.serialize(false));
 
 export const validSignatureSet = makeNapiTestSets(1).map((set) => {
-  const {msg, secretKey, publicKey, signature} = set;
+  const {message, secretKey, publicKey, signature} = set;
   return {
-    msg,
+    message,
     secretKey,
     publicKey,
     signature,
