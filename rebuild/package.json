@@ -2,8 +2,6 @@
   "name": "@chainsafe/blst-ts",
   "version": "1.0.0",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
   "gypfile": true,
   "private": false,
   "files": [
@@ -12,6 +10,26 @@
     "lib",
     "src"
   ],
+  "type": "module",
+  "main": "./import/index.js",
+  "module": "./import/index.js",
+  "types": "./import/index.d.ts",
+  "exports": {
+    ".": "./import/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./import/index.d.ts"
+      ]
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./import/index.js"
+    },
+    "types": "./import/index.d.ts"
+  },
   "scripts": {
     "preinstall": "mkdir -p deps && cp -r ../blst deps",
     "clean": "npm run clean:dist; npm run clean:build",
@@ -24,7 +42,7 @@
     "lint:ts": "eslint --color --ext .ts lib/ test/",
     "lint:c": "clang-format -i ./src/*",
     "lint": "npm run lint:c && npm run lint:ts",
-    "test": "yarn test:unit",
+    "test": "yarn test:unit && yarn test:spec",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "test:spec": "mocha 'test/spec/**/*.test.ts'",
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"

@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {randomFillSync} from "crypto";
-import * as bindings from "../lib";
-import {BufferLike, NapiTestSet} from "./types";
+import * as bindings from "../lib/index.js";
+import {BufferLike, NapiTestSet} from "./types.js";
 
 function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;
@@ -10,18 +10,22 @@ function toHexString(bytes: BufferLike): string {
   throw Error("toHexString only accepts BufferLike types");
 }
 
-export function normalizeHex(bytes: BufferLike): string {
+export function toHex(bytes: BufferLike): string {
   const hex = toHexString(bytes);
   if (hex.startsWith("0x")) return hex;
   return "0x" + hex;
 }
 
+export function isEqualBytes(value: BufferLike, expected: BufferLike): boolean {
+  return toHex(value) === toHex(expected);
+}
+
 export function expectEqualHex(value: BufferLike, expected: BufferLike): void {
-  expect(normalizeHex(value)).to.equal(normalizeHex(expected));
+  expect(toHex(value)).to.equal(toHex(expected));
 }
 
 export function expectNotEqualHex(value: BufferLike, expected: BufferLike): void {
-  expect(normalizeHex(value)).to.not.equal(normalizeHex(expected));
+  expect(toHex(value)).to.not.equal(toHex(expected));
 }
 
 export function fromHex(hexString: string): Uint8Array {
@@ -41,22 +45,22 @@ export function sullyUint8Array(bytes: Uint8Array): Uint8Array {
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
-export function makeNapiTestSet(msg: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
+export function makeNapiTestSet(message: Uint8Array = DEFAULT_TEST_MESSAGE): NapiTestSet {
   const secretKey = bindings.SecretKey.fromKeygen(randomFillSync(Buffer.alloc(32)));
   const publicKey = secretKey.toPublicKey();
-  const signature = secretKey.sign(msg);
+  const signature = secretKey.sign(message);
   return {
-    msg,
+    message,
     secretKey,
     publicKey,
     signature,
   };
 }
 
-export function makeNapiTestSets(numSets: number, msg = DEFAULT_TEST_MESSAGE): NapiTestSet[] {
+export function makeNapiTestSets(numSets: number, message = DEFAULT_TEST_MESSAGE): NapiTestSet[] {
   const sets: NapiTestSet[] = [];
   for (let i = 0; i < numSets; i++) {
-    sets.push(makeNapiTestSet(msg));
+    sets.push(makeNapiTestSet(message));
   }
   return sets;
 }

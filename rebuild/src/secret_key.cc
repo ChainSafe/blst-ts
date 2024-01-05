@@ -43,7 +43,7 @@ void SecretKey::Init(
 }
 
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value ikm_value = info[0];
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(
@@ -61,7 +61,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     // optional parameter from blst library.
     if (!info[1].IsUndefined()) {
         if (!info[1].IsString()) {
-            Napi::TypeError::New(env, "info must be a string")
+            Napi::TypeError::New(env, "BLST_ERROR: info must be a string")
                 .ThrowAsJavaScriptException();
             return env.Undefined();
         }
@@ -85,12 +85,12 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(
         sk_bytes_value, sk_bytes, "skBytes", scope.Escape(env.Undefined()))
-    std::string err_out{"skBytes"};
+    std::string err_out{"BLST_ERROR: skBytes"};
     if (!is_valid_length(
             err_out, sk_bytes.ByteLength(), BLST_TS_SECRET_KEY_LENGTH)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
@@ -125,7 +125,7 @@ SecretKey::SecretKey(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return;
     }
-};
+}
 
 Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
@@ -139,7 +139,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, pk)
     // Derive public key from secret key. Default to jacobian coordinates
@@ -150,11 +150,12 @@ Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
     // Check for zero key and throw error to meet spec requirements
     if (_is_zero_key) {
-        Napi::TypeError::New(env, "cannot sign message with zero private key")
+        Napi::TypeError::New(
+            env, "BLST_ERROR: cannot sign message with zero private key")
             .ThrowAsJavaScriptException();
         return scope.Escape(info.Env().Undefined());
     }

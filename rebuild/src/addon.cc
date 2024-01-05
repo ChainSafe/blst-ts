@@ -31,19 +31,19 @@ bool is_valid_length(
     };
     error_out.append(" bytes long");
     return false;
-};
+}
 
 BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     : _dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"},
       _blst_error_strings{
           "BLST_SUCCESS",
-          "BLST_BAD_ENCODING",
-          "BLST_POINT_NOT_ON_CURVE",
-          "BLST_POINT_NOT_IN_GROUP",
-          "BLST_AGGR_TYPE_MISMATCH",
-          "BLST_VERIFY_FAIL",
-          "BLST_PK_IS_INFINITY",
-          "BLST_BAD_SCALAR",
+          "BLST_ERROR::BLST_BAD_ENCODING",
+          "BLST_ERROR::BLST_POINT_NOT_ON_CURVE",
+          "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
+          "BLST_ERROR::BLST_AGGR_TYPE_MISMATCH",
+          "BLST_ERROR::BLST_VERIFY_FAIL",
+          "BLST_ERROR::BLST_PK_IS_INFINITY",
+          "BLST_ERROR::BLST_BAD_SCALAR",
       } {
     Napi::Object js_constants = Napi::Object::New(env);
     js_constants.Set(
@@ -56,12 +56,36 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     SecretKey::Init(env, exports, this);
     PublicKey::Init(env, exports, this);
     Signature::Init(env, exports, this);
-    // Functions::Init(env, exports);
+    Functions::Init(env, exports);
     env.SetInstanceData(this);
+
+    // Check that openssl PRNG is seeded
+    blst::byte seed{0};
+    if (!this->GetRandomBytes(&seed, 0)) {
+        Napi::Error::New(
+            env, "BLST_ERROR: Error seeding pseudo-random number generator")
+            .ThrowAsJavaScriptException();
+    }
 }
 
 std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err) {
     return _blst_error_strings[err];
+}
+
+bool BlstTsAddon::GetRandomBytes(blst::byte *bytes, size_t length) {
+    // [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
+    // [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
+    // [RandomBytesTraits::DeriveBits](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_random.cc#L65)
+    // [CSPRNG](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_util.cc#L63)
+    do {
+        if (1 == RAND_status()) {
+            if (1 == RAND_bytes(bytes, length)) {
+                return true;
+            }
+        }
+    } while (1 == RAND_poll());
+
+    return false;
 }
 
 NODE_API_ADDON(BlstTsAddon)

@@ -36,12 +36,12 @@ void Signature::Init(
 }
 
 Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value sig_bytes_value = info[0];
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(
         sig_bytes_value, sig_bytes, "sigBytes", scope.Escape(env.Undefined()))
-    std::string err_out{"sigBytes"};
+    std::string err_out{"BLST_ERROR: sigBytes"};
     if (!is_valid_length(
             err_out,
             sig_bytes.ByteLength(),
@@ -59,7 +59,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     if (!info[1].IsUndefined()) {
         Napi::Value type_val = info[1].As<Napi::Value>();
         if (!type_val.IsNumber()) {
-            Napi::TypeError::New(env, "type must be of enum CoordType (number)")
+            Napi::TypeError::New(
+                env, "BLST_ERROR: type must be of enum CoordType (number)")
                 .ThrowAsJavaScriptException();
             return scope.Escape(env.Undefined());
         }
@@ -101,7 +102,7 @@ Signature::Signature(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return;
     }
-};
+}
 
 Napi::Value Signature::Serialize(const Napi::CallbackInfo &info){
     BLST_TS_SERIALIZE_POINT(SIGNATURE, "Signature")}
@@ -111,13 +112,13 @@ Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info) {
     Napi::EscapableHandleScope scope(env);
 
     if (!_has_jacobian && !_has_affine) {
-        Napi::Error::New(env, "Signature not initialized")
+        Napi::Error::New(env, "BLST_ERROR: Signature not initialized")
             .ThrowAsJavaScriptException();
     } else if (_has_jacobian && !_jacobian->in_group()) {
-        Napi::Error::New(env, "blst::BLST_POINT_NOT_IN_GROUP")
+        Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
             .ThrowAsJavaScriptException();
     } else if (_has_affine && !_affine->in_group()) {
-        Napi::Error::New(env, "blst::BLST_POINT_NOT_IN_GROUP")
+        Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
             .ThrowAsJavaScriptException();
     }
 

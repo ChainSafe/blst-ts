@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib";
-import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
+import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib/index.js";
+import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils.js";
+import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__/index.js";
 
 describe("Signature", () => {
   it("should exist", () => {
@@ -48,38 +48,38 @@ describe("Signature", () => {
         expect(() => Signature.deserialize(sullyUint8Array(validSignature.compressed))).to.throw("BLST_BAD_ENCODING");
       });
     });
-    describe("methods", () => {
-      describe("serialize", () => {
-        const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
-        it("should default to compressed serialization", () => {
-          expectEqualHex(sig.serialize(), sig.serialize(true));
-          expectNotEqualHex(sig.serialize(), sig.serialize(false));
-        });
-        it("should serialize compressed to the correct length", () => {
-          expect(sig.serialize(true)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_COMPRESSED);
-        });
-        it("should serialize uncompressed to the correct length", () => {
-          expect(sig.serialize(false)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_UNCOMPRESSED);
-        });
-        it("should serialize affine and jacobian points to the same value", () => {
-          const jacobian = Signature.deserialize(sig.serialize(), CoordType.jacobian);
-          const affine = Signature.deserialize(sig.serialize(), CoordType.affine);
-          expectEqualHex(jacobian.serialize(true), affine.serialize(true));
-          expectEqualHex(jacobian.serialize(false), affine.serialize(false));
-        });
+  });
+  describe("methods", () => {
+    describe("serialize", () => {
+      const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
+      it("should default to compressed serialization", () => {
+        expectEqualHex(sig.serialize(), sig.serialize(true));
+        expectNotEqualHex(sig.serialize(), sig.serialize(false));
       });
-      describe("sigValidate()", () => {
-        it("should return undefined for valid", () => {
-          const sig = Signature.deserialize(validSignature.compressed);
-          expect(sig.sigValidate()).to.be.undefined;
-        });
-        it("should throw for invalid", () => {
-          const pkSeed = Signature.deserialize(validSignature.compressed);
-          const sig = Signature.deserialize(
-            Uint8Array.from([...pkSeed.serialize().subarray(0, 94), ...Buffer.from("a1")])
-          );
-          expect(() => sig.sigValidate()).to.throw("blst::BLST_POINT_NOT_IN_GROUP");
-        });
+      it("should serialize compressed to the correct length", () => {
+        expect(sig.serialize(true)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_COMPRESSED);
+      });
+      it("should serialize uncompressed to the correct length", () => {
+        expect(sig.serialize(false)).to.have.lengthOf(BLST_CONSTANTS.SIGNATURE_LENGTH_UNCOMPRESSED);
+      });
+      it("should serialize affine and jacobian points to the same value", () => {
+        const jacobian = Signature.deserialize(sig.serialize(), CoordType.jacobian);
+        const affine = Signature.deserialize(sig.serialize(), CoordType.affine);
+        expectEqualHex(jacobian.serialize(true), affine.serialize(true));
+        expectEqualHex(jacobian.serialize(false), affine.serialize(false));
+      });
+    });
+    describe("sigValidate()", () => {
+      it("should return undefined for valid", () => {
+        const sig = Signature.deserialize(validSignature.compressed);
+        expect(sig.sigValidate()).to.be.undefined;
+      });
+      it("should throw for invalid", () => {
+        const pkSeed = Signature.deserialize(validSignature.compressed);
+        const sig = Signature.deserialize(
+          Uint8Array.from([...pkSeed.serialize().subarray(0, 94), ...Buffer.from("a1")])
+        );
+        expect(() => sig.sigValidate()).to.throw("BLST_ERROR::BLST_POINT_NOT_IN_GROUP");
       });
     });
   });
