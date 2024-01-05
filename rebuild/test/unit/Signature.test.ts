@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib";
-import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
+import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib/index.js";
+import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils.js";
+import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__/index.js";
 
 describe("Signature", () => {
   it("should exist", () => {

@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {PublicKey, SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
-import {KEY_MATERIAL, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__";
-import {expectEqualHex, expectNotEqualHex} from "../utils";
+import {PublicKey, SecretKey, Signature, BLST_CONSTANTS} from "../../lib/index.js";
+import {KEY_MATERIAL, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__/index.js";
+import {expectEqualHex, expectNotEqualHex} from "../utils.js";
 
 describe("SecretKey", () => {
   it("should exist", () => {

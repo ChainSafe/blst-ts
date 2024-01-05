@@ -1,4 +1,7 @@
-import path from "path";
+import {join, dirname} from "path";
+import {fileURLToPath} from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // WARNING! Don't move or rename this file !!!
 //
@@ -11,4 +14,4 @@ export const SPEC_TEST_REPO_URL = "https://github.com/ethereum/consensus-spec-te
 export const SPEC_TEST_VERSION = "v1.3.0";
 export const SPEC_TEST_TO_DOWNLOAD = ["general" as const];
 // Target directory is the host package root: '<roo>/spec-tests'
-export const SPEC_TEST_LOCATION = path.join(__dirname, "../../spec-tests");
+export const SPEC_TEST_LOCATION = join(__dirname, "../../spec-tests");

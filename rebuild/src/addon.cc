@@ -62,7 +62,8 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     // Check that openssl PRNG is seeded
     blst::byte seed{0};
     if (!this->GetRandomBytes(&seed, 0)) {
-        Napi::Error::New(env, "BLST_ERROR: Error seeding pseudo-random number generator")
+        Napi::Error::New(
+            env, "BLST_ERROR: Error seeding pseudo-random number generator")
             .ThrowAsJavaScriptException();
     }
 }
