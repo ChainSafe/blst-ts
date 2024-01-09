@@ -39,9 +39,9 @@ export function prepareSwigWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
         // this can throw, handled in the consumer code
         const publicKey = getAggregatePublicKey(set, true);
         return {
-          signature: set.signature,
-          message: set.signingRoot,
-          publicKey: publicKey.toBytes(),
+          sig: set.signature,
+          msg: set.signingRoot,
+          pk: publicKey.toBytes(),
         };
       }),
     };
@@ -60,9 +60,9 @@ export function prepareSwigWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
     opts: job.opts,
     sets: [
       {
-        publicKey: publicKey.toBytes(),
-        signature: signature.toBytes(),
-        message: job.message,
+        pk: publicKey.toBytes(),
+        sig: signature.toBytes(),
+        msg: job.message,
       },
     ],
   };

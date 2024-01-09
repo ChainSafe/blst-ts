@@ -160,6 +160,16 @@ export class BlsMultiThreading {
     }
   }
 
+  async waitTillInitialized(): Promise<void> {
+    await Promise.all(
+      this.workers.map(async (worker) => {
+        if (worker.status.code === WorkerStatusCode.initializing) {
+          await worker.status.initPromise;
+        }
+      })
+    );
+  }
+
   private createWorkers(poolSize: number): WorkerDescriptor[] {
     const workers: WorkerDescriptor[] = [];
 

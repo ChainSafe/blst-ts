@@ -1,7 +1,7 @@
-import {SignatureSet as SwigSignatureSet} from "../../../src";
+import * as swig from "../../../src";
 import {SignatureSet as NapiSignatureSet} from "../../../rebuild/lib";
 
-import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
+import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest, SerializedSwigSet} from "./types";
 import {chunkifyMaximizeChunkSize} from "./helpers";
 import {asyncVerifyNapiSignatureSets, verifySwigSignatureSets} from "./verify";
 
@@ -13,17 +13,17 @@ export function runSwigWorkRequests(workerId: number, workReqArr: BlsWorkRequest
   let batchSigsSuccess = 0;
 
   // If there are multiple batchable sets attempt batch verification with them
-  const batchableSets: {idx: number; sets: SwigSignatureSet[]}[] = [];
-  const nonBatchableSets: {idx: number; sets: SwigSignatureSet[]}[] = [];
+  const batchableSets: {idx: number; sets: SerializedSwigSet[]}[] = [];
+  const nonBatchableSets: {idx: number; sets: SerializedSwigSet[]}[] = [];
 
   // Split sets between batchable and non-batchable preserving their original index in the req array
   for (let i = 0; i < workReqArr.length; i++) {
     const workReq = workReqArr[i];
 
     if (workReq.opts.batchable) {
-      batchableSets.push({idx: i, sets: workReq.sets as SwigSignatureSet[]});
+      batchableSets.push({idx: i, sets: workReq.sets as SerializedSwigSet[]});
     } else {
-      nonBatchableSets.push({idx: i, sets: workReq.sets as SwigSignatureSet[]});
+      nonBatchableSets.push({idx: i, sets: workReq.sets as SerializedSwigSet[]});
     }
   }
 
@@ -33,7 +33,7 @@ export function runSwigWorkRequests(workerId: number, workReqArr: BlsWorkRequest
 
     for (const batchableChunk of batchableChunks) {
       // flatten all sets into a single array for batch verification
-      const allSets: SwigSignatureSet[] = [];
+      const allSets: SerializedSwigSet[] = [];
       for (const {sets} of batchableChunk) {
         // TODO: speed test in perf for potential switch to allSets.push(...sets);
         for (const set of sets) {
@@ -43,7 +43,13 @@ export function runSwigWorkRequests(workerId: number, workReqArr: BlsWorkRequest
 
       try {
         // Attempt to verify multiple sets at once
-        const isValid = verifySwigSignatureSets(allSets);
+        const isValid = verifySwigSignatureSets(
+          allSets.map((set) => ({
+            pk: swig.PublicKey.fromBytes(set.pk, swig.CoordType.affine),
+            msg: set.msg,
+            sig: swig.Signature.fromBytes(set.sig, swig.CoordType.affine),
+          }))
+        );
 
         if (isValid) {
           // The entire batch is valid, return success to all
@@ -68,7 +74,13 @@ export function runSwigWorkRequests(workerId: number, workReqArr: BlsWorkRequest
 
   for (const {idx, sets} of nonBatchableSets) {
     try {
-      const isValid = verifySwigSignatureSets(sets);
+      const isValid = verifySwigSignatureSets(
+        sets.map((set) => ({
+          pk: swig.PublicKey.fromBytes(set.pk, swig.CoordType.affine),
+          msg: set.msg,
+          sig: swig.Signature.fromBytes(set.sig, swig.CoordType.affine),
+        }))
+      );
       results[idx] = {code: WorkResultCode.success, result: isValid};
     } catch (e) {
       results[idx] = {code: WorkResultCode.error, error: e as Error};

@@ -2,15 +2,22 @@ import crypto from "crypto";
 import * as swig from "../../../src";
 import * as napi from "../../../rebuild/lib";
 import {NapiSet, SerializedSet, SwigSet} from "../types";
-import {getNapiSet, getSwigSet, buildNapiSet, shuffle} from "../helpers";
+import {getNapiSet, getSwigSet, shuffle} from "../helpers";
 import {
   AggregatedSignatureSet,
   NapiAggregatedSignatureSet,
+  NapiSameMessagePair,
+  NapiSameMessageSet,
   NapiSignatureSetGroups,
+  NapiSingleSignatureSet,
+  SameMessageSetArray,
   SignatureSetType,
   SingleSignatureSet,
   SwigAggregatedSignatureSet,
+  SwigSameMessagePair,
+  SwigSameMessageSet,
   SwigSignatureSetGroups,
+  SwigSingleSignatureSet,
   WorkResultError,
 } from "./types";
 import {QueuedJob, QueuedJobType} from "./queuedJob";
@@ -52,29 +59,33 @@ const commonMessage = crypto.randomBytes(32);
 const commonNapiMessageSignatures = new Map<number, napi.Signature>();
 export function getNapiSetSameMessage(i: number): NapiSet {
   const set = getNapiSet(i);
-  set.message = commonMessage;
-  const signature = commonNapiMessageSignatures.get(i);
-  if (signature) {
-    set.signature = signature;
-  } else {
-    set.signature = set.secretKey.sign(commonMessage);
-    commonNapiMessageSignatures.set(i, set.signature);
+  let signature = commonNapiMessageSignatures.get(i);
+  if (!signature) {
+    signature = set.secretKey.sign(commonMessage);
+    commonNapiMessageSignatures.set(i, signature);
   }
-  return set;
+  return {
+    message: commonMessage,
+    secretKey: set.secretKey,
+    publicKey: set.publicKey,
+    signature,
+  };
 }
 
 const commonSwigMessageSignatures = new Map<number, swig.Signature>();
 export function getSwigSetSameMessage(i: number): SwigSet {
   const set = getSwigSet(i);
-  set.msg = commonMessage;
-  const signature = commonSwigMessageSignatures.get(i);
-  if (signature) {
-    set.sig = signature;
-  } else {
-    set.sig = set.sk.sign(commonMessage);
-    commonSwigMessageSignatures.set(i, set.sig);
+  let signature = commonSwigMessageSignatures.get(i);
+  if (!signature) {
+    signature = set.sk.sign(commonMessage);
+    commonSwigMessageSignatures.set(i, signature);
   }
-  return set;
+  return {
+    msg: commonMessage,
+    sk: set.sk,
+    pk: set.pk,
+    sig: signature,
+  };
 }
 
 const serializedSets = new Map<number, SerializedSet>();
@@ -83,7 +94,7 @@ export function getSerializedSet(i: number): SerializedSet {
   if (set) {
     return set;
   }
-  const deserialized = buildNapiSet(i);
+  const deserialized = getNapiSet(i);
   const serialized = {
     message: deserialized.message,
     secretKey: deserialized.secretKey.serialize(),
@@ -96,82 +107,173 @@ export function getSerializedSet(i: number): SerializedSet {
 
 export const keygenMaterial = crypto.randomBytes(32);
 
-export function getAggregatedSignatureSets<
+/**
+ * Gets batches of signature sets.
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param batchSize - number of sets to generate
+ */
+export function getBatchesOfSingleSignatureSets<
   T extends boolean,
-  R extends AggregatedSignatureSet[] = T extends true ? SwigAggregatedSignatureSet[] : NapiAggregatedSignatureSet[],
->(count: number, pubKeyCount: number, isSwig: T): R {
+  R extends SingleSignatureSet[] = T extends true ? SwigSingleSignatureSet[] : NapiSingleSignatureSet[],
+>(isSwig: T, batchSize: number): R {
   const sets = [] as unknown as R;
-  for (let i = 0; i < count; i++) {
-    const aggregated = [] as (SwigSet | NapiSet)[];
-    for (let j = 0; j < pubKeyCount; j++) {
-      const set = isSwig ? getSwigSet(i + j) : getNapiSet(i + j);
-      aggregated.push(set);
+
+  for (let i = 0; i < batchSize; i++) {
+    if (isSwig) {
+      const set = getSwigSet(i);
+      sets.push({
+        type: SignatureSetType.single,
+        pubkey: set.pk,
+        signingRoot: set.msg,
+        signature: set.sig.toBytes(),
+      });
+    } else {
+      const set = getNapiSet(i);
+      sets.push({
+        type: SignatureSetType.single,
+        pubkey: set.publicKey,
+        signingRoot: set.message,
+        signature: set.signature.serialize(),
+      });
+    }
+  }
+
+  return sets;
+}
+
+/**
+ * Gets groups of batches of signature sets
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param batchSize - number of sets in each group, each with a single signature and message
+ * @param numGroups - number of groups to generate
+ * @returns
+ */
+export function getGroupsOfBatchesOfSingleSignatureSets<T extends boolean>(
+  isSwig: T,
+  batchSize: number,
+  numGroups: number
+): SingleSignatureSet[][] {
+  const groups = [] as SingleSignatureSet[][];
+  for (let i = 0; i < numGroups; i++) {
+    groups.push(getBatchesOfSingleSignatureSets(isSwig, batchSize));
+  }
+  return groups;
+}
+
+/**
+ * Gets batches of signature sets where the signature is aggregated from
+ * multiple public keys signing the same message.
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param setCount - number of public key/signature pairs
+ * @param batchSize - number of sets to generate
+ */
+export function getBatchesOfSameMessageSignatureSets<
+  T extends boolean,
+  R extends SameMessageSetArray = T extends true ? SwigSameMessageSet[] : NapiSameMessageSet[],
+>(isSwig: T, setCount: number, batchSize: number): R {
+  const aggregatedSets = [] as unknown as R;
+  for (let i = 0; i < batchSize; i++) {
+    let message: Uint8Array;
+    const sets = [] as (NapiSameMessagePair | SwigSameMessagePair)[];
+    for (let j = 0; j < setCount; j++) {
+      if (isSwig) {
+        const set = getSwigSetSameMessage(i + j);
+        if (j === 0) {
+          message = set.msg;
+        }
+        sets.push({publicKey: set.pk, signature: set.sig});
+      } else {
+        const set = getNapiSetSameMessage(i + j);
+        if (j === 0) {
+          message = set.message;
+        }
+        sets.push({publicKey: set.publicKey, signature: set.signature});
+      }
     }
 
-    const sigs = aggregated.map((set) => (isSwig ? (set as SwigSet).sig : (set as NapiSet).signature));
+    aggregatedSets.push({
+      sets: sets as any,
+      message: message!,
+    });
+  }
+  return aggregatedSets;
+}
+
+/**
+ * Gets batches of signature sets where the signature is aggregated from
+ * multiple public keys signing the same message.
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param pubKeyCount - number of public key/signature pairs to aggregate
+ * @param batchSize - number of sets to generate
+ */
+export function getBatchesOfAggregatedSignatureSets<
+  T extends boolean,
+  R extends AggregatedSignatureSet[] = T extends true ? SwigAggregatedSignatureSet[] : NapiAggregatedSignatureSet[],
+>(isSwig: T, pubKeyCount: number, batchSize: number): R {
+  const aggregatedSets = [] as unknown as R;
+  const sameMessageSets = getBatchesOfSameMessageSignatureSets(isSwig, pubKeyCount, batchSize);
+  for (const {sets, message} of sameMessageSets) {
+    const sigs = sets.map((set) => set.signature);
     const signature = isSwig
       ? swig.aggregateSignatures(sigs as swig.Signature[]).toBytes()
       : napi.aggregateSignatures(sigs as napi.Signature[]).serialize();
 
-    sets.push({
+    aggregatedSets.push({
       type: SignatureSetType.aggregate,
-      pubkeys: aggregated.map((set) => (isSwig ? (set as SwigSet).pk : (set as NapiSet).publicKey)) as any,
-      signingRoot: commonMessage,
+      pubkeys: sets.map((set) => set.publicKey) as any,
+      signingRoot: message,
       signature,
     });
   }
-  return sets;
+  return aggregatedSets;
 }
 
-export function getGroupsOfAggregatedSignatureSets<T extends boolean>(
-  numGroups: number,
-  count: number,
+/**
+ * Gets groups of batches of sets where the signature is aggregated from
+ * multiple public keys signing the same message.
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param pubKeyCount - number of public key/signature pairs to aggregate
+ * @param batchSize - number of sets in each group, each with a single signature and message
+ * @param numGroups - number of groups to generate
+ * @returns
+ */
+export function getGroupsOfBatchesOfAggregatedSignatureSets<T extends boolean>(
+  isSwig: T,
   pubKeyCount: number,
-  isSwig: T
+  batchSize: number,
+  numGroups: number
 ): AggregatedSignatureSet[][] {
   const groups = [] as AggregatedSignatureSet[][];
   for (let i = 0; i < numGroups; i++) {
-    groups.push(getAggregatedSignatureSets(count, pubKeyCount, isSwig));
+    groups.push(getBatchesOfAggregatedSignatureSets(isSwig, pubKeyCount, batchSize));
   }
   return groups;
 }
 
-export function getSingleSignatureSets<T extends boolean>(count: number, isSwig: T): SingleSignatureSet[] {
-  const sets = [] as SingleSignatureSet[];
-
-  for (let i = 0; i < count; i++) {
-    const set = isSwig ? getSwigSet(i) : getNapiSet(i);
-    sets.push({
-      type: SignatureSetType.single,
-      pubkey: isSwig ? (set as SwigSet).pk : (set as NapiSet).publicKey,
-      signingRoot: commonMessage,
-      signature: isSwig ? (set as SwigSet).sig.toBytes() : (set as NapiSet).signature.serialize(),
-    });
-  }
-
-  return sets;
-}
-
-export function getGroupsOfSingleSignatureSets<T extends boolean>(
-  numGroups: number,
-  count: number,
-  isSwig: T
-): SingleSignatureSet[][] {
-  const groups = [] as SingleSignatureSet[][];
-  for (let i = 0; i < numGroups; i++) {
-    groups.push(getSingleSignatureSets(count, isSwig));
-  }
-  return groups;
-}
-
-export function getGroupsOfSignatureSets<T extends boolean>(
+/**
+ * Gets groups of batches of signature sets. Gets both single and aggregated and
+ * shuffles them together as would be expected in a real-world scenario.
+ *
+ * @param isSwig - true for swig, false for napi
+ * @param pubKeyCount - number of public key/signature pairs in a batch
+ * @param batchSize - number of batches in each group
+ * @param singleGroupsCount - number of groups of single signature sets
+ * @param aggregatedGroupsCount - number of groups of aggregated signature sets
+ * @returns
+ */
+export function getGroupsOfBatchesOfSignatureSets<T extends boolean>(
   isSwig: T,
-  countPerGroup: number,
-  singleGroups: number,
-  aggregatedGroups: number,
-  pubKeyCount: number
+  pubKeyCount: number,
+  batchSize: number,
+  singleGroupsCount: number,
+  aggregatedGroupsCount: number
 ): T extends true ? SwigSignatureSetGroups : NapiSignatureSetGroups {
-  const single = getGroupsOfSingleSignatureSets(singleGroups, countPerGroup, isSwig);
-  const aggregated = getGroupsOfAggregatedSignatureSets(aggregatedGroups, countPerGroup, pubKeyCount, isSwig);
+  const single = getGroupsOfBatchesOfSingleSignatureSets(isSwig, batchSize, singleGroupsCount);
+  const aggregated = getGroupsOfBatchesOfAggregatedSignatureSets(isSwig, pubKeyCount, batchSize, aggregatedGroupsCount);
   return shuffle([...single, ...aggregated]) as T extends true ? SwigSignatureSetGroups : NapiSignatureSetGroups;
 }

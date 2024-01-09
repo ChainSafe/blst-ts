@@ -1,12 +1,17 @@
 import {itBench} from "@dapplion/benchmark";
-import {BlsMultiThreading, BlsPoolType, getGroupsOfSignatureSets} from "../utils";
+import {BlsMultiThreading, BlsPoolType, getGroupsOfBatchesOfSignatureSets} from "../utils";
 
-describe("multithreading perf", () => {
+describe("multithreading perf", function () {
+  this.timeout(20000);
+
   let libuvPool: BlsMultiThreading;
   let workerPool: BlsMultiThreading;
-  before(() => {
+  let groups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
+  before(async () => {
     workerPool = new BlsMultiThreading({blsPoolType: BlsPoolType.workers});
+    await workerPool.waitTillInitialized();
     libuvPool = new BlsMultiThreading({blsPoolType: BlsPoolType.libuv});
+    groups = getGroupsOfBatchesOfSignatureSets(true, 12, 32, 4, 4);
   });
   after(async () => {
     await libuvPool.close();
@@ -15,10 +20,7 @@ describe("multithreading perf", () => {
 
   itBench({
     id: "worker multithreading - swig",
-    beforeEach: () => {
-      return getGroupsOfSignatureSets(true, 12, 4, 4, 2);
-    },
-    fn: async (groups) => {
+    fn: async () => {
       const responses = [] as Promise<boolean>[];
       for (const sets of groups) {
         responses.push(workerPool.verifySignatureSets(sets, {batchable: true}));
@@ -29,10 +31,7 @@ describe("multithreading perf", () => {
 
   itBench({
     id: "libuv multithreading - napi",
-    beforeEach: () => {
-      return getGroupsOfSignatureSets(false, 16, 128, 128, 4);
-    },
-    fn: async (groups) => {
+    fn: async () => {
       const responses = [] as Promise<boolean>[];
       for (const sets of groups) {
         responses.push(libuvPool.verifySignatureSets(sets, {batchable: true}));

@@ -1,7 +1,7 @@
 import {Worker} from "@chainsafe/threads";
 import * as swig from "../../../src";
 import * as napi from "../../../rebuild/lib";
-import {SignatureSetArray} from "../types";
+import {NapiSet, SignatureSetArray} from "../types";
 
 export enum SignatureSetType {
   single = "single",
@@ -51,6 +51,28 @@ export type SwigSignatureSetGroups = (SwigSingleSignatureSet[] | SwigAggregatedS
 
 export type ISignatureSet = SingleSignatureSet | AggregatedSignatureSet;
 
+export interface NapiSameMessagePair {
+  publicKey: napi.PublicKey;
+  signature: napi.Signature;
+}
+export interface NapiSameMessageSet {
+  sets: NapiSameMessagePair[];
+  message: Uint8Array;
+}
+
+export interface SwigSameMessagePair {
+  publicKey: swig.PublicKey;
+  signature: swig.Signature;
+}
+export interface SwigSameMessageSet {
+  sets: SwigSameMessagePair[];
+  message: Uint8Array;
+}
+
+export type SameMessageSet = NapiSameMessageSet | SwigSameMessageSet;
+
+export type SameMessageSetArray = NapiSameMessageSet[] | SwigSameMessageSet[];
+
 export enum BlsPoolType {
   workers = "workers",
   libuv = "libuv",
@@ -69,10 +91,22 @@ export interface VerifySignatureOpts {
   priority?: boolean;
 }
 
-export interface BlsWorkRequest {
+export interface SerializedSwigSet {
+  msg: Uint8Array;
+  pk: Uint8Array;
+  sig: Uint8Array;
+}
+
+export interface NapiBlsWorkRequest {
   opts: VerifySignatureOpts;
   sets: SignatureSetArray;
 }
+export interface SwigBlsWorkRequest {
+  opts: VerifySignatureOpts;
+  sets: SerializedSwigSet[];
+}
+
+export type BlsWorkRequest = NapiBlsWorkRequest | SwigBlsWorkRequest;
 
 export enum WorkResultCode {
   success = "success",
