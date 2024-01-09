@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {randomFillSync} from "crypto";
-import * as bindings from "../lib/index.js";
-import {BufferLike, NapiTestSet} from "./types.js";
+import * as bindings from "../lib";
+import {BufferLike, NapiTestSet} from "./types";
 
 function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;

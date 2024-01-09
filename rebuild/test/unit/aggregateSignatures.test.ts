@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {aggregateSignatures, Signature} from "../../lib/index.js";
-import {isEqualBytes, makeNapiTestSets} from "../utils.js";
-import {badSignature} from "../__fixtures__/index.js";
+import {aggregateSignatures, Signature} from "../../lib";
+import {isEqualBytes, makeNapiTestSets} from "../utils";
+import {badSignature} from "../__fixtures__";
 
 describe("Aggregate Signatures", () => {
   const sets = makeNapiTestSets(10);

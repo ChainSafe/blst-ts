@@ -2,7 +2,7 @@ import {expect} from "chai";
 import fs from "fs";
 import path from "path";
 import jsYaml from "js-yaml";
-import {SPEC_TEST_LOCATION} from "./specTestVersioning.js";
+import {SPEC_TEST_LOCATION} from "./specTestVersioning";
 import {
   PublicKey,
   SecretKey,
@@ -12,8 +12,8 @@ import {
   verify as VERIFY,
   aggregateVerify,
   fastAggregateVerify,
-} from "../../lib/index.js";
-import {fromHex, toHex} from "../utils.js";
+} from "../../lib";
+import {fromHex, toHex} from "../utils";
 
 // Example full path
 // blst-ts/spec-tests/tests/general/altair/bls/eth_aggregate_pubkeys/small/eth_aggregate_pubkeys_empty_list
