@@ -16,7 +16,7 @@
     "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
     "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp",
     "test": "yarn test:unit && yarn test:spec",
-    "test:perf": "NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/multithreading.test.ts",
+    "test:perf": "UV_THREADPOOL_SIZE=$(($(nproc)-1)) NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/multithreading.test.ts",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "test:spec": "mocha 'test/spec/**/*.test.ts'",
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"

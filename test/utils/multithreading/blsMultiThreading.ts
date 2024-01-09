@@ -43,10 +43,10 @@ const MAX_BUFFER_WAIT_MS = 100;
 const MAX_JOBS_CAN_ACCEPT_WORK = 512;
 
 export class BlsMultiThreading {
+  readonly blsPoolSize: number;
+
   private readonly blsVerifyAllInQueue: boolean;
   private readonly blsPoolType: BlsPoolType;
-  private readonly blsPoolSize: number;
-
   private readonly workers: WorkerDescriptor[] = [];
 
   private readonly jobsForNextRun = new LinkedList<QueuedJob>();

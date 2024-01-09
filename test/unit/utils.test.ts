@@ -130,6 +130,14 @@ describe("utils", () => {
       const response = await libuvPool.verifySignatureSets(napiGroups[0], {batchable: true});
       expect(response).to.be.true;
     });
+    it("should verify multiple napi sets", async () => {
+      const responses = [] as Promise<boolean>[];
+      for (const sets of napiGroups) {
+        responses.push(libuvPool.verifySignatureSets(sets, {batchable: true}));
+      }
+      const results = await Promise.all(responses);
+      expect(results.every((r) => r)).to.be.true;
+    });
   });
   describe("multithreading verify swig set", function () {
     this.timeout(60000);
@@ -143,9 +151,17 @@ describe("utils", () => {
     after(async () => {
       await workerPool.close();
     });
-    it("should verify swig sets", async () => {
+    it("should verify a single swig set", async () => {
       const response = await workerPool.verifySignatureSets(swigGroups[0], {batchable: true});
       expect(response).to.be.true;
+    });
+    it("should verify multiple swig sets", async () => {
+      const responses = [] as Promise<boolean>[];
+      for (const sets of swigGroups) {
+        responses.push(workerPool.verifySignatureSets(sets, {batchable: true}));
+      }
+      const results = await Promise.all(responses);
+      expect(results.every((r) => r)).to.be.true;
     });
   });
 });
