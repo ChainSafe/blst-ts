@@ -1,4 +1,4 @@
-import {SecretKey, PublicKey, Signature} from "../../lib";
+import {verify, SecretKey, PublicKey, Signature} from "../../lib";
 
 export interface FuzzTestCase {
   name: string;
@@ -52,5 +52,15 @@ export const testCases: FuzzTestCase[] = [
       "BLST_ERROR::BLST_BAD_ENCODING",
       "BLST_ERROR: sigBytes must be 96 or 192 bytes long",
     ],
+  },
+  {
+    name: "verify",
+    target: (data: Buffer) => {
+      const secretKey = SecretKey.fromKeygen(Buffer.alloc(32, "*"));
+      const publicKey = secretKey.toPublicKey();
+      const signature = secretKey.sign(data);
+      return verify(data, publicKey, signature);
+    },
+    expectedErrors: [],
   },
 ];
