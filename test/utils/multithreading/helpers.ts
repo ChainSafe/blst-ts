@@ -54,7 +54,7 @@ export function getJobResultError(jobResult: WorkResultError | null, i: number):
   return workerError;
 }
 
-const commonMessage = crypto.randomBytes(32);
+export const commonMessage = crypto.randomBytes(32);
 
 const commonNapiMessageSignatures = new Map<number, napi.Signature>();
 export function getNapiSetSameMessage(i: number): NapiSet {
