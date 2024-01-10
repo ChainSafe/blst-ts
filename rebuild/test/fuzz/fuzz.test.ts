@@ -56,6 +56,8 @@ for (const testCase of testCases) {
     "--coverage true",
     `--coverage_directory ${coverageDir}`,
     "--coverage_reporters lcov",
+    // "--",
+    // "-max_total_time=10",
   ].join(" ");
 
   console.log(`Running fuzz test: ${testCase.name}`);
