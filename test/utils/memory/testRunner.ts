@@ -213,6 +213,7 @@ function formatRunResult(test: MemoryTestOptions<unknown>, result: MemoryTestRes
   const segments = [title, `${stringifyResultByOrderOfMagnitude(result.averageBytesPerInstance)} / instance`];
   if (test.displayRunInfo) {
     segments.push(`${result.totalMemoryAllocated} allocated by ${result.instancesCreated} instances`);
+    segments.push(`${result.rssAllocated} rss allocated`);
   }
   return segments.join(" - ");
 }
@@ -227,8 +228,9 @@ export async function memoryTest(
   const longestId = Math.max(...testCases.map(({id}) => id.length));
 
   for (const testRun of testCases) {
-    const result = await memoryTestRunner({...options, ...testRun});
+    const test = {...options, ...testRun};
+    const result = await memoryTestRunner(test);
     // eslint-disable-next-line no-console
-    console.log(formatRunResult(testRun, result, longestId));
+    console.log(formatRunResult(test, result, longestId));
   }
 }
