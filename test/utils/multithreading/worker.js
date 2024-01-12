@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-require("ts-node").register();
+require("ts-node").register({esm: true});
 const worker = require("worker_threads");
 const {expose} = require("@chainsafe/threads/worker");
 const {runSwigWorkRequests} = require("./runWorkRequests");

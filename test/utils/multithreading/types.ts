@@ -1,7 +1,7 @@
 import {Worker} from "@chainsafe/threads";
 import * as swig from "../../../src";
 import * as napi from "../../../rebuild/lib";
-import {NapiSet, SignatureSetArray} from "../types";
+import {SignatureSetArray} from "../types";
 
 export enum SignatureSetType {
   single = "single",
@@ -138,18 +138,18 @@ export enum WorkerStatusCode {
   running,
 }
 
+export type IdleWorkerStatus = {code: WorkerStatusCode.idle; workerApi: WorkerApi};
 export type WorkerStatus =
   | {code: WorkerStatusCode.notInitialized}
   | {code: WorkerStatusCode.initializing; initPromise: Promise<WorkerApi>}
   | {code: WorkerStatusCode.initializationError; error: Error}
-  | {code: WorkerStatusCode.idle; workerApi: WorkerApi}
+  | IdleWorkerStatus
   | {code: WorkerStatusCode.running; workerApi: WorkerApi};
 
 export type WorkerDescriptor = {
   worker: Worker;
   status: WorkerStatus;
 };
-
 export type WorkRequestHandler = (workReqs: BlsWorkRequest[]) => Promise<BlsWorkResult>;
 
 export interface WorkerData {
