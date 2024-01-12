@@ -22,6 +22,7 @@ import {
   WorkerStatusCode,
   WorkRequestHandler,
   ISignatureSet,
+  IdleWorkerStatus,
 } from "./types";
 import {LinkedList} from "./array";
 import {
@@ -279,7 +280,7 @@ export class BlsMultiThreading {
         this.jobsForNextRun.unshift(job);
       }
       this.buffer = null;
-      setTimeout(this.runJob, 0);
+      setTimeout(this.runJob.bind(this), 0);
     }
   };
 
@@ -305,13 +306,18 @@ export class BlsMultiThreading {
     await this._runJob(jobs, runNapiWorkRequests);
   };
 
-  private runJobWorkerPool = async (jobs: QueuedJob[]): Promise<void> => {
+  private async getIdleWorker(): Promise<WorkerDescriptor> {
     const worker = this.workers.find((worker) => worker.status.code === WorkerStatusCode.idle);
     if (!worker || worker.status.code !== WorkerStatusCode.idle) {
-      return;
+      await new Promise<void>((resolve) => setTimeout(resolve, 50));
+      return await this.getIdleWorker();
     }
+    return worker;
+  }
 
-    const workerApi = worker.status.workerApi;
+  private runJobWorkerPool = async (jobs: QueuedJob[]): Promise<void> => {
+    const worker = await this.getIdleWorker();
+    const workerApi = (worker.status as IdleWorkerStatus).workerApi;
     worker.status = {code: WorkerStatusCode.running, workerApi};
     this.workersBusy++;
 
