@@ -13,20 +13,17 @@ describe("multithreading perf", function () {
     256,
   ];
 
+  let libuvPool: BlsMultiThreading;
+  let workerPool: BlsMultiThreading;
+
   describe("libuv", () => {
-    let libuvPool: BlsMultiThreading;
     let napiGroups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
     before(async () => {
       libuvPool = new BlsMultiThreading({blsPoolType: BlsPoolType.libuv});
-      console.log({libuvPoolSize: libuvPool.blsPoolSize});
       napiGroups = getGroupsOfBatchesOfSignatureSets(...getGroupsInfo(false));
-    });
-    after(async () => {
-      await libuvPool.close();
     });
     itBench({
       id: "libuv multithreading - napi",
-      timeoutBench: 120_000,
       fn: async () => {
         const responses = [] as Promise<boolean>[];
         for (const sets of napiGroups) {
@@ -39,12 +36,10 @@ describe("multithreading perf", function () {
   });
 
   describe("workers", () => {
-    let workerPool: BlsMultiThreading;
     let swigGroups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
     before(async () => {
       workerPool = new BlsMultiThreading({blsPoolType: BlsPoolType.workers});
       await workerPool.waitTillInitialized();
-      console.log({workerPoolSize: workerPool.blsPoolSize});
       swigGroups = getGroupsOfBatchesOfSignatureSets(...getGroupsInfo(true));
     });
     after(async () => {
@@ -52,7 +47,6 @@ describe("multithreading perf", function () {
     });
     itBench({
       id: "worker multithreading - swig",
-      timeoutBench: 120_000,
       fn: async () => {
         const responses = [] as Promise<any>[];
         for (const sets of swigGroups) {
@@ -62,5 +56,14 @@ describe("multithreading perf", function () {
         expect(results.every((r) => r)).to.be.true;
       },
     });
+  });
+
+  after(async () => {
+    console.log({
+      libuvPoolSize: libuvPool.blsPoolSize,
+      workerPoolSize: workerPool.blsPoolSize,
+    });
+    await libuvPool.close();
+    await workerPool.close();
   });
 });
