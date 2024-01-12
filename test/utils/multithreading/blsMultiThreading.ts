@@ -307,12 +307,15 @@ export class BlsMultiThreading {
   };
 
   private async getIdleWorker(): Promise<WorkerDescriptor> {
-    const worker = this.workers.find((worker) => worker.status.code === WorkerStatusCode.idle);
-    if (!worker || worker.status.code !== WorkerStatusCode.idle) {
-      await new Promise<void>((resolve) => setTimeout(resolve, 50));
-      return await this.getIdleWorker();
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const worker = this.workers.find((worker) => worker.status.code === WorkerStatusCode.idle);
+      if (!worker || worker.status.code !== WorkerStatusCode.idle) {
+        await new Promise<void>((resolve) => setTimeout(resolve, 5));
+        continue;
+      }
+      return worker;
     }
-    return worker;
   }
 
   private runJobWorkerPool = async (jobs: QueuedJob[]): Promise<void> => {
