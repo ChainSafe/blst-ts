@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Mocha Tests",
+            "name": "Debug Multi-Thread Tests",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/ts-node",
             "args": [
                 "${workspaceFolder}/node_modules/.bin/benchmark",
