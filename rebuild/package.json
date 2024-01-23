@@ -11,10 +11,12 @@
     "build": "node-gyp build",
     "build:clean": "npm run clean && npm run build",
     "build:debug": "node-gyp build --debug",
+    "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "lint:ts": "eslint --color --ext .ts lib/ test/",
     "lint:c": "clang-format -i ./src/*",
     "lint": "npm run lint:c && npm run lint:ts",
     "test": "yarn test:unit && yarn test:spec",
+    "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "test:spec": "mocha 'test/spec/**/*.test.ts'",
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
@@ -25,6 +27,7 @@
     "node-gyp": "^9.3.1"
   },
   "devDependencies": {
+    "@jazzer.js/core": "^2.1.0",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.15.11",

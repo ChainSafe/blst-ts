@@ -47,7 +47,7 @@ export function shuffle(array: any[]): any[] {
 }
 
 const napiSets = new Map<number, NapiSet>();
-function buildNapiSet(i: number): NapiSet {
+export function buildNapiSet(i: number): NapiSet {
   const message = crypto.randomBytes(32);
   const secretKey = napi.SecretKey.fromKeygen(crypto.randomBytes(32));
   const set = {
@@ -69,7 +69,7 @@ export function getNapiSet(i: number): NapiSet {
 }
 
 const swigSets = new Map<number, SwigSet>();
-function buildSwigSet(i: number): SwigSet {
+export function buildSwigSet(i: number): SwigSet {
   const message = crypto.randomBytes(32);
   const secretKey = swig.SecretKey.fromKeygen(crypto.randomBytes(32));
   const set = {
