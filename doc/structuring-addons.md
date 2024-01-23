@@ -46,7 +46,7 @@ Each function has a Worker that extends `BlstAsyncWorker`. In this context it he
 
 ## Complex Data Types
 
-Because of the section above, structuring arguments becomes a lot easier.  There are some considerations to take though.
+JS is much more forgiving than `C` when it comes to data types. In particular, converting TypeScript Union types to native data can be quite verbose.  There needs to be explicit type checking and conversion for each step of the unwrapping process. It is much easier to do this with a helper class. It is possible to not use helper classes, however there is a lot of boilerplate code that needs to be written and maintained. The helper classes are designed to be used during class construction and the results can be checked during the `Setup` phase of the Worker.  This not only simplifies the code but also makes error handling much easier.
 
 ## Context-Awareness
 
