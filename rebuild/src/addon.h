@@ -42,9 +42,10 @@ using std::endl;
 
 #define BLST_TS_CREATE_JHEAP_OBJECT(                                           \
     wrapped_name, obj_name, class_name, instance_name)                         \
+    bool *is_external = true;                                                  \
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped_name = module->_##obj_name##_ctr.New(                 \
-        {Napi::External<void>::New(env, nullptr)});                            \
+        {Napi::External<bool>::New(env, is_external)});                        \
     /* Setup object correctly.  Start with type tagging wrapper class. */      \
     wrapped_name.TypeTag(&module->_##obj_name##_tag);                          \
     /* Unwrap object to get native instance */                                 \
