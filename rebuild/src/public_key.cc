@@ -18,6 +18,10 @@ void PublicKey::Init(
             "keyValidate",
             &PublicKey::KeyValidate,
             static_cast<napi_property_attributes>(napi_enumerable)),
+        InstanceMethod(
+            "isInfinity",
+            &PublicKey::IsInfinity,
+            static_cast<napi_property_attributes>(napi_enumerable)),
     };
 
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
@@ -138,4 +142,19 @@ Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     }
 
     return scope.Escape(info.Env().Undefined());
+}
+
+Napi::Value PublicKey::IsInfinity(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
+
+    if (!_has_jacobian && !_has_affine) {
+        Napi::Error::New(env, "BLST_ERROR: PublicKey not initialized")
+            .ThrowAsJavaScriptException();
+    } else if (_has_jacobian && _jacobian->is_inf()) {
+        return scope.Escape(Napi::Boolean::New(env, true));
+    } else if (_has_affine && _affine->is_inf()) {
+        return scope.Escape(Napi::Boolean::New(env, true));
+    }
+    return scope.Escape(Napi::Boolean::New(env, false));
 }
