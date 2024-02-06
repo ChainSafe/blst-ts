@@ -136,37 +136,39 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
+    return info.Env().Undefined();
+    // BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
-    BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, pk)
-    // Derive public key from secret key. Default to jacobian coordinates
-    pk->_jacobian.reset(new blst::P1{*_key});
-    pk->_has_jacobian = true;
+    // BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, pk)
+    // // Derive public key from secret key. Default to jacobian coordinates
+    // pk->_jacobian.reset(new blst::P1{*_key});
+    // pk->_has_jacobian = true;
 
-    return scope.Escape(wrapped);
+    // return scope.Escape(wrapped);
 }
 
 Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
-    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
+    return info.Env().Undefined();
+    // BLST_TS_FUNCTION_PREAMBLE(info, env, module)
 
-    // Check for zero key and throw error to meet spec requirements
-    if (_is_zero_key) {
-        Napi::TypeError::New(
-            env, "BLST_ERROR: cannot sign message with zero private key")
-            .ThrowAsJavaScriptException();
-        return scope.Escape(info.Env().Undefined());
-    }
+    // // Check for zero key and throw error to meet spec requirements
+    // if (_is_zero_key) {
+    //     Napi::TypeError::New(
+    //         env, "BLST_ERROR: cannot sign message with zero private key")
+    //         .ThrowAsJavaScriptException();
+    //     return scope.Escape(info.Env().Undefined());
+    // }
 
-    Napi::Value msg_value = info[0];
-    BLST_TS_UNWRAP_UINT_8_ARRAY(
-        msg_value, msg, "msg", scope.Escape(env.Undefined()))
-    BLST_TS_CREATE_JHEAP_OBJECT(wrapped, signature, Signature, sig)
-    // Default to jacobian coordinates
-    sig->_jacobian.reset(new blst::P2);
-    sig->_has_jacobian = true;
-    // Hash to point and sign message
-    sig->_jacobian->hash_to(msg.Data(), msg.ByteLength(), module->_dst);
-    sig->_jacobian->sign_with(*_key);
+    // Napi::Value msg_value = info[0];
+    // BLST_TS_UNWRAP_UINT_8_ARRAY(
+    //     msg_value, msg, "msg", scope.Escape(env.Undefined()))
+    // BLST_TS_CREATE_JHEAP_OBJECT(wrapped, signature, Signature, sig)
+    // // Default to jacobian coordinates
+    // sig->_jacobian.reset(new blst::P2);
+    // sig->_has_jacobian = true;
+    // // Hash to point and sign message
+    // sig->_jacobian->hash_to(msg.Data(), msg.ByteLength(), module->_dst);
+    // sig->_jacobian->sign_with(*_key);
 
-    return scope.Escape(wrapped);
+    // return scope.Escape(wrapped);
 }
