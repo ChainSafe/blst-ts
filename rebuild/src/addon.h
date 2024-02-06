@@ -23,12 +23,12 @@ using std::endl;
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
-#define NEW_BLST_TS_IS_INFINITY                                                    \
+#define BLST_TS_IS_INFINITY                                                \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     return scope.Escape(Napi::Boolean::New(env, _point->IsInfinite()));
 
-#define NEW_BLST_TS_SERIALIZE_POINT(macro_name)                                \
+#define BLST_TS_SERIALIZE_POINT(macro_name)                                \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     bool compressed{true};                                                     \
@@ -42,8 +42,7 @@ using std::endl;
     _point->Serialize(compressed, serialized.Data());                          \
     return scope.Escape(serialized);
 
-
-#define NEW_BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)         \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
@@ -60,7 +59,7 @@ using std::endl;
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define NEW_BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
+#define NEW_BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)   \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
@@ -78,62 +77,6 @@ using std::endl;
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
-
-
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
-    if (!value_name.IsTypedArray()) {                                          \
-        Napi::TypeError::New(                                                  \
-            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
-            .ThrowAsJavaScriptException();                                     \
-        return ret_val;                                                        \
-    }                                                                          \
-    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
-    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
-        Napi::TypeError::New(                                                  \
-            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
-            .ThrowAsJavaScriptException();                                     \
-        return ret_val;                                                        \
-    }                                                                          \
-    Napi::Uint8Array arr_name =                                                \
-        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
-
-#define BLST_TS_CREATE_JHEAP_OBJECT(                                           \
-    wrapped_name, obj_name, class_name, instance_name)                         \
-    /* Allocate object in javascript heap */                                   \
-    Napi::Object wrapped_name = module->_##obj_name##_ctr.New(                 \
-        {Napi::External<void>::New(env, nullptr)});                            \
-    /* Unwrap object to get native instance */                                 \
-    class_name *instance_name = class_name::Unwrap(wrapped_name);
-
-#define BLST_TS_SERIALIZE_POINT(macro_name, class_name)                        \
-    Napi::Env env = info.Env();                                                \
-    Napi::EscapableHandleScope scope(env);                                     \
-                                                                               \
-    bool compressed{true};                                                     \
-    if (!info[0].IsUndefined()) {                                              \
-        compressed = info[0].ToBoolean().Value();                              \
-    }                                                                          \
-    Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(             \
-        env,                                                                   \
-        compressed ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                  \
-                   : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);              \
-                                                                               \
-    if (_has_jacobian) {                                                       \
-        compressed ? _jacobian->compress(serialized.Data())                    \
-                   : _jacobian->serialize(serialized.Data());                  \
-    } else if (_has_affine) {                                                  \
-        compressed ? _affine->compress(serialized.Data())                      \
-                   : _affine->serialize(serialized.Data());                    \
-    } else {                                                                   \
-        Napi::Error::New(                                                      \
-            env,                                                               \
-            "BLST_ERROR: " class_name                                          \
-            " cannot be serialized. No point found!")                          \
-            .ThrowAsJavaScriptException();                                     \
-        return scope.Escape(env.Undefined());                                  \
-    }                                                                          \
-                                                                               \
-    return scope.Escape(serialized);
 
 #define BLST_TS_UNWRAP_POINT_ARG(                                              \
     env,                                                                       \

@@ -39,7 +39,7 @@ void PublicKey::Init(
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value pk_bytes_val = info[0];
-    NEW_BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_val, pk_bytes, "pkBytes")
+    BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_val, pk_bytes, "pkBytes")
 
     std::string err_out{"BLST_ERROR: pkBytes"};
     if (!is_valid_length(
@@ -114,7 +114,7 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
 }
 
 Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info){
-    NEW_BLST_TS_SERIALIZE_POINT(PUBLIC_KEY)}
+    BLST_TS_SERIALIZE_POINT(PUBLIC_KEY)}
 
 Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
@@ -131,5 +131,5 @@ Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value PublicKey::IsInfinity(const Napi::CallbackInfo &info) {
-    NEW_BLST_TS_IS_INFINITY
+    BLST_TS_IS_INFINITY
 }

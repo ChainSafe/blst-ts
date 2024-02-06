@@ -40,7 +40,7 @@ void Signature::Init(
 Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value sig_bytes_val = info[0];
-    NEW_BLST_TS_UNWRAP_UINT_8_ARRAY(sig_bytes_val, sig_bytes, "sigBytes")
+    BLST_TS_UNWRAP_UINT_8_ARRAY(sig_bytes_val, sig_bytes, "sigBytes")
 
     std::string err_out{"BLST_ERROR: sigBytes"};
     if (!is_valid_length(
@@ -115,7 +115,7 @@ Signature::Signature(const Napi::CallbackInfo &info)
 }
 
 Napi::Value Signature::Serialize(const Napi::CallbackInfo &info){
-    NEW_BLST_TS_SERIALIZE_POINT(SIGNATURE)}
+    BLST_TS_SERIALIZE_POINT(SIGNATURE)}
 
 Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
@@ -128,5 +128,5 @@ Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info) {
 }
 
 Napi::Value Signature::IsInfinity(const Napi::CallbackInfo &info) {
-    NEW_BLST_TS_IS_INFINITY
+    BLST_TS_IS_INFINITY
 }
