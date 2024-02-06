@@ -23,54 +23,37 @@ using std::endl;
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
+        return ret_val;                                                        \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
     if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        return env.Undefined();                                                \
-    }                                                                          \
-    Napi::Uint8Array arr_name =                                                \
-        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
-
-#define BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
-    if (!value_name.IsTypedArray()) {                                          \
-        Napi::TypeError::New(                                                  \
-            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
-            .ThrowAsJavaScriptException();                                     \
-        m_has_error = true;                                                    \
-        return;                                                                \
-    }                                                                          \
-    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
-    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
-        Napi::TypeError::New(                                                  \
-            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
-            .ThrowAsJavaScriptException();                                     \
-        m_has_error = true;                                                    \
-        return;                                                                \
+        return ret_val;                                                        \
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
 #define BLST_TS_CREATE_JHEAP_OBJECT(                                           \
     wrapped_name, obj_name, class_name, instance_name)                         \
-    bool is_external = true;                                                   \
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped_name = module->_##obj_name##_ctr.New(                 \
-        {Napi::External<bool>::New(env, &is_external)});                       \
+        {Napi::External<void>::New(env, nullptr)});                            \
+    /* Setup object correctly.  Start with type tagging wrapper class. */      \
+    wrapped_name.TypeTag(&module->_##obj_name##_tag);                          \
     /* Unwrap object to get native instance */                                 \
     class_name *instance_name = class_name::Unwrap(wrapped_name);
 
-#define BLST_TS_SERIALIZE_POINT(macro_name)                                    \
+#define BLST_TS_SERIALIZE_POINT(macro_name, class_name)                        \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
+                                                                               \
     bool compressed{true};                                                     \
     if (!info[0].IsUndefined()) {                                              \
         compressed = info[0].ToBoolean().Value();                              \
@@ -79,13 +62,23 @@ using std::endl;
         env,                                                                   \
         compressed ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                  \
                    : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);              \
-    _point->Serialize(compressed, serialized.Data());                          \
+                                                                               \
+    if (_has_jacobian) {                                                       \
+        compressed ? _jacobian->compress(serialized.Data())                    \
+                   : _jacobian->serialize(serialized.Data());                  \
+    } else if (_has_affine) {                                                  \
+        compressed ? _affine->compress(serialized.Data())                      \
+                   : _affine->serialize(serialized.Data());                    \
+    } else {                                                                   \
+        Napi::Error::New(                                                      \
+            env,                                                               \
+            "BLST_ERROR: " class_name                                          \
+            " cannot be serialized. No point found!")                          \
+            .ThrowAsJavaScriptException();                                     \
+        return scope.Escape(env.Undefined());                                  \
+    }                                                                          \
+                                                                               \
     return scope.Escape(serialized);
-
-#define BLST_TS_IS_INFINITY                                                    \
-    Napi::Env env = info.Env();                                                \
-    Napi::EscapableHandleScope scope(env);                                     \
-    return scope.Escape(Napi::Boolean::New(env, _point->IsInfinite()));
 
 #define BLST_TS_UNWRAP_POINT_ARG(                                              \
     env,                                                                       \
@@ -128,13 +121,11 @@ using std::endl;
                 .ThrowAsJavaScriptException();                                 \
             has_error = true;                                                  \
         }                                                                      \
-        /** this can potentially throw. macro must be in try/catch.            \
-         * Leave in outer context so that loop counter can be used             \
-         * in error message                                                    \
+        /** this can potentially throw. macro must be in try/catch. Leave in   \
+         *  outer context so that loop counter can be used in error message    \
          *                                                                     \
-         *  Only need to create this ptr to hold the blst::point               \
-         * and make sure its deleted. Deserialized objects have a              \
-         * member smart pointer                                                \
+         *  Only need to create this ptr to hold the blst::point and make sure \
+         *  its deleted. Deserialized objects have a member smart pointer      \
          */                                                                    \
         ptr_group.unique_ptr.reset(                                            \
             new blst_point{typed.Data(), typed.ByteLength()});                 \
@@ -196,17 +187,9 @@ class BlstTsAddon;
 
 typedef enum { Affine, Jacobian } CoordType;
 
-class Point {
-   public:
-    virtual ~Point() = default;
-    virtual bool IsInfinite() = 0;
-    virtual bool InGroup() = 0;
-    virtual void Serialize(bool compress, blst::byte *out) = 0;
-};
-
 /**
- * Checks a byte array to see if it is all zeros. Can pass start byte
- * for the cases where the first byte is the tag (infinity point and
+ * Checks a byte array to see if it is all zeros. Can pass start byte for the
+ * cases where the first byte is the tag (infinity point and
  * compress/uncompressed).
  *
  * @param data uint8_t*
@@ -219,14 +202,11 @@ bool is_zero_bytes(
     const uint8_t *data, const size_t start_byte, const size_t byte_length);
 
 /**
- * Checks if a byte array is a valid length. If not, sets the error
- * message and returns false.  If valid returns true for use in
- * conditional statements.
+ * Checks if a byte array is a valid length. If not, sets the error message and
+ * returns false.  If valid returns true for use in conditional statements.
  *
- * @param[out] error_out &std::string - error message to set if
- * invalid
- * @param[in] byte_length size_t - length of the byte array to
- * validate
+ * @param[out] error_out &std::string - error message to set if invalid
+ * @param[in] byte_length size_t - length of the byte array to validate
  * @param[in] length1 size_t - first valid length
  * @param[in] length2 size_t - second valid length (optional)
  *
@@ -247,20 +227,23 @@ bool is_valid_length(
 #include "signature.h"
 
 /**
- * BlstTsAddon is the main entry point for the library. It is
- * responsible for initialization and holding global values.
+ * BlstTsAddon is the main entry point for the library. It is responsible
+ * for initialization and holding global values.
  */
 class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
    public:
     std::string _dst;
     std::string _blst_error_strings[8];
     Napi::FunctionReference _secret_key_ctr;
+    napi_type_tag _secret_key_tag;
     Napi::FunctionReference _public_key_ctr;
+    napi_type_tag _public_key_tag;
     Napi::FunctionReference _signature_ctr;
+    napi_type_tag _signature_tag;
 
     /**
-     * BlstTsAddon::BlstTsAddon constructor used by Node.js to create
-     * an instance of the addon.
+     * BlstTsAddon::BlstTsAddon constructor used by Node.js to create an
+     * instance of the addon.
      *
      * @param env Napi::Env
      * @param exports Napi::Object
@@ -272,9 +255,8 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
     BlstTsAddon(Napi::Env env, Napi::Object exports);
 
     /**
-     * References are by default non-copyable and non-movable. This
-     * is just to make it explicit that it's not allowed to be copied
-     * or moved.
+     * References are by default non-copyable and non-movable. This is just
+     * to make it explicit that it's not allowed to be copied or moved.
      */
     BlstTsAddon(BlstTsAddon &&source) = delete;
     BlstTsAddon(const BlstTsAddon &source) = delete;
@@ -289,10 +271,10 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
     /**
      * Uses the same openssl method as node to generate random bytes
      *
-     * Either succeeds with exactly |length| bytes of
-     * cryptographically strong pseudo-random data, or fails. This
-     * function may block. Don't assume anything about the contents
-     * of |buffer| on error. MUST check the return value for success!
+     * Either succeeds with exactly |length| bytes of cryptographically
+     * strong pseudo-random data, or fails. This function may block.
+     * Don't assume anything about the contents of |buffer| on error.
+     * MUST check the return value for success!
      *
      * As a special case, |length == 0| can be used to check if the
      * GetRandomBytes is properly seeded without consuming entropy.

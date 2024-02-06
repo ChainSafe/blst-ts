@@ -1,13 +1,7 @@
 import {expect} from "chai";
 import {BLST_CONSTANTS, CoordType, PublicKey, SecretKey} from "../../lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {
-  validPublicKey,
-  SECRET_KEY_BYTES,
-  invalidInputs,
-  badPublicKey,
-  G1_POINT_AT_INFINITY,
-} from "../__fixtures__";
+import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, badPublicKey, G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("PublicKey", () => {
   it("should exist", () => {
@@ -23,7 +17,7 @@ describe("PublicKey", () => {
     describe("deserialize", () => {
       it("should only take 48 or 96 bytes", () => {
         expect(() => PublicKey.deserialize(Buffer.alloc(32, "*"))).to.throw(
-          "pkBytes is 32 bytes, but must be 48 or 96 bytes long"
+          "BLST_ERROR: pkBytes must be 48 or 96 bytes long"
         );
       });
       it("should take uncompressed byte arrays", () => {
@@ -53,13 +47,15 @@ describe("PublicKey", () => {
         }
         it("should throw incorrect length pkBytes", () => {
           expect(() => PublicKey.deserialize(Buffer.alloc(12, "*"))).to.throw(
-            "pkBytes is 12 bytes, but must be 48 or 96 bytes long"
+            "BLST_ERROR: pkBytes must be 48 or 96 bytes long"
           );
         });
       });
       it("should throw on invalid key", () => {
-        expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw("BLST_BAD_ENCODING");
-        expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_BAD_ENCODING");
+        expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw(
+          "BLST_ERROR::BLST_BAD_ENCODING"
+        );
+        expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_ERROR::BLST_BAD_ENCODING");
       });
       it("should throw on zero key", () => {
         expect(() => PublicKey.deserialize(Buffer.from(G1_POINT_AT_INFINITY))).to.throw("BLST_BAD_ENCODING");
