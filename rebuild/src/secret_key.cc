@@ -139,7 +139,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     return scope.Escape(module->_public_key_ctr.New(
-        {Napi::External<P1>::New(env, new P1{blst::P1{*_key}}),
+        {Napi::External<P1Wrapper>::New(env, new P1{blst::P1{*_key}}),
          Napi::Boolean::New(env, false)}));
 }
 
@@ -158,7 +158,7 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
     
     Napi::Object sig_obj = module->_signature_ctr.New(
         // Default to jacobian coordinates
-        {Napi::External<P2>::New(env, new P2{blst::P2{}}),
+        {Napi::External<P2Wrapper>::New(env, new P2{blst::P2{}}),
          Napi::Boolean::New(env, false)});
     Signature *sig = Napi::ObjectWrap<Signature>::Unwrap(sig_obj);
     sig->_point->Sign(*_key, msg.Data(), msg.ByteLength(), module->_dst);

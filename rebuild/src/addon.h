@@ -59,7 +59,7 @@ using std::endl;
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define NEW_BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)   \
+#define BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)   \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
