@@ -26,8 +26,6 @@ void Signature::Init(
 
     Napi::Function ctr = DefineClass(env, "Signature", proto, module);
     module->_signature_ctr = Napi::Persistent(ctr);
-    // These tag values must be unique across all classes
-    module->_signature_tag = {4ULL, 5ULL};
     exports.Set(Napi::String::New(env, "Signature"), ctr);
 
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();

@@ -25,8 +25,6 @@ void PublicKey::Init(
 
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
     module->_public_key_ctr = Napi::Persistent(ctr);
-    // These tag values must be unique across all classes
-    module->_public_key_tag = {2ULL, 3ULL};
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
 
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();

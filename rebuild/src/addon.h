@@ -23,6 +23,63 @@ using std::endl;
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
+#define NEW_BLST_TS_IS_INFINITY                                                    \
+    Napi::Env env = info.Env();                                                \
+    Napi::EscapableHandleScope scope(env);                                     \
+    return scope.Escape(Napi::Boolean::New(env, _point->IsInfinite()));
+
+#define NEW_BLST_TS_SERIALIZE_POINT(macro_name)                                \
+    Napi::Env env = info.Env();                                                \
+    Napi::EscapableHandleScope scope(env);                                     \
+    bool compressed{true};                                                     \
+    if (!info[0].IsUndefined()) {                                              \
+        compressed = info[0].ToBoolean().Value();                              \
+    }                                                                          \
+    Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(             \
+        env,                                                                   \
+        compressed ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                  \
+                   : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);              \
+    _point->Serialize(compressed, serialized.Data());                          \
+    return scope.Escape(serialized);
+
+
+#define NEW_BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
+    if (!value_name.IsTypedArray()) {                                          \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
+            .ThrowAsJavaScriptException();                                     \
+        return env.Undefined();                                                \
+    }                                                                          \
+    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
+    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
+            .ThrowAsJavaScriptException();                                     \
+        return env.Undefined();                                                \
+    }                                                                          \
+    Napi::Uint8Array arr_name =                                                \
+        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
+
+#define NEW_BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
+    if (!value_name.IsTypedArray()) {                                          \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
+            .ThrowAsJavaScriptException();                                     \
+        m_has_error = true;                                                    \
+        return;                                                                \
+    }                                                                          \
+    Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
+    if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
+        Napi::TypeError::New(                                                  \
+            env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
+            .ThrowAsJavaScriptException();                                     \
+        m_has_error = true;                                                    \
+        return;                                                                \
+    }                                                                          \
+    Napi::Uint8Array arr_name =                                                \
+        arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
+
+
 #define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name, ret_val)    \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
@@ -45,8 +102,6 @@ using std::endl;
     /* Allocate object in javascript heap */                                   \
     Napi::Object wrapped_name = module->_##obj_name##_ctr.New(                 \
         {Napi::External<void>::New(env, nullptr)});                            \
-    /* Setup object correctly.  Start with type tagging wrapper class. */      \
-    wrapped_name.TypeTag(&module->_##obj_name##_tag);                          \
     /* Unwrap object to get native instance */                                 \
     class_name *instance_name = class_name::Unwrap(wrapped_name);
 
@@ -134,14 +189,6 @@ using std::endl;
         /* Arg is a deserialized point */                                      \
     } else if (val_name.IsObject()) {                                          \
         Napi::Object wrapped = val_name.As<Napi::Object>();                    \
-        if (!wrapped.CheckTypeTag(&module->_##snake_case_name##_tag)) {        \
-            Napi::TypeError::New(                                              \
-                env,                                                           \
-                "BLST_ERROR: " pascal_case_string                              \
-                " must be a " pascal_case_string "Arg")                        \
-                .ThrowAsJavaScriptException();                                 \
-            has_error = true;                                                  \
-        }                                                                      \
         pascal_case_name *snake_case_name = pascal_case_name::Unwrap(wrapped); \
         /* Check that the required point type has been created */              \
         if (coord_type == CoordType::Jacobian) {                               \
@@ -235,11 +282,8 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
     std::string _dst;
     std::string _blst_error_strings[8];
     Napi::FunctionReference _secret_key_ctr;
-    napi_type_tag _secret_key_tag;
     Napi::FunctionReference _public_key_ctr;
-    napi_type_tag _public_key_tag;
     Napi::FunctionReference _signature_ctr;
-    napi_type_tag _signature_tag;
 
     /**
      * BlstTsAddon::BlstTsAddon constructor used by Node.js to create an

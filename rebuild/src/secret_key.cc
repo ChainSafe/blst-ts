@@ -2,8 +2,7 @@
 
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
-    Napi::HandleScope scope(
-        env);  // no need to EscapeHandleScope, Persistent will take care of it
+    Napi::HandleScope scope(env);
     auto proto = {
         StaticMethod(
             "fromKeygen",
@@ -31,8 +30,6 @@ void SecretKey::Init(
 
     Napi::Function ctr = DefineClass(env, "SecretKey", proto, module);
     module->_secret_key_ctr = Napi::Persistent(ctr);
-    // These tag values must be unique across all classes
-    module->_secret_key_tag = {0ULL, 1ULL};
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
 
     exports.Get("BLST_CONSTANTS")
