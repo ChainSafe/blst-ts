@@ -2,8 +2,7 @@
 
 void PublicKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
-    Napi::HandleScope scope(
-        env);  // no need to Escape, Persistent will take care of it
+    Napi::HandleScope scope(env);
     auto proto = {
         StaticMethod(
             "deserialize",
@@ -17,6 +16,10 @@ void PublicKey::Init(
         InstanceMethod(
             "keyValidate",
             &PublicKey::KeyValidate,
+            static_cast<napi_property_attributes>(napi_enumerable)),
+        InstanceMethod(
+            "isInfinity",
+            &PublicKey::IsInfinity,
             static_cast<napi_property_attributes>(napi_enumerable)),
     };
 
@@ -37,10 +40,9 @@ void PublicKey::Init(
 
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
-    Napi::Value pk_bytes_value = info[0];
+    Napi::Value pk_bytes_val = info[0];
+    NEW_BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_val, pk_bytes, "pkBytes")
 
-    BLST_TS_UNWRAP_UINT_8_ARRAY(
-        pk_bytes_value, pk_bytes, "pkBytes", scope.Escape(env.Undefined()))
     std::string err_out{"BLST_ERROR: pkBytes"};
     if (!is_valid_length(
             err_out,
@@ -48,13 +50,10 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
             BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
             BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
+        return env.Undefined();
     }
 
-    BLST_TS_CREATE_JHEAP_OBJECT(wrapped, public_key, PublicKey, pk)
-    // default to jacobian
-    pk->_has_jacobian = true;
-
+    bool is_affine = false;
     // but figure out if request for affine
     if (!info[1].IsUndefined()) {
         Napi::Value type_val = info[1].As<Napi::Value>();
@@ -62,41 +61,48 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
             Napi::TypeError::New(
                 env, "BLST_ERROR: type must be of enum CoordType (number)")
                 .ThrowAsJavaScriptException();
-            return scope.Escape(env.Undefined());
+            return env.Undefined();
         }
-        if (type_val.As<Napi::Number>().Uint32Value() == 0) {
-            pk->_has_jacobian = false;
-            pk->_has_affine = true;
+        switch (type_val.As<Napi::Number>().Uint32Value()) {
+            case 0:
+                is_affine = true;
+                break;
+            case 1:
+                // is_affine defaults to false
+                break;
+            default:
+                Napi::TypeError::New(
+                    env,
+                    "BLST_ERROR: must be CoordType.affine or "
+                    "CoordType.jacobian")
+                    .ThrowAsJavaScriptException();
+                return env.Undefined();
         }
     }
 
+    // try/catch here because using untrusted bytes for point creation and
+    // blst library will throw for invalid points
     try {
-        if (pk->_has_jacobian) {
-            pk->_jacobian.reset(
-                new blst::P1{pk_bytes.Data(), pk_bytes.ByteLength()});
-        } else {
-            pk->_affine.reset(
-                new blst::P1_Affine{pk_bytes.Data(), pk_bytes.ByteLength()});
+        if (is_affine) {
+            return scope.Escape(
+                module->_public_key_ctr.New({Napi::External<P1Wrapper>::New(
+                    env,
+                    new P1Affine{blst::P1_Affine{
+                        pk_bytes.Data(), pk_bytes.ByteLength()}})}));
         }
+        return scope.Escape(
+            module->_public_key_ctr.New({Napi::External<P1Wrapper>::New(
+                env,
+                new P1{blst::P1{pk_bytes.Data(), pk_bytes.ByteLength()}})}));
     } catch (blst::BLST_ERROR err) {
         Napi::RangeError::New(env, module->GetBlstErrorString(err))
             .ThrowAsJavaScriptException();
-        return scope.Escape(env.Undefined());
+        return env.Undefined();
     }
-
-    /**
-     * TODO: Check for zero key for spec tests
-     */
-
-    return scope.Escape(wrapped);
 }
 
 PublicKey::PublicKey(const Napi::CallbackInfo &info)
-    : Napi::ObjectWrap<PublicKey>{info},
-      _has_jacobian{false},
-      _has_affine{false},
-      _jacobian{nullptr},
-      _affine{nullptr} {
+    : Napi::ObjectWrap<PublicKey>{info} {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
     // Check that constructor was called from C++ and not JS. Externals can only
@@ -106,36 +112,26 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return;
     }
+    _point.reset(info[0].As<Napi::External<P1Wrapper>>().Data());
 }
 
-Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info) {
-    BLST_TS_SERIALIZE_POINT(PUBLIC_KEY, "PublicKey");
-}
+Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info){
+    NEW_BLST_TS_SERIALIZE_POINT(PUBLIC_KEY)}
 
 Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
-    Napi::EscapableHandleScope scope(env);
-
-    if (_has_jacobian) {
-        if (_jacobian->is_inf()) {
-            Napi::Error::New(env, "BLST_ERROR::BLST_PK_IS_INFINITY")
-                .ThrowAsJavaScriptException();
-        } else if (!_jacobian->in_group()) {
-            Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
-                .ThrowAsJavaScriptException();
-        }
-    } else if (_has_affine) {
-        if (_affine->is_inf()) {
-            Napi::Error::New(env, "BLST_ERROR::BLST_PK_IS_INFINITY")
-                .ThrowAsJavaScriptException();
-        } else if (!_affine->in_group()) {
-            Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
-                .ThrowAsJavaScriptException();
-        }
-    } else {
+    Napi::HandleScope scope(env);
+    if (_point->IsInfinite()) {
         Napi::Error::New(env, "BLST_ERROR::BLST_PK_IS_INFINITY")
             .ThrowAsJavaScriptException();
     }
+    if (!_point->InGroup()) {
+        Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
+            .ThrowAsJavaScriptException();
+    }
+    return info.Env().Undefined();
+}
 
-    return scope.Escape(info.Env().Undefined());
+Napi::Value PublicKey::IsInfinity(const Napi::CallbackInfo &info) {
+    NEW_BLST_TS_IS_INFINITY
 }
