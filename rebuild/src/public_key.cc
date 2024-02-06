@@ -100,7 +100,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
 }
 
 PublicKey::PublicKey(const Napi::CallbackInfo &info)
-    : Napi::ObjectWrap<PublicKey>{info} {
+    : Napi::ObjectWrap<PublicKey>{info}, _point{nullptr} {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
     // Check that constructor was called from C++ and not JS. Externals can only

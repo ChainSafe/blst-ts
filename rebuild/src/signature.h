@@ -23,6 +23,11 @@ class P2Wrapper {
     virtual void Serialize(bool compress, blst::byte *out) = 0;
     virtual void AddTo(blst::P2 &point) = 0;
     virtual P2AffineGroup AsAffine() = 0;
+    virtual void Sign(
+        const blst::SecretKey &key,
+        uint8_t *msg,
+        size_t msg_length,
+        const std::string &dst) = 0;
 };
 
 class P2 : public P2Wrapper {
@@ -41,6 +46,14 @@ class P2 : public P2Wrapper {
         group.raw_point = group.smart_pointer.get();
         return group;
     };
+    void Sign(
+        const blst::SecretKey &key,
+        uint8_t *msg,
+        size_t msg_length,
+        const std::string &dst) override {
+        _point.hash_to(msg, msg_length, dst);
+        _point.sign_with(key);
+    };
 };
 
 class P2Affine : public P2Wrapper {
@@ -58,6 +71,16 @@ class P2Affine : public P2Wrapper {
         P2AffineGroup group{.raw_point = &_point};
         return group;
     }
+    void Sign(
+        const blst::SecretKey &key,
+        uint8_t *msg,
+        size_t msg_length,
+        const std::string &dst) override {
+        blst::P2 jacobian{_point};
+        jacobian.hash_to(msg, msg_length, dst);
+        jacobian.sign_with(key);
+        _point = jacobian.to_affine();
+    };
 };
 
 class Signature : public Napi::ObjectWrap<Signature> {
