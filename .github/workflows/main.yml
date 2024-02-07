@@ -53,8 +53,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]
-        node: [14, 16, 17, 18, 20]
+        os: [ubuntu-20.04, macos-12, macos-14, windows-latest]
+        node: [16, 17, 18, 20]
     defaults:
       run:
         shell: bash
@@ -73,6 +73,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node}}
+
+      - uses: actions/setup-python@v5
+        with:
+          # More recent versions of python require more recent node-gyp
+          # See https://github.com/nodejs/node-gyp/issues/2869
+          python-version: '3.11' 
 
       - name: Install && Build TS + bindings
         run: |
@@ -105,6 +111,9 @@ jobs:
           path: prebuild/*.node
           if-no-files-found: error
 
+  # Required as current base images do not support arm64
+  # https://resources.github.com/devops/accelerate-your-cicd-with-arm-and-gpu-runners-in-github-actions/
+  # https://github.com/actions/runner-images/issues/5631
   build-arm:
     needs: ["build-swig"]
     runs-on: ubuntu-20.04
