@@ -65,6 +65,16 @@ Note that this repo contains a git submodule. Make sure the git submodule `blst`
 git submodule update --init --recursive
 ```
 
+## Release
+
+The release process is automatically [triggered](.github/workflows/main.yml#195) when a tagged commit is pushed.
+
+To create a new release: 
+
+1. First, increment the project version in [package.json](package.json#3) and merge the associated commit
+2. Then tag this commit with `git tag v${NEW_VERSION}`
+3. Finally push the new tag with `git push ${REMOTE} v${NEW_VERSION}`
+
 ## License
 
 Apache-2.0
