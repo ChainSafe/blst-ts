@@ -40,7 +40,7 @@ describe("Signature", () => {
         }
         it("should only take 96 or 192 bytes", () => {
           expect(() => Signature.deserialize(Buffer.alloc(32, "*"))).to.throw(
-            "sigBytes is 32 bytes, but must be 96 or 192 bytes long"
+            "BLST_ERROR: sigBytes must be 96 or 192 bytes long"
           );
         });
       });

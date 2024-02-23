@@ -57,7 +57,7 @@ describe("SecretKey", () => {
         }
         it("should throw incorrect length ikm", () => {
           expect(() => SecretKey.deserialize(Buffer.alloc(12, "*"))).to.throw(
-            "skBytes is 12 bytes, but must be 32 bytes long"
+            "BLST_ERROR: skBytes must be 32 bytes long"
           );
         });
       });
