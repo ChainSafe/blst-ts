@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: Setup SWIG
         run: |
           git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
@@ -54,7 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-12, macos-14, windows-latest]
-        node: [16, 17, 18, 20]
+        node: [18, 20, 21]
     defaults:
       run:
         shell: bash
@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [14, 16, 18, 20]
+        node: [18, 20, 21]
     defaults:
       run:
         shell: bash
@@ -172,7 +172,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Get SWIG pre-built
         uses: actions/download-artifact@v2
@@ -202,7 +202,7 @@ jobs:
           submodules: true
       - uses: actions/setup-node@v3 # Necessary for 'yarn publish'
         with:
-          node-version: "12.x"
+          node-version: 20
           registry-url: "https://registry.npmjs.org"
 
       - name: Get SWIG pre-built
