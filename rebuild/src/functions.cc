@@ -751,8 +751,8 @@ Napi::Value AsyncVerifyMultipleAggregateSignatures(
 
 }  // anonymous namespace
 
-namespace Functions {
-void Init(const Napi::Env &env, Napi::Object &exports) {
+namespace functions {
+void init(const Napi::Env &env, Napi::Object &exports) {
     exports.Set(
         Napi::String::New(env, "aggregatePublicKeys"),
         Napi::Function::New(env, AggregatePublicKeys));
