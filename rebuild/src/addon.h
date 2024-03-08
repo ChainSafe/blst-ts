@@ -1,8 +1,8 @@
-#ifndef BLST_TS_ADDON_H__
-#define BLST_TS_ADDON_H__
+#pragma once
 
 #include <openssl/rand.h>
 
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -23,12 +23,12 @@ using std::endl;
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
-#define BLST_TS_IS_INFINITY                                                \
+#define BLST_TS_IS_INFINITY                                                    \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     return scope.Escape(Napi::Boolean::New(env, _point->IsInfinite()));
 
-#define BLST_TS_SERIALIZE_POINT(macro_name)                                \
+#define BLST_TS_SERIALIZE_POINT(macro_name)                                    \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     bool compressed{true};                                                     \
@@ -42,7 +42,7 @@ using std::endl;
     _point->Serialize(compressed, serialized.Data());                          \
     return scope.Escape(serialized);
 
-#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)         \
+#define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
@@ -59,7 +59,7 @@ using std::endl;
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)   \
+#define BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
@@ -94,7 +94,9 @@ typedef enum { Affine, Jacobian } CoordType;
  * @return bool
  */
 bool is_zero_bytes(
-    const uint8_t *data, const size_t start_byte, const size_t byte_length);
+    const uint8_t *data,
+    const size_t start_byte,
+    const size_t byte_length) noexcept;
 
 /**
  * Checks if a byte array is a valid length. If not, sets the error message and
@@ -111,7 +113,7 @@ bool is_valid_length(
     std::string &error_out,
     size_t byte_length,
     size_t length1,
-    size_t length2 = 0);
+    size_t length2 = 0) noexcept;
 
 /**
  * Circular dependency if these are moved up to the top of the file.
@@ -173,5 +175,3 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      */
     bool GetRandomBytes(blst::byte *ikm, size_t length);
 };
-
-#endif /* BLST_TS_ADDON_H__ */
