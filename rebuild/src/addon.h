@@ -12,10 +12,6 @@
 #include "blst.hpp"
 #include "napi.h"
 
-// TODO: these should come out post PR review
-using std::cout;
-using std::endl;
-
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
 #define BLST_TS_FUNCTION_PREAMBLE(info, env, module)                           \
