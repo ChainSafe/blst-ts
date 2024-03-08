@@ -29,7 +29,7 @@ void SecretKey::Init(
     };
 
     Napi::Function ctr = DefineClass(env, "SecretKey", proto, module);
-    module->_secret_key_ctr = Napi::Persistent(ctr);
+    module->secret_key_ctr = Napi::Persistent(ctr);
     exports.Set(Napi::String::New(env, "SecretKey"), ctr);
 
     exports.Get("BLST_CONSTANTS")
@@ -55,7 +55,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     }
 
     bool is_external = true;
-    Napi::Object wrapped = module->_secret_key_ctr.New(
+    Napi::Object wrapped = module->secret_key_ctr.New(
         {Napi::External<bool>::New(env, &is_external)});
     SecretKey *sk = SecretKey::Unwrap(wrapped);
 
@@ -99,7 +99,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     }
 
     bool is_external = true;
-    Napi::Object wrapped = module->_secret_key_ctr.New(
+    Napi::Object wrapped = module->secret_key_ctr.New(
         {Napi::External<bool>::New(env, &is_external)});
     SecretKey *sk = SecretKey::Unwrap(wrapped);
 
@@ -142,7 +142,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
 
 Napi::Value SecretKey::ToPublicKey(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
-    return scope.Escape(module->_public_key_ctr.New(
+    return scope.Escape(module->public_key_ctr.New(
         {Napi::External<P1Wrapper>::New(env, new P1{blst::P1{*_key}}),
          Napi::Boolean::New(env, false)}));
 }
@@ -160,12 +160,12 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
     Napi::Value msg_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
 
-    Napi::Object sig_obj = module->_signature_ctr.New(
+    Napi::Object sig_obj = module->signature_ctr.New(
         // Default to jacobian coordinates
         {Napi::External<P2Wrapper>::New(env, new P2{blst::P2{}}),
          Napi::Boolean::New(env, false)});
     Signature *sig = Napi::ObjectWrap<Signature>::Unwrap(sig_obj);
-    sig->_point->Sign(*_key, msg.Data(), msg.ByteLength(), module->_dst);
+    sig->_point->Sign(*_key, msg.Data(), msg.ByteLength(), module->dst);
 
     return scope.Escape(sig_obj);
 }

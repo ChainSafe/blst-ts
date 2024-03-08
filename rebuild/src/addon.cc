@@ -70,20 +70,20 @@ bool is_valid_length(
 }
 
 BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
-    : _dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"},
-      _blst_error_strings{
-          "BLST_SUCCESS",
-          "BLST_ERROR::BLST_BAD_ENCODING",
-          "BLST_ERROR::BLST_POINT_NOT_ON_CURVE",
-          "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
-          "BLST_ERROR::BLST_AGGR_TYPE_MISMATCH",
-          "BLST_ERROR::BLST_VERIFY_FAIL",
-          "BLST_ERROR::BLST_PK_IS_INFINITY",
-          "BLST_ERROR::BLST_BAD_SCALAR",
-      } {
+    : _blst_error_strings{
+        "BLST_SUCCESS",
+        "BLST_ERROR::BLST_BAD_ENCODING",
+        "BLST_ERROR::BLST_POINT_NOT_ON_CURVE",
+        "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
+        "BLST_ERROR::BLST_AGGR_TYPE_MISMATCH",
+        "BLST_ERROR::BLST_VERIFY_FAIL",
+        "BLST_ERROR::BLST_PK_IS_INFINITY",
+        "BLST_ERROR::BLST_BAD_SCALAR",
+    },
+    dst{"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_"} {
     Napi::Object js_constants = Napi::Object::New(env);
     js_constants.Set(
-        Napi::String::New(env, "DST"), Napi::String::New(env, _dst));
+        Napi::String::New(env, "DST"), Napi::String::New(env, dst));
     DefineAddon(
         exports,
         {

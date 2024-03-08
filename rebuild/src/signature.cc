@@ -29,7 +29,7 @@ void Signature::Init(
     };
 
     Napi::Function ctr = DefineClass(env, "Signature", proto, module);
-    module->_signature_ctr = Napi::Persistent(ctr);
+    module->signature_ctr = Napi::Persistent(ctr);
     exports.Set(Napi::String::New(env, "Signature"), ctr);
 
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();
@@ -88,13 +88,13 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     try {
         if (is_affine) {
             return scope.Escape(
-                module->_signature_ctr.New({Napi::External<P2Wrapper>::New(
+                module->signature_ctr.New({Napi::External<P2Wrapper>::New(
                     env,
                     new P2Affine{blst::P2_Affine{
                         sig_bytes.Data(), sig_bytes.ByteLength()}})}));
         }
         return scope.Escape(
-            module->_signature_ctr.New({Napi::External<P2Wrapper>::New(
+            module->signature_ctr.New({Napi::External<P2Wrapper>::New(
                 env,
                 new P2{blst::P2{sig_bytes.Data(), sig_bytes.ByteLength()}})}));
     } catch (blst::BLST_ERROR err) {
@@ -139,7 +139,7 @@ Napi::Value Signature::MultiplyBy(const Napi::CallbackInfo &info) {
     Napi::Value rand_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(rand_bytes_value, rand_bytes, "randomBytes")
 
-    Napi::Object sig_obj = module->_signature_ctr.New(
+    Napi::Object sig_obj = module->signature_ctr.New(
         // Default to jacobian coordinates
         {Napi::External<P2Wrapper>::New(
              env,

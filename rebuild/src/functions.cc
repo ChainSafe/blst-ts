@@ -68,7 +68,7 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
         }
     }
 
-    return scope.Escape(module->_public_key_ctr.New(
+    return scope.Escape(module->public_key_ctr.New(
         {Napi::External<P1Wrapper>::New(env, new P1{std::move(aggregate)})}));
 }
 
@@ -131,7 +131,7 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
         }
     }
 
-    return scope.Escape(module->_signature_ctr.New(
+    return scope.Escape(module->signature_ctr.New(
         {Napi::External<P2Wrapper>::New(env, new P2{std::move(aggregate)})}));
 }
 
@@ -201,7 +201,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         }
 
         std::unique_ptr<blst::Pairing> ctx{
-            new blst::Pairing(true, module->_dst)};
+            new blst::Pairing(true, module->dst)};
         for (uint32_t i = 0; i < pk_array_length; i++) {
             Napi::Value msg_value = msgs_array[i];
             BLST_TS_UNWRAP_UINT_8_ARRAY(msg_value, msg, "msg")
@@ -273,7 +273,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
           m_deferred{Env()},
           m_has_error{false},
           m_module{Env().GetInstanceData<BlstTsAddon>()},
-          m_ctx{new blst::Pairing(true, m_module->_dst)},
+          m_ctx{new blst::Pairing(true, m_module->dst)},
           m_sig_point{},
           m_sets{},
           m_is_invalid{false},
@@ -459,7 +459,7 @@ Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info) {
 
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
-    std::unique_ptr<blst::Pairing> ctx{new blst::Pairing(true, module->_dst)};
+    std::unique_ptr<blst::Pairing> ctx{new blst::Pairing(true, module->dst)};
     try {
         if (!info[0].IsArray()) {
             Napi::TypeError::New(
@@ -584,7 +584,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
           m_deferred{Env()},
           m_has_error{false},
           m_module{Env().GetInstanceData<BlstTsAddon>()},
-          m_ctx{new blst::Pairing(true, m_module->_dst)},
+          m_ctx{new blst::Pairing(true, m_module->dst)},
           m_sets{},
           m_result{false} {
         Napi::Env env = Env();

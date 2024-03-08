@@ -124,12 +124,14 @@ bool is_valid_length(
  * for initialization and holding global values.
  */
 class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
-   public:
-    std::string _dst;
+   private:
     std::string _blst_error_strings[8];
-    Napi::FunctionReference _secret_key_ctr;
-    Napi::FunctionReference _public_key_ctr;
-    Napi::FunctionReference _signature_ctr;
+
+   public:
+    std::string dst;
+    Napi::FunctionReference secret_key_ctr;
+    Napi::FunctionReference public_key_ctr;
+    Napi::FunctionReference signature_ctr;
 
     /**
      * BlstTsAddon::BlstTsAddon constructor used by Node.js to create an

@@ -28,7 +28,7 @@ void PublicKey::Init(
     };
 
     Napi::Function ctr = DefineClass(env, "PublicKey", proto, module);
-    module->_public_key_ctr = Napi::Persistent(ctr);
+    module->public_key_ctr = Napi::Persistent(ctr);
     exports.Set(Napi::String::New(env, "PublicKey"), ctr);
 
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();
@@ -87,13 +87,13 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     try {
         if (is_affine) {
             return scope.Escape(
-                module->_public_key_ctr.New({Napi::External<P1Wrapper>::New(
+                module->public_key_ctr.New({Napi::External<P1Wrapper>::New(
                     env,
                     new P1Affine{blst::P1_Affine{
                         pk_bytes.Data(), pk_bytes.ByteLength()}})}));
         }
         return scope.Escape(
-            module->_public_key_ctr.New({Napi::External<P1Wrapper>::New(
+            module->public_key_ctr.New({Napi::External<P1Wrapper>::New(
                 env,
                 new P1{blst::P1{pk_bytes.Data(), pk_bytes.ByteLength()}})}));
     } catch (blst::BLST_ERROR err) {
@@ -142,7 +142,7 @@ Napi::Value PublicKey::MultiplyBy(const Napi::CallbackInfo &info) {
     Napi::Value rand_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(rand_bytes_value, rand_bytes, "randomBytes")
 
-    Napi::Object pk_obj = module->_public_key_ctr.New(
+    Napi::Object pk_obj = module->public_key_ctr.New(
         // Default to jacobian coordinates
         {Napi::External<P1Wrapper>::New(
              env,
