@@ -301,11 +301,13 @@ export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[])
  * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
  * See https://github.com/ChainSafe/blst-ts/issues/45
  */
-function randomBytesNonZero(BYTES_COUNT: number): Buffer {
+export function randomBytesNonZero(BYTES_COUNT: number): Buffer {
   const rand = crypto.randomBytes(BYTES_COUNT);
-  for (let i = 0; i < BYTES_COUNT; i++) {
-    if (rand[0] !== 0) return rand;
+  for (let i = 0; i < rand.length; i++) {
+    // At least one byte is non-zero, exit early
+    if (rand[i] !== 0) return rand;
   }
+  // All bytes are zero, set the first byte to some value
   rand[0] = 1;
   return rand;
 }
