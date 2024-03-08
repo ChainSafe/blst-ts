@@ -81,6 +81,7 @@ export enum BlsPoolType {
 export type BlsMultiThreadWorkerPoolOptions = {
   blsVerifyAllInQueue?: boolean;
   blsPoolType?: BlsPoolType;
+  addVerificationRandomness?: boolean;
 };
 
 export type BlsMultiThreadWorkerPoolModules = Record<string, never>;
@@ -89,6 +90,7 @@ export interface VerifySignatureOpts {
   batchable?: boolean;
   verifyOnMainThread?: boolean;
   priority?: boolean;
+  addVerificationRandomness?: boolean;
 }
 
 export interface SerializedSwigSet {

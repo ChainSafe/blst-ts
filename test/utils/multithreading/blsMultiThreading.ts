@@ -46,6 +46,7 @@ const MAX_JOBS_CAN_ACCEPT_WORK = 512;
 export class BlsMultiThreading {
   readonly blsPoolSize: number;
 
+  private readonly addVerificationRandomness: boolean;
   private readonly blsVerifyAllInQueue: boolean;
   private readonly blsPoolType: BlsPoolType;
   private readonly workers: WorkerDescriptor[] = [];
@@ -63,6 +64,7 @@ export class BlsMultiThreading {
   private workersBusy = 0;
 
   constructor(options: BlsMultiThreadWorkerPoolOptions /*, modules: BlsMultiThreadWorkerPoolModules */) {
+    this.addVerificationRandomness = options.addVerificationRandomness ?? false;
     this.blsVerifyAllInQueue = options.blsVerifyAllInQueue ?? false;
     this.blsPoolType = options.blsPoolType ?? BlsPoolType.workers;
 
@@ -122,7 +124,7 @@ export class BlsMultiThreading {
               resolve,
               reject,
               addedTimeMs: Date.now(),
-              opts,
+              opts: {...opts, addVerificationRandomness: this.addVerificationRandomness},
               sets: setsChunk,
               message,
             });
