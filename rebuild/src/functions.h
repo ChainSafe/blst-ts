@@ -1,5 +1,4 @@
-#ifndef BLST_TS_FUNCTIONS_H__
-#define BLST_TS_FUNCTIONS_H__
+#pragma once
 
 #include "addon.h"
 #include "blst.hpp"
@@ -8,5 +7,3 @@
 namespace Functions {
 void Init(const Napi::Env &env, Napi::Object &exports);
 }
-
-#endif /* BLST_TS_FUNCTIONS_H__ */

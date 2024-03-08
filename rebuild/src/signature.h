@@ -1,5 +1,4 @@
-#ifndef BLST_TS_SIGNATURE_H__
-#define BLST_TS_SIGNATURE_H__
+#pragma once
 
 #include <memory>
 
@@ -115,5 +114,3 @@ class Signature : public Napi::ObjectWrap<Signature> {
     Napi::Value IsInfinity(const Napi::CallbackInfo &info);
     Napi::Value MultiplyBy(const Napi::CallbackInfo &info);
 };
-
-#endif /* BLST_TS_SIGNATURE_H__ */

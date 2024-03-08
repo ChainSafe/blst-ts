@@ -1,5 +1,4 @@
-#ifndef BLST_TS_SECRET_KEY_H__
-#define BLST_TS_SECRET_KEY_H__
+#pragma once
 
 #include <memory>
 
@@ -24,5 +23,3 @@ class SecretKey : public Napi::ObjectWrap<SecretKey> {
     Napi::Value ToPublicKey(const Napi::CallbackInfo &info);
     Napi::Value Sign(const Napi::CallbackInfo &info);
 };
-
-#endif /* BLST_TS_SECRET_KEY_H__ */
