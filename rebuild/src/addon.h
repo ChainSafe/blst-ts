@@ -114,10 +114,12 @@ bool is_valid_length(
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
-#include "functions.h"
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
+namespace functions {
+void init(const Napi::Env &env, Napi::Object &exports);
+}
 
 /**
  * BlstTsAddon is the main entry point for the library. It is responsible

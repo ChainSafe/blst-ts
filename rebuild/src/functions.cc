@@ -1,4 +1,6 @@
-#include "functions.h"
+#include "addon.h"
+#include "blst.hpp"
+#include "napi.h"
 
 namespace {
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
