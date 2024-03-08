@@ -70,7 +70,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
                 is_affine = true;
                 break;
             case 1:
-                // is_affine defaults to false
+                is_affine = false;
                 break;
             default:
                 Napi::TypeError::New(
