@@ -31,14 +31,14 @@ class P1 : public P1Wrapper {
 
    public:
     P1(blst::P1 point) : _point(std::move(point)) {}
-    bool IsInfinite() override { return _point.is_inf(); }
-    bool InGroup() override { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) override {
+    bool IsInfinite() final { return _point.is_inf(); }
+    bool InGroup() final { return _point.in_group(); }
+    void Serialize(bool compress, blst::byte *out) final {
         compress ? _point.compress(out) : _point.serialize(out);
     }
-    void AddTo(blst::P1 &point) override { point.add(_point); };
+    void AddTo(blst::P1 &point) final { point.add(_point); };
     blst::P1 MultiplyBy(
-        blst::byte *rand_bytes, size_t rand_bytes_length) override {
+        blst::byte *rand_bytes, size_t rand_bytes_length) final {
         blst::byte out[96];
         _point.serialize(out);
         // this should get std::move all the way into the P1 member value
@@ -46,7 +46,7 @@ class P1 : public P1Wrapper {
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };
-    P1AffineGroup AsAffine() override {
+    P1AffineGroup AsAffine() final {
         P1AffineGroup group{std::make_unique<blst::P1_Affine>(_point), nullptr};
         group.raw_point = group.smart_pointer.get();
         return group;
@@ -58,14 +58,14 @@ class P1Affine : public P1Wrapper {
 
    public:
     P1Affine(blst::P1_Affine point) : _point(std::move(point)) {}
-    bool IsInfinite() override { return _point.is_inf(); }
-    bool InGroup() override { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) override {
+    bool IsInfinite() final { return _point.is_inf(); }
+    bool InGroup() final { return _point.in_group(); }
+    void Serialize(bool compress, blst::byte *out) final {
         compress ? _point.compress(out) : _point.serialize(out);
     }
-    void AddTo(blst::P1 &point) override { point.add(_point); };
+    void AddTo(blst::P1 &point) final { point.add(_point); };
     blst::P1 MultiplyBy(
-        blst::byte *rand_bytes, size_t rand_bytes_length) override {
+        blst::byte *rand_bytes, size_t rand_bytes_length) final {
         blst::byte out[96];
         _point.serialize(out);
         // this should get std::move all the way into the P1 member value
@@ -73,7 +73,7 @@ class P1Affine : public P1Wrapper {
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };
-    P1AffineGroup AsAffine() override {
+    P1AffineGroup AsAffine() final {
         P1AffineGroup group{nullptr, &_point};
         return group;
     }
