@@ -41,10 +41,10 @@ class P1 : public P1Wrapper {
     blst::P1 MultiplyBy(
         const blst::byte *rand_bytes,
         const size_t rand_bytes_length) const final {
-        blst::byte out[96];
+        blst::byte out[BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED];
         _point.serialize(out);
         // this should get std::move all the way into the P1 member value
-        blst::P1 point{out, 96};
+        blst::P1 point{out, BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED};
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };
