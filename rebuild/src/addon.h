@@ -12,6 +12,7 @@
 #include "blst.hpp"
 #include "napi.h"
 
+namespace blst_ts {
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 
 #define BLST_TS_FUNCTION_PREAMBLE(info, env, module)                           \
@@ -33,8 +34,8 @@
     }                                                                          \
     Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(             \
         env,                                                                   \
-        compressed ? snake_case_name##_length_compressed             \
-                   : snake_case_name##_length_uncompressed);         \
+        compressed ? snake_case_name##_length_compressed                       \
+                   : snake_case_name##_length_uncompressed);                   \
     point->Serialize(compressed, serialized.Data());                           \
     return scope.Escape(serialized);
 
@@ -74,8 +75,6 @@
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-class BlstTsAddon;
-
 typedef enum { Affine, Jacobian } CoordType;
 
 /**
@@ -110,14 +109,16 @@ bool is_valid_length(
     size_t byte_length,
     size_t length1,
     size_t length2 = 0) noexcept;
+}  // namespace blst_ts
 
+class BlstTsAddon;
 /**
  * Circular dependency if these are moved up to the top of the file.
  */
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
-namespace functions {
+namespace blst_ts_functions {
 void init(const Napi::Env &env, Napi::Object &exports);
 }
 

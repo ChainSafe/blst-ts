@@ -1,5 +1,6 @@
 #include "addon.h"
 
+namespace blst_ts {
 /**
  * Checks if a specified range of bytes within a byte array consists only of
  * zeros.
@@ -68,6 +69,7 @@ bool is_valid_length(
     error_out.append(" bytes long");
     return false;
 }
+}  // namespace blst_ts
 
 BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
     : _blst_error_strings{
@@ -89,10 +91,10 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
         {
             InstanceValue("BLST_CONSTANTS", js_constants, napi_enumerable),
         });
-    SecretKey::Init(env, exports, this);
-    PublicKey::Init(env, exports, this);
-    Signature::Init(env, exports, this);
-    functions::init(env, exports);
+    blst_ts::SecretKey::Init(env, exports, this);
+    blst_ts::PublicKey::Init(env, exports, this);
+    blst_ts::Signature::Init(env, exports, this);
+    blst_ts_functions::init(env, exports);
     env.SetInstanceData(this);
 
     // Check that openssl PRNG is seeded

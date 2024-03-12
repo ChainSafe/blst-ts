@@ -1,5 +1,6 @@
 #include "secret_key.h"
 
+namespace blst_ts {
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(env);
@@ -45,11 +46,11 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(ikm_value, ikm, "ikm")
     // Check for less than 32 bytes so consumers don't accidentally create
-    // zero keys 
+    // zero keys
     if (ikm.ByteLength() < secret_key_length) {
         std::ostringstream msg;
-        msg << "ikm must be greater than or equal to "
-            << secret_key_length << " bytes";
+        msg << "ikm must be greater than or equal to " << secret_key_length
+            << " bytes";
         Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -79,7 +80,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     // incoming bytes incase info changes the key
     blst::byte key_bytes[secret_key_length];
     sk->key->to_bendian(key_bytes);
-    if (is_zero_bytes(key_bytes, 0, secret_key_length)) {
+    if (blst_ts::is_zero_bytes(key_bytes, 0, secret_key_length)) {
         sk->is_zero_key = true;
     }
 
@@ -92,8 +93,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
     std::string err_out{"BLST_ERROR: skBytes"};
-    if (!is_valid_length(
-            err_out, sk_bytes.ByteLength(), secret_key_length)) {
+    if (!blst_ts::is_valid_length(err_out, sk_bytes.ByteLength(), secret_key_length)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -105,7 +105,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
 
     // Check if key is zero and set flag if so. Several specs depend on this
     // check (signing with zero key)
-    if (is_zero_bytes(sk_bytes.Data(), 0, sk_bytes.ByteLength())) {
+    if (blst_ts::is_zero_bytes(sk_bytes.Data(), 0, sk_bytes.ByteLength())) {
         sk->is_zero_key = true;
     }
     // Deserialize key
@@ -169,3 +169,4 @@ Napi::Value SecretKey::Sign(const Napi::CallbackInfo &info) {
 
     return scope.Escape(sig_obj);
 }
+}  // namespace blst_ts

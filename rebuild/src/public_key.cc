@@ -1,5 +1,6 @@
 #include "public_key.h"
 
+namespace blst_ts {
 void PublicKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(env);
@@ -46,7 +47,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_val, pk_bytes, "pkBytes")
 
     std::string err_out{"BLST_ERROR: pkBytes"};
-    if (!is_valid_length(
+    if (!blst_ts::is_valid_length(
             err_out,
             pk_bytes.ByteLength(),
             public_key_length_compressed,
@@ -101,7 +102,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
             .ThrowAsJavaScriptException();
         return env.Undefined();
     } catch (...) {
-        Napi::Error::New(env, "BLST_ERROR: Unknown error deserializing PublicKey")
+        Napi::Error::New(
+            env, "BLST_ERROR: Unknown error deserializing PublicKey")
             .ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -156,3 +158,4 @@ Napi::Value PublicKey::MultiplyBy(const Napi::CallbackInfo &info) {
 
     return scope.Escape(pk_obj);
 }
+}  // namespace blst_ts

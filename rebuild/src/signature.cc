@@ -1,5 +1,6 @@
 #include "signature.h"
 
+namespace blst_ts {
 void Signature::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(
@@ -47,7 +48,7 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_UNWRAP_UINT_8_ARRAY(sig_bytes_val, sig_bytes, "sigBytes")
 
     std::string err_out{"BLST_ERROR: sigBytes"};
-    if (!is_valid_length(
+    if (!blst_ts::is_valid_length(
             err_out,
             sig_bytes.ByteLength(),
             signature_length_compressed,
@@ -149,3 +150,4 @@ Napi::Value Signature::MultiplyBy(const Napi::CallbackInfo &info) {
 
     return scope.Escape(sig_obj);
 }
+}  // namespace blst_ts

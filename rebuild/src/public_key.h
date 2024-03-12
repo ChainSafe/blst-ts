@@ -6,6 +6,7 @@
 #include "blst.hpp"
 #include "napi.h"
 
+namespace blst_ts {
 static const size_t public_key_length_compressed = 48;
 static const size_t public_key_length_uncompressed = 96;
 
@@ -95,3 +96,4 @@ class PublicKey final : public Napi::ObjectWrap<PublicKey> {
     Napi::Value IsInfinity(const Napi::CallbackInfo &info);
     Napi::Value MultiplyBy(const Napi::CallbackInfo &info);
 };
+}  // namespace blst_ts

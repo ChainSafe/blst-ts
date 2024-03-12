@@ -6,6 +6,7 @@
 #include "public_key.h"
 #include "signature.h"
 
+namespace blst_ts {
 static const size_t secret_key_length = 32;
 
 class SecretKey final : public Napi::ObjectWrap<SecretKey> {
@@ -21,3 +22,4 @@ class SecretKey final : public Napi::ObjectWrap<SecretKey> {
     Napi::Value ToPublicKey(const Napi::CallbackInfo &info);
     Napi::Value Sign(const Napi::CallbackInfo &info);
 };
+}  // namespace blst_ts

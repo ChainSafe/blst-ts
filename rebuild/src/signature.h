@@ -6,6 +6,7 @@
 #include "blst.hpp"
 #include "napi.h"
 
+namespace blst_ts {
 static const size_t signature_length_compressed = 96;
 static const size_t signature_length_uncompressed = 192;
 
@@ -118,3 +119,4 @@ class Signature final : public Napi::ObjectWrap<Signature> {
     Napi::Value IsInfinity(const Napi::CallbackInfo &info);
     Napi::Value MultiplyBy(const Napi::CallbackInfo &info);
 };
+}  // namespace blst_ts
