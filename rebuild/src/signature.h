@@ -32,6 +32,7 @@ class P2Wrapper {
 };
 
 class P2 : public P2Wrapper {
+   private:
     blst::P2 _point;
 
    public:
@@ -67,6 +68,7 @@ class P2 : public P2Wrapper {
 };
 
 class P2Affine : public P2Wrapper {
+   private:
     blst::P2_Affine _point;
 
    public:
