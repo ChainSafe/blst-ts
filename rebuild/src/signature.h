@@ -44,10 +44,10 @@ class P2 : public P2Wrapper {
     void AddTo(blst::P2 &point) final { point.add(_point); };
     blst::P2 MultiplyBy(
         blst::byte *rand_bytes, size_t rand_bytes_length) final {
-        blst::byte out[192];
+        blst::byte out[BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED];
         _point.serialize(out);
         // this should get std::move all the way into the P2 member value
-        blst::P2 point{out, 192};
+        blst::P2 point{out, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED};
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };

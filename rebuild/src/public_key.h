@@ -66,10 +66,10 @@ class P1Affine : public P1Wrapper {
     void AddTo(blst::P1 &point) final { point.add(_point); };
     blst::P1 MultiplyBy(
         blst::byte *rand_bytes, size_t rand_bytes_length) final {
-        blst::byte out[96];
+        blst::byte out[BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED];
         _point.serialize(out);
         // this should get std::move all the way into the P1 member value
-        blst::P1 point{out, 96};
+        blst::P1 point{out, BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED};
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };
