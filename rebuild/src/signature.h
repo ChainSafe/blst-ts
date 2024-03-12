@@ -106,7 +106,7 @@ class P2Affine : public P2Wrapper {
     };
 };
 
-class Signature : public Napi::ObjectWrap<Signature> {
+class Signature final : public Napi::ObjectWrap<Signature> {
    public:
     std::unique_ptr<P2Wrapper> point;
 

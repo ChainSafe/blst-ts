@@ -8,7 +8,7 @@
 
 static const size_t secret_key_length = 32;
 
-class SecretKey : public Napi::ObjectWrap<SecretKey> {
+class SecretKey final : public Napi::ObjectWrap<SecretKey> {
    public:
     std::unique_ptr<blst::SecretKey> key;
     bool is_zero_key;

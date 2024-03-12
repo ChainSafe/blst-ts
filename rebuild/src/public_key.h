@@ -83,7 +83,7 @@ class P1Affine : public P1Wrapper {
     }
 };
 
-class PublicKey : public Napi::ObjectWrap<PublicKey> {
+class PublicKey final : public Napi::ObjectWrap<PublicKey> {
    public:
     std::unique_ptr<P1Wrapper> point;
 
