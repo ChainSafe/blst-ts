@@ -3,7 +3,7 @@
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(env);
-    auto proto = {
+    std::initializer_list<Napi::ClassPropertyDescriptor<SecretKey>> proto = {
         StaticMethod(
             "fromKeygen",
             &SecretKey::FromKeygen,

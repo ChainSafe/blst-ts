@@ -4,7 +4,7 @@ void Signature::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(
         env);  // no need to Escape, Persistent will take care of it
-    auto proto = {
+    std::initializer_list<Napi::ClassPropertyDescriptor<Signature>> proto = {
         StaticMethod(
             "deserialize",
             &Signature::Deserialize,
