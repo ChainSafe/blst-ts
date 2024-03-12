@@ -3,8 +3,6 @@
 #include <memory>
 
 #include "addon.h"
-#include "blst.hpp"
-#include "napi.h"
 #include "public_key.h"
 #include "signature.h"
 
