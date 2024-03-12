@@ -51,7 +51,7 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
             } else {
                 PublicKey *to_aggregate =
                     PublicKey::Unwrap(val.As<Napi::Object>());
-                to_aggregate->_point->AddTo(aggregate);
+                to_aggregate->point->AddTo(aggregate);
             }
             if (has_error) {
                 return env.Undefined();
@@ -114,7 +114,7 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
             } else {
                 Signature *to_aggregate =
                     Signature::Unwrap(val.As<Napi::Object>());
-                to_aggregate->_point->AddTo(aggregate);
+                to_aggregate->point->AddTo(aggregate);
             }
             if (has_error) {
                 return env.Undefined();
@@ -160,7 +160,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         } else {
             Signature *to_verify =
                 Signature::Unwrap(sig_val.As<Napi::Object>());
-            sig_point = to_verify->_point->AsAffine();
+            sig_point = to_verify->point->AsAffine();
         }
 
         if (!info[0].IsArray()) {
@@ -237,7 +237,7 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
             } else {
                 PublicKey *to_verify =
                     PublicKey::Unwrap(pk_val.As<Napi::Object>());
-                pk_point = to_verify->_point->AsAffine();
+                pk_point = to_verify->point->AsAffine();
             }
 
             blst::BLST_ERROR err = ctx->aggregate(
@@ -304,7 +304,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
             } else {
                 Signature *to_verify =
                     Signature::Unwrap(sig_val.As<Napi::Object>());
-                m_sig_point = to_verify->_point->AsAffine();
+                m_sig_point = to_verify->point->AsAffine();
             }
 
             if (!info[0].IsArray()) {
@@ -397,7 +397,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                 } else {
                     PublicKey *to_verify =
                         PublicKey::Unwrap(pk_val.As<Napi::Object>());
-                    m_sets[i].pk_point = to_verify->_point->AsAffine();
+                    m_sets[i].pk_point = to_verify->point->AsAffine();
                 }
             }
         } catch (...) {
@@ -522,7 +522,7 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             } else {
                 PublicKey *to_verify =
                     PublicKey::Unwrap(pk_val.As<Napi::Object>());
-                pk_point = to_verify->_point->AsAffine();
+                pk_point = to_verify->point->AsAffine();
             }
 
             Napi::Value sig_val = set.Get("signature");
@@ -546,7 +546,7 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             } else {
                 Signature *to_verify =
                     Signature::Unwrap(sig_val.As<Napi::Object>());
-                sig_point = to_verify->_point->AsAffine();
+                sig_point = to_verify->point->AsAffine();
             }
 
             blst::BLST_ERROR err = ctx->mul_n_aggregate(
@@ -656,7 +656,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 } else {
                     PublicKey *to_verify =
                         PublicKey::Unwrap(pk_val.As<Napi::Object>());
-                    m_sets[i].pk_point = to_verify->_point->AsAffine();
+                    m_sets[i].pk_point = to_verify->point->AsAffine();
                 }
 
                 Napi::Value sig_val = set.Get("signature");
@@ -683,7 +683,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 } else {
                     Signature *to_verify =
                         Signature::Unwrap(sig_val.As<Napi::Object>());
-                    m_sets[i].sig_point = to_verify->_point->AsAffine();
+                    m_sets[i].sig_point = to_verify->point->AsAffine();
                 }
             }
         } catch (const blst::BLST_ERROR &err) {

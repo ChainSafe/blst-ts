@@ -108,7 +108,7 @@ class P2Affine : public P2Wrapper {
 
 class Signature : public Napi::ObjectWrap<Signature> {
    public:
-    std::unique_ptr<P2Wrapper> _point;
+    std::unique_ptr<P2Wrapper> point;
 
     static void Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module);
     static Napi::Value Deserialize(const Napi::CallbackInfo &info);

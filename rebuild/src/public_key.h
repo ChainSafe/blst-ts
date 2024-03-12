@@ -85,7 +85,7 @@ class P1Affine : public P1Wrapper {
 
 class PublicKey : public Napi::ObjectWrap<PublicKey> {
    public:
-    std::unique_ptr<P1Wrapper> _point;
+    std::unique_ptr<P1Wrapper> point;
 
     static void Init(Napi::Env env, Napi::Object &exports, BlstTsAddon *module);
     static Napi::Value Deserialize(const Napi::CallbackInfo &info);

@@ -108,7 +108,7 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
 }
 
 PublicKey::PublicKey(const Napi::CallbackInfo &info)
-    : Napi::ObjectWrap<PublicKey>{info}, _point{nullptr} {
+    : Napi::ObjectWrap<PublicKey>{info}, point{nullptr} {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
     // Check that constructor was called from C++ and not JS. Externals can only
@@ -118,7 +118,7 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
             .ThrowAsJavaScriptException();
         return;
     }
-    _point.reset(info[0].As<Napi::External<P1Wrapper>>().Data());
+    point.reset(info[0].As<Napi::External<P1Wrapper>>().Data());
 }
 
 Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info){
@@ -127,11 +127,11 @@ Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info){
 Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::HandleScope scope(env);
-    if (_point->IsInfinite()) {
+    if (point->IsInfinite()) {
         Napi::Error::New(env, "BLST_ERROR::BLST_PK_IS_INFINITY")
             .ThrowAsJavaScriptException();
     }
-    if (!_point->InGroup()) {
+    if (!point->InGroup()) {
         Napi::Error::New(env, "BLST_ERROR::BLST_POINT_NOT_IN_GROUP")
             .ThrowAsJavaScriptException();
     }
@@ -150,7 +150,7 @@ Napi::Value PublicKey::MultiplyBy(const Napi::CallbackInfo &info) {
         // Default to jacobian coordinates
         {Napi::External<P1Wrapper>::New(
              env,
-             new P1{_point->MultiplyBy(
+             new P1{point->MultiplyBy(
                  rand_bytes.Data(), rand_bytes.ByteLength())}),
          Napi::Boolean::New(env, false)});
 

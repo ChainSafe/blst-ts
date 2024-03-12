@@ -22,7 +22,7 @@
 #define BLST_TS_IS_INFINITY                                                    \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
-    return scope.Escape(Napi::Boolean::New(env, _point->IsInfinite()));
+    return scope.Escape(Napi::Boolean::New(env, point->IsInfinite()));
 
 #define BLST_TS_SERIALIZE_POINT(macro_name)                                    \
     Napi::Env env = info.Env();                                                \
@@ -35,7 +35,7 @@
         env,                                                                   \
         compressed ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                  \
                    : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);              \
-    _point->Serialize(compressed, serialized.Data());                          \
+    point->Serialize(compressed, serialized.Data());                          \
     return scope.Escape(serialized);
 
 #define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
