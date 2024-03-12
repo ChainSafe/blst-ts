@@ -35,10 +35,10 @@ void Signature::Init(
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();
     js_exports.Set(
         Napi::String::New(env, "SIGNATURE_LENGTH_COMPRESSED"),
-        Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_COMPRESSED));
+        Napi::Number::New(env, signature_length_compressed));
     js_exports.Set(
         Napi::String::New(env, "SIGNATURE_LENGTH_UNCOMPRESSED"),
-        Napi::Number::New(env, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED));
+        Napi::Number::New(env, signature_length_uncompressed));
 }
 
 Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
@@ -50,8 +50,8 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     if (!is_valid_length(
             err_out,
             sig_bytes.ByteLength(),
-            BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-            BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+            signature_length_compressed,
+            signature_length_uncompressed)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -119,7 +119,7 @@ Signature::Signature(const Napi::CallbackInfo &info)
 }
 
 Napi::Value Signature::Serialize(const Napi::CallbackInfo &info){
-    BLST_TS_SERIALIZE_POINT(SIGNATURE)}
+    BLST_TS_SERIALIZE_POINT(signature)}
 
 Napi::Value Signature::SigValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();

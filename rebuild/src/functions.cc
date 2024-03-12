@@ -31,8 +31,8 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-                        BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+                        public_key_length_compressed,
+                        public_key_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     has_error = true;
@@ -102,8 +102,8 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-                        BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+                        signature_length_compressed,
+                        signature_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     has_error = true;
@@ -148,8 +148,8 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
             if (!is_valid_length(
                     err_out,
                     typed_array.ByteLength(),
-                    BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-                    BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+                    signature_length_compressed,
+                    signature_length_uncompressed)) {
                 Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
                 return env.Undefined();
             } else {
@@ -216,8 +216,8 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-                        BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+                        public_key_length_compressed,
+                        public_key_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
@@ -289,8 +289,8 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-                        BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+                        signature_length_compressed,
+                        signature_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     m_has_error = true;
@@ -371,8 +371,8 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                     if (!is_valid_length(
                             err_out,
                             typed_array.ByteLength(),
-                            BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-                            BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+                            public_key_length_compressed,
+                            public_key_length_uncompressed)) {
                         Napi::TypeError::New(env, err_out)
                             .ThrowAsJavaScriptException();
                         m_is_invalid = true;
@@ -501,8 +501,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-                        BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+                        public_key_length_compressed,
+                        public_key_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
@@ -533,8 +533,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
                 if (!is_valid_length(
                         err_out,
                         typed_array.ByteLength(),
-                        BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-                        BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+                        signature_length_compressed,
+                        signature_length_uncompressed)) {
                     Napi::TypeError::New(env, err_out)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
@@ -630,8 +630,8 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                     if (!is_valid_length(
                             err_out,
                             typed_array.ByteLength(),
-                            BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-                            BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+                            public_key_length_compressed,
+                            public_key_length_uncompressed)) {
                         Napi::TypeError::New(env, err_out)
                             .ThrowAsJavaScriptException();
                         m_has_error = true;
@@ -667,8 +667,8 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                     if (!is_valid_length(
                             err_out,
                             typed_array.ByteLength(),
-                            BLST_TS_SIGNATURE_LENGTH_COMPRESSED,
-                            BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED)) {
+                            signature_length_compressed,
+                            signature_length_uncompressed)) {
                         Napi::TypeError::New(env, err_out)
                             .ThrowAsJavaScriptException();
                         m_has_error = true;

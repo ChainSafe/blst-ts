@@ -34,10 +34,10 @@ void PublicKey::Init(
     Napi::Object js_exports = exports.Get("BLST_CONSTANTS").As<Napi::Object>();
     js_exports.Set(
         Napi::String::New(env, "PUBLIC_KEY_LENGTH_COMPRESSED"),
-        Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED));
+        Napi::Number::New(env, public_key_length_compressed));
     js_exports.Set(
         Napi::String::New(env, "PUBLIC_KEY_LENGTH_UNCOMPRESSED"),
-        Napi::Number::New(env, BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED));
+        Napi::Number::New(env, public_key_length_uncompressed));
 }
 
 Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
@@ -49,8 +49,8 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     if (!is_valid_length(
             err_out,
             pk_bytes.ByteLength(),
-            BLST_TS_PUBLIC_KEY_LENGTH_COMPRESSED,
-            BLST_TS_PUBLIC_KEY_LENGTH_UNCOMPRESSED)) {
+            public_key_length_compressed,
+            public_key_length_uncompressed)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -122,7 +122,7 @@ PublicKey::PublicKey(const Napi::CallbackInfo &info)
 }
 
 Napi::Value PublicKey::Serialize(const Napi::CallbackInfo &info){
-    BLST_TS_SERIALIZE_POINT(PUBLIC_KEY)}
+    BLST_TS_SERIALIZE_POINT(public_key)}
 
 Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();

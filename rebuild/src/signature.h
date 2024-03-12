@@ -6,8 +6,8 @@
 #include "blst.hpp"
 #include "napi.h"
 
-#define BLST_TS_SIGNATURE_LENGTH_COMPRESSED 96U
-#define BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED 192U
+static const size_t signature_length_compressed = 96;
+static const size_t signature_length_uncompressed = 192;
 
 typedef struct {
     std::unique_ptr<blst::P2_Affine> smart_pointer;
@@ -46,10 +46,10 @@ class P2 : public P2Wrapper {
     blst::P2 MultiplyBy(
         const blst::byte *rand_bytes,
         const size_t rand_bytes_length) const final {
-        blst::byte out[BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED];
+        blst::byte out[signature_length_uncompressed];
         _point.serialize(out);
         // this should get std::move all the way into the P2 member value
-        blst::P2 point{out, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED};
+        blst::P2 point{out, signature_length_uncompressed};
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };
@@ -83,10 +83,10 @@ class P2Affine : public P2Wrapper {
     blst::P2 MultiplyBy(
         const blst::byte *rand_bytes,
         const size_t rand_bytes_length) const final {
-        blst::byte out[BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED];
+        blst::byte out[signature_length_uncompressed];
         _point.serialize(out);
         // this should get std::move all the way into the P2 member value
-        blst::P2 point{out, BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED};
+        blst::P2 point{out, signature_length_uncompressed};
         point.mult(rand_bytes, rand_bytes_length);
         return point;
     };

@@ -36,7 +36,7 @@ void SecretKey::Init(
         .As<Napi::Object>()
         .Set(
             Napi::String::New(env, "SECRET_KEY_LENGTH"),
-            Napi::Number::New(env, BLST_TS_SECRET_KEY_LENGTH));
+            Napi::Number::New(env, secret_key_length));
 }
 
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
@@ -46,10 +46,10 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     BLST_TS_UNWRAP_UINT_8_ARRAY(ikm_value, ikm, "ikm")
     // Check for less than 32 bytes so consumers don't accidentally create
     // zero keys 
-    if (ikm.ByteLength() < BLST_TS_SECRET_KEY_LENGTH) {
+    if (ikm.ByteLength() < secret_key_length) {
         std::ostringstream msg;
         msg << "ikm must be greater than or equal to "
-            << BLST_TS_SECRET_KEY_LENGTH << " bytes";
+            << secret_key_length << " bytes";
         Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -77,9 +77,9 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     // Check if key is zero and set flag if so. Several specs depend on this
     // check (signing with zero key). Do after building instead of checking
     // incoming bytes incase info changes the key
-    blst::byte key_bytes[BLST_TS_SECRET_KEY_LENGTH];
+    blst::byte key_bytes[secret_key_length];
     sk->key->to_bendian(key_bytes);
-    if (is_zero_bytes(key_bytes, 0, BLST_TS_SECRET_KEY_LENGTH)) {
+    if (is_zero_bytes(key_bytes, 0, secret_key_length)) {
         sk->is_zero_key = true;
     }
 
@@ -93,7 +93,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
     std::string err_out{"BLST_ERROR: skBytes"};
     if (!is_valid_length(
-            err_out, sk_bytes.ByteLength(), BLST_TS_SECRET_KEY_LENGTH)) {
+            err_out, sk_bytes.ByteLength(), secret_key_length)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -134,7 +134,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
     Napi::EscapableHandleScope scope(env);
 
     Napi::Buffer<uint8_t> serialized =
-        Napi::Buffer<uint8_t>::New(env, BLST_TS_SECRET_KEY_LENGTH);
+        Napi::Buffer<uint8_t>::New(env, secret_key_length);
     key->to_bendian(serialized.Data());
 
     return scope.Escape(serialized);

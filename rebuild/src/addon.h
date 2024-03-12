@@ -24,7 +24,7 @@
     Napi::EscapableHandleScope scope(env);                                     \
     return scope.Escape(Napi::Boolean::New(env, point->IsInfinite()));
 
-#define BLST_TS_SERIALIZE_POINT(macro_name)                                    \
+#define BLST_TS_SERIALIZE_POINT(snake_case_name)                               \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \
     bool compressed{true};                                                     \
@@ -33,9 +33,9 @@
     }                                                                          \
     Napi::Buffer<uint8_t> serialized = Napi::Buffer<uint8_t>::New(             \
         env,                                                                   \
-        compressed ? BLST_TS_##macro_name##_LENGTH_COMPRESSED                  \
-                   : BLST_TS_##macro_name##_LENGTH_UNCOMPRESSED);              \
-    point->Serialize(compressed, serialized.Data());                          \
+        compressed ? snake_case_name##_length_compressed             \
+                   : snake_case_name##_length_uncompressed);         \
+    point->Serialize(compressed, serialized.Data());                           \
     return scope.Escape(serialized);
 
 #define BLST_TS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)             \
