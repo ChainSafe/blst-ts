@@ -17,17 +17,17 @@ typedef struct {
 class P2Wrapper {
    public:
     virtual ~P2Wrapper() = default;
-    virtual bool IsInfinite() = 0;
-    virtual bool InGroup() = 0;
-    virtual void Serialize(bool compress, blst::byte *out) = 0;
-    virtual void AddTo(blst::P2 &point) = 0;
+    virtual bool IsInfinite() const = 0;
+    virtual bool InGroup() const = 0;
+    virtual void Serialize(bool compress, blst::byte *out) const = 0;
+    virtual void AddTo(blst::P2 &point) const = 0;
     virtual blst::P2 MultiplyBy(
-        blst::byte *rand_bytes, size_t rand_bytes_length) = 0;
+        const blst::byte *rand_bytes, const size_t rand_bytes_length) const = 0;
     virtual P2AffineGroup AsAffine() = 0;
     virtual void Sign(
         const blst::SecretKey &key,
-        uint8_t *msg,
-        size_t msg_length,
+        const uint8_t *msg,
+        const size_t msg_length,
         const std::string &dst) = 0;
 };
 
@@ -37,14 +37,15 @@ class P2 : public P2Wrapper {
 
    public:
     P2(blst::P2 point) : _point(std::move(point)) {}
-    bool IsInfinite() final { return _point.is_inf(); }
-    bool InGroup() final { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) final {
+    bool IsInfinite() const final { return _point.is_inf(); }
+    bool InGroup() const final { return _point.in_group(); }
+    void Serialize(bool compress, blst::byte *out) const final {
         compress ? _point.compress(out) : _point.serialize(out);
     }
-    void AddTo(blst::P2 &point) final { point.add(_point); };
+    void AddTo(blst::P2 &point) const final { point.add(_point); };
     blst::P2 MultiplyBy(
-        blst::byte *rand_bytes, size_t rand_bytes_length) final {
+        const blst::byte *rand_bytes,
+        const size_t rand_bytes_length) const final {
         blst::byte out[BLST_TS_SIGNATURE_LENGTH_UNCOMPRESSED];
         _point.serialize(out);
         // this should get std::move all the way into the P2 member value
@@ -59,8 +60,8 @@ class P2 : public P2Wrapper {
     };
     void Sign(
         const blst::SecretKey &key,
-        uint8_t *msg,
-        size_t msg_length,
+        const uint8_t *msg,
+        const size_t msg_length,
         const std::string &dst) final {
         _point.hash_to(msg, msg_length, dst);
         _point.sign_with(key);
@@ -73,14 +74,15 @@ class P2Affine : public P2Wrapper {
 
    public:
     P2Affine(blst::P2_Affine point) : _point(std::move(point)) {}
-    bool IsInfinite() final { return _point.is_inf(); }
-    bool InGroup() final { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) final {
+    bool IsInfinite() const final { return _point.is_inf(); }
+    bool InGroup() const final { return _point.in_group(); }
+    void Serialize(bool compress, blst::byte *out) const final {
         compress ? _point.compress(out) : _point.serialize(out);
     }
-    void AddTo(blst::P2 &point) final { point.add(_point); };
+    void AddTo(blst::P2 &point) const final { point.add(_point); };
     blst::P2 MultiplyBy(
-        blst::byte *rand_bytes, size_t rand_bytes_length) final {
+        const blst::byte *rand_bytes,
+        const size_t rand_bytes_length) const final {
         blst::byte out[192];
         _point.serialize(out);
         // this should get std::move all the way into the P2 member value
@@ -94,8 +96,8 @@ class P2Affine : public P2Wrapper {
     }
     void Sign(
         const blst::SecretKey &key,
-        uint8_t *msg,
-        size_t msg_length,
+        const uint8_t *msg,
+        const size_t msg_length,
         const std::string &dst) final {
         blst::P2 jacobian{_point};
         jacobian.hash_to(msg, msg_length, dst);
