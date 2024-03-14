@@ -20,11 +20,6 @@ namespace blst_ts {
     Napi::EscapableHandleScope scope(env);                                     \
     BlstTsAddon *module = env.GetInstanceData<BlstTsAddon>();
 
-#define BLST_TS_IS_INFINITY                                                    \
-    Napi::Env env = info.Env();                                                \
-    Napi::EscapableHandleScope scope(env);                                     \
-    return scope.Escape(Napi::Boolean::New(env, point->IsInfinite()));
-
 #define BLST_TS_SERIALIZE_POINT(snake_case_name)                               \
     Napi::Env env = info.Env();                                                \
     Napi::EscapableHandleScope scope(env);                                     \

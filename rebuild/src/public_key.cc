@@ -140,8 +140,11 @@ Napi::Value PublicKey::KeyValidate(const Napi::CallbackInfo &info) {
     return info.Env().Undefined();
 }
 
-Napi::Value PublicKey::IsInfinity(const Napi::CallbackInfo &info){
-    BLST_TS_IS_INFINITY}
+Napi::Value PublicKey::IsInfinity(const Napi::CallbackInfo &info) {
+    Napi::Env env = info.Env();
+    Napi::EscapableHandleScope scope(env);
+    return scope.Escape(Napi::Boolean::New(env, point->IsInfinite()));
+}
 
 Napi::Value PublicKey::MultiplyBy(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
