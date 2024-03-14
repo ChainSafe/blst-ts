@@ -1,10 +1,6 @@
 #pragma once
 
-#include <memory>
-
 #include "addon.h"
-#include "blst.hpp"
-#include "napi.h"
 
 namespace blst_ts {
 static const size_t public_key_length_compressed = 48;
@@ -20,11 +16,11 @@ class P1Wrapper {
     virtual ~P1Wrapper() = default;
     virtual bool IsInfinite() const = 0;
     virtual bool InGroup() const = 0;
-    virtual void Serialize(bool compress, blst::byte *out) const = 0;
     virtual void AddTo(blst::P1 &point) const = 0;
+    virtual void Serialize(bool compress, blst::byte *out) const = 0;
+    virtual P1AffineGroup AsAffine() = 0;
     virtual blst::P1 MultiplyBy(
         const blst::byte *rand_bytes, const size_t rand_bytes_length) const = 0;
-    virtual P1AffineGroup AsAffine() = 0;
 };
 
 class P1 : public P1Wrapper {
@@ -35,25 +31,12 @@ class P1 : public P1Wrapper {
     P1(blst::P1 point) : _point(std::move(point)) {}
     bool IsInfinite() const final { return _point.is_inf(); }
     bool InGroup() const final { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) const final {
-        compress ? _point.compress(out) : _point.serialize(out);
-    }
     void AddTo(blst::P1 &point) const final { point.add(_point); };
+    void Serialize(bool compress, blst::byte *out) const final;
+    P1AffineGroup AsAffine() final;
     blst::P1 MultiplyBy(
         const blst::byte *rand_bytes,
-        const size_t rand_bytes_length) const final {
-        blst::byte out[public_key_length_uncompressed];
-        _point.serialize(out);
-        // this should get std::move all the way into the P1 member value
-        blst::P1 point{out, public_key_length_uncompressed};
-        point.mult(rand_bytes, rand_bytes_length);
-        return point;
-    };
-    P1AffineGroup AsAffine() final {
-        P1AffineGroup group{std::make_unique<blst::P1_Affine>(_point), nullptr};
-        group.raw_point = group.smart_pointer.get();
-        return group;
-    };
+        const size_t rand_bytes_length) const final;
 };
 
 class P1Affine : public P1Wrapper {
@@ -64,24 +47,12 @@ class P1Affine : public P1Wrapper {
     P1Affine(blst::P1_Affine point) : _point(std::move(point)) {}
     bool IsInfinite() const final { return _point.is_inf(); }
     bool InGroup() const final { return _point.in_group(); }
-    void Serialize(bool compress, blst::byte *out) const final {
-        compress ? _point.compress(out) : _point.serialize(out);
-    }
-    void AddTo(blst::P1 &point) const final { point.add(_point); };
+    void AddTo(blst::P1 &point) const final { point.add(_point); }
+    void Serialize(bool compress, blst::byte *out) const final;
+    P1AffineGroup AsAffine() final;
     blst::P1 MultiplyBy(
         const blst::byte *rand_bytes,
-        const size_t rand_bytes_length) const final {
-        blst::byte out[public_key_length_uncompressed];
-        _point.serialize(out);
-        // this should get std::move all the way into the P1 member value
-        blst::P1 point{out, public_key_length_uncompressed};
-        point.mult(rand_bytes, rand_bytes_length);
-        return point;
-    };
-    P1AffineGroup AsAffine() final {
-        P1AffineGroup group{nullptr, &_point};
-        return group;
-    }
+        const size_t rand_bytes_length) const final;
 };
 
 class PublicKey final : public Napi::ObjectWrap<PublicKey> {

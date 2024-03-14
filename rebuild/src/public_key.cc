@@ -1,6 +1,46 @@
 #include "public_key.h"
 
 namespace blst_ts {
+
+void P1::Serialize(bool compress, blst::byte *out) const {
+    compress ? _point.compress(out) : _point.serialize(out);
+}
+
+P1AffineGroup P1::AsAffine() {
+    P1AffineGroup group{std::make_unique<blst::P1_Affine>(_point), nullptr};
+    group.raw_point = group.smart_pointer.get();
+    return group;
+}
+
+blst::P1 P1::MultiplyBy(
+    const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
+    blst::byte out[public_key_length_uncompressed];
+    _point.serialize(out);
+    // this should get std::move all the way into the P1 member value
+    blst::P1 point{out, public_key_length_uncompressed};
+    point.mult(rand_bytes, rand_bytes_length);
+    return point;
+}
+
+void P1Affine::Serialize(bool compress, blst::byte *out) const {
+    compress ? _point.compress(out) : _point.serialize(out);
+}
+
+P1AffineGroup P1Affine::AsAffine() {
+    P1AffineGroup group{nullptr, &_point};
+    return group;
+}
+
+blst::P1 P1Affine::MultiplyBy(
+    const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
+    blst::byte out[public_key_length_uncompressed];
+    _point.serialize(out);
+    // this should get std::move all the way into the P1 member value
+    blst::P1 point{out, public_key_length_uncompressed};
+    point.mult(rand_bytes, rand_bytes_length);
+    return point;
+}
+
 void PublicKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(env);

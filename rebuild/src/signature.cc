@@ -1,6 +1,65 @@
 #include "signature.h"
 
 namespace blst_ts {
+void P2::Serialize(bool compress, blst::byte *out) const {
+    compress ? _point.compress(out) : _point.serialize(out);
+}
+
+P2AffineGroup P2::AsAffine() {
+    P2AffineGroup group{std::make_unique<blst::P2_Affine>(_point), nullptr};
+    group.raw_point = group.smart_pointer.get();
+    return group;
+}
+
+blst::P2 P2::MultiplyBy(
+    const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
+    blst::byte out[signature_length_uncompressed];
+    _point.serialize(out);
+    // this should get std::move all the way into the P2 member value
+    blst::P2 point{out, signature_length_uncompressed};
+    point.mult(rand_bytes, rand_bytes_length);
+    return point;
+}
+
+void P2::Sign(
+    const blst::SecretKey &key,
+    const uint8_t *msg,
+    const size_t msg_length,
+    const std::string &dst) {
+    _point.hash_to(msg, msg_length, dst);
+    _point.sign_with(key);
+}
+
+void P2Affine::Serialize(bool compress, blst::byte *out) const {
+    compress ? _point.compress(out) : _point.serialize(out);
+}
+
+P2AffineGroup P2Affine::AsAffine() {
+    P2AffineGroup group{nullptr, &_point};
+    return group;
+}
+
+blst::P2 P2Affine::MultiplyBy(
+    const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
+    blst::byte out[signature_length_uncompressed];
+    _point.serialize(out);
+    // this should get std::move all the way into the P2 member value
+    blst::P2 point{out, signature_length_uncompressed};
+    point.mult(rand_bytes, rand_bytes_length);
+    return point;
+}
+
+void P2Affine::Sign(
+    const blst::SecretKey &key,
+    const uint8_t *msg,
+    const size_t msg_length,
+    const std::string &dst) {
+    blst::P2 jacobian{_point};
+    jacobian.hash_to(msg, msg_length, dst);
+    jacobian.sign_with(key);
+    _point = jacobian.to_affine();
+}
+
 void Signature::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
     Napi::HandleScope scope(
