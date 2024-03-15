@@ -157,8 +157,13 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
             module->signature_ctr.New({Napi::External<P2Wrapper>::New(
                 env,
                 new P2{blst::P2{sig_bytes.Data(), sig_bytes.ByteLength()}})}));
-    } catch (blst::BLST_ERROR err) {
+    } catch (const blst::BLST_ERROR &err) {
         Napi::RangeError::New(env, module->GetBlstErrorString(err))
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    } catch (...) {
+        Napi::Error::New(
+            env, "BLST_ERROR: Unknown error deserializing PublicKey")
             .ThrowAsJavaScriptException();
         return env.Undefined();
     }
