@@ -56,6 +56,8 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
         return env.Undefined();
     }
 
+    // just need to pass some value to the External constructor. debug builds
+    // have hard crash check for nullptr
     bool is_external = true;
     Napi::Object wrapped = module->secret_key_ctr.New(
         {Napi::External<bool>::New(env, &is_external)});
@@ -98,7 +100,9 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
-
+    
+    // just need to pass some value to the External constructor. debug builds
+    // have hard crash check for nullptr
     bool is_external = true;
     Napi::Object wrapped = module->secret_key_ctr.New(
         {Napi::External<bool>::New(env, &is_external)});
@@ -126,7 +130,6 @@ SecretKey::SecretKey(const Napi::CallbackInfo &info)
     if (!info[0].IsExternal()) {
         Napi::Error::New(env, "SecretKey constructor is private")
             .ThrowAsJavaScriptException();
-        return;
     }
 }
 
