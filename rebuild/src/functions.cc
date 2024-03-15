@@ -1,6 +1,6 @@
 #include "addon.h"
-#include "blst.hpp"
-#include "napi.h"
+
+using namespace std::string_literals;
 
 namespace {
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
@@ -57,15 +57,18 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
                 return env.Undefined();
             }
         } catch (const blst::BLST_ERROR &err) {
-            std::ostringstream msg;
-            msg << "BLST_ERROR::" << module->GetBlstErrorString(err)
-                << ": Invalid key at index " << i;
-            Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+            Napi::Error::New(
+                env,
+                "BLST_ERROR::"s + module->GetBlstErrorString(err) +
+                    ": Invalid key at index "s + std::to_string(i))
+                .ThrowAsJavaScriptException();
             return env.Undefined();
         } catch (...) {
-            std::ostringstream msg;
-            msg << "BLST_ERROR: Invalid PublicKeyArg at index " << i;
-            Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+            Napi::Error::New(
+                env,
+                "BLST_ERROR: Invalid PublicKeyArg at index "s +
+                    std::to_string(i))
+                .ThrowAsJavaScriptException();
             return env.Undefined();
         }
     }
@@ -121,15 +124,18 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
                 return env.Undefined();
             }
         } catch (const blst::BLST_ERROR &err) {
-            std::ostringstream msg;
-            msg << module->GetBlstErrorString(err)
-                << " - Invalid signature at index " << i;
-            Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+            Napi::Error::New(
+                env,
+                module->GetBlstErrorString(err) +
+                    " - Invalid signature at index "s + std::to_string(i))
+                .ThrowAsJavaScriptException();
             return env.Undefined();
         } catch (...) {
-            std::ostringstream msg;
-            msg << "BLST_ERROR - Invalid SignatureArg at index " << i;
-            Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+            Napi::Error::New(
+                env,
+                "BLST_ERROR - Invalid SignatureArg at index "s +
+                    std::to_string(i))
+                .ThrowAsJavaScriptException();
             return env.Undefined();
         }
     }
@@ -248,10 +254,12 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
                 msg.Data(),
                 msg.ByteLength());
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-                std::ostringstream msg;
-                msg << "BLST_ERROR::" << module->GetBlstErrorString(err)
-                    << ": Invalid verification aggregate at index " << i;
-                Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+                Napi::Error::New(
+                    env,
+                    "BLST_ERROR::"s + module->GetBlstErrorString(err) +
+                        ": Invalid verification aggregate at index "s +
+                        std::to_string(i))
+                    .ThrowAsJavaScriptException();
                 return env.Undefined();
             }
         }
@@ -424,10 +432,10 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                 m_sets[i].msg,
                 m_sets[i].msg_len);
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-                std::ostringstream msg;
-                msg << "BLST_ERROR::" << m_module->GetBlstErrorString(err)
-                    << ": Invalid verification aggregate at index " << i;
-                SetError(msg.str());
+                SetError(
+                    "BLST_ERROR::"s + m_module->GetBlstErrorString(err) +
+                    ": Invalid verification aggregate at index "s +
+                    std::to_string(i));
                 return;
             }
         }
@@ -559,10 +567,12 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
                 msg.Data(),
                 msg.ByteLength());
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-                std::ostringstream msg;
-                msg << module->GetBlstErrorString(err)
-                    << ": Invalid batch aggregation at index " << i;
-                Napi::Error::New(env, msg.str()).ThrowAsJavaScriptException();
+                Napi::Error::New(
+                    env,
+                    module->GetBlstErrorString(err) +
+                        ": Invalid batch aggregation at index "s +
+                        std::to_string(i))
+                    .ThrowAsJavaScriptException();
                 return env.Undefined();
             }
         }
@@ -717,10 +727,10 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 m_sets[i].msg,
                 m_sets[i].msg_len);
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-                std::ostringstream msg;
-                msg << m_module->GetBlstErrorString(err)
-                    << ": Invalid batch aggregation at index " << i;
-                SetError(msg.str());
+                SetError(
+                    m_module->GetBlstErrorString(err) +
+                    ": Invalid batch aggregation at index "s +
+                    std::to_string(i));
                 return;
             }
         }
@@ -776,4 +786,4 @@ void init(const Napi::Env &env, Napi::Object &exports) {
         Napi::String::New(env, "asyncVerifyMultipleAggregateSignatures"),
         Napi::Function::New(env, AsyncVerifyMultipleAggregateSignatures));
 }
-}  // namespace functions
+}  // namespace blst_ts_functions

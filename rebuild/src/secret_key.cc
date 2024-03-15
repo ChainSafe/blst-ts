@@ -1,5 +1,7 @@
 #include "secret_key.h"
 
+using namespace std::string_literals;
+
 namespace blst_ts {
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {
@@ -49,10 +51,11 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     // Check for less than 32 bytes so consumers don't accidentally create
     // zero keys
     if (ikm.ByteLength() < secret_key_length) {
-        std::ostringstream msg;
-        msg << "ikm must be greater than or equal to " << secret_key_length
-            << " bytes";
-        Napi::TypeError::New(env, msg.str()).ThrowAsJavaScriptException();
+        Napi::TypeError::New(
+            env,
+            "ikm must be greater than or equal to "s +
+                std::to_string(secret_key_length) + " bytes"s)
+            .ThrowAsJavaScriptException();
         return env.Undefined();
     }
 
@@ -100,7 +103,7 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
-    
+
     // just need to pass some value to the External constructor. debug builds
     // have hard crash check for nullptr
     bool is_external = true;
