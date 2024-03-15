@@ -1,5 +1,6 @@
 #include "signature.h"
 
+using namespace std::string_literals;
 namespace blst_ts {
 void P2::Serialize(bool compress, blst::byte *out) const {
     compress ? _point.compress(out) : _point.serialize(out);
@@ -106,13 +107,12 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Value sig_bytes_val = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sig_bytes_val, sig_bytes, "sigBytes")
 
-    std::string err_out{"BLST_ERROR: sigBytes"};
-    if (!blst_ts::is_valid_length(
-            err_out,
+    if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
             sig_bytes.ByteLength(),
             signature_length_compressed,
             signature_length_uncompressed)) {
-        Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "BLST_ERROR: sigBytes"s + *err_msg)
+            .ThrowAsJavaScriptException();
         return env.Undefined();
     }
 

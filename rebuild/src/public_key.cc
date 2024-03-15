@@ -1,5 +1,7 @@
 #include "public_key.h"
 
+using namespace std::string_literals;
+
 namespace blst_ts {
 
 void P1::Serialize(bool compress, blst::byte *out) const {
@@ -86,13 +88,12 @@ Napi::Value PublicKey::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Value pk_bytes_val = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(pk_bytes_val, pk_bytes, "pkBytes")
 
-    std::string err_out{"BLST_ERROR: pkBytes"};
-    if (!blst_ts::is_valid_length(
-            err_out,
+    if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
             pk_bytes.ByteLength(),
             public_key_length_compressed,
             public_key_length_uncompressed)) {
-        Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
+        Napi::TypeError::New(env, "BLST_ERROR: pkBytes"s + *err_msg)
+            .ThrowAsJavaScriptException();
         return env.Undefined();
     }
 

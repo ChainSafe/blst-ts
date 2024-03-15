@@ -27,13 +27,13 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
         try {
             if (val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: PublicKeyArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::public_key_length_compressed,
-                        blst_ts::public_key_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::public_key_length_compressed,
+                            blst_ts::public_key_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     has_error = true;
                 } else if (blst_ts::is_zero_bytes(
@@ -102,13 +102,13 @@ Napi::Value AggregateSignatures(const Napi::CallbackInfo &info) {
         try {
             if (val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: SignatureArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::signature_length_compressed,
-                        blst_ts::signature_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::signature_length_compressed,
+                            blst_ts::signature_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: SignatureArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     has_error = true;
                 } else {
@@ -152,13 +152,13 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         blst_ts::P2AffineGroup sig_point;
         if (sig_val.IsTypedArray()) {
             Napi::Uint8Array typed_array = sig_val.As<Napi::Uint8Array>();
-            std::string err_out{"BLST_ERROR: SignatureArg"};
-            if (!blst_ts::is_valid_length(
-                    err_out,
+            if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
                     typed_array.ByteLength(),
                     blst_ts::signature_length_compressed,
                     blst_ts::signature_length_uncompressed)) {
-                Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
+                Napi::TypeError::New(
+                    env, "BLST_ERROR: SignatureArg"s + *err_msg)
+                    .ThrowAsJavaScriptException();
                 return env.Undefined();
             } else {
                 sig_point.smart_pointer = std::make_unique<blst::P2_Affine>(
@@ -220,13 +220,13 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
             blst_ts::P1AffineGroup pk_point;
             if (pk_val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = pk_val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: PublicKeyArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::public_key_length_compressed,
-                        blst_ts::public_key_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::public_key_length_compressed,
+                            blst_ts::public_key_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
                 } else if (blst_ts::is_zero_bytes(
@@ -295,13 +295,13 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
             Napi::Value sig_val = info[2];
             if (sig_val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = sig_val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: SignatureArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::signature_length_compressed,
-                        blst_ts::signature_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::signature_length_compressed,
+                            blst_ts::signature_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: SignatureArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     has_error = true;
                     return;
@@ -377,13 +377,13 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
                 if (pk_val.IsTypedArray()) {
                     Napi::Uint8Array typed_array =
                         pk_val.As<Napi::Uint8Array>();
-                    std::string err_out{"BLST_ERROR: PublicKeyArg"};
-                    if (!blst_ts::is_valid_length(
-                            err_out,
-                            typed_array.ByteLength(),
-                            blst_ts::public_key_length_compressed,
-                            blst_ts::public_key_length_uncompressed)) {
-                        Napi::TypeError::New(env, err_out)
+                    if (std::optional<std::string> err_msg =
+                            blst_ts::is_valid_length(
+                                typed_array.ByteLength(),
+                                blst_ts::public_key_length_compressed,
+                                blst_ts::public_key_length_uncompressed)) {
+                        Napi::TypeError::New(
+                            env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                             .ThrowAsJavaScriptException();
                         _is_invalid = true;
                         return;
@@ -507,13 +507,13 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             blst_ts::P1AffineGroup pk_point;
             if (pk_val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = pk_val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: PublicKeyArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::public_key_length_compressed,
-                        blst_ts::public_key_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::public_key_length_compressed,
+                            blst_ts::public_key_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
                 } else if (blst_ts::is_zero_bytes(
@@ -539,13 +539,13 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
             blst_ts::P2AffineGroup sig_point;
             if (sig_val.IsTypedArray()) {
                 Napi::Uint8Array typed_array = sig_val.As<Napi::Uint8Array>();
-                std::string err_out{"BLST_ERROR: SignatureArg"};
-                if (!blst_ts::is_valid_length(
-                        err_out,
-                        typed_array.ByteLength(),
-                        blst_ts::signature_length_compressed,
-                        blst_ts::signature_length_uncompressed)) {
-                    Napi::TypeError::New(env, err_out)
+                if (std::optional<std::string> err_msg =
+                        blst_ts::is_valid_length(
+                            typed_array.ByteLength(),
+                            blst_ts::signature_length_compressed,
+                            blst_ts::signature_length_uncompressed)) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: SignatureArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     return env.Undefined();
                 } else {
@@ -638,13 +638,13 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 if (pk_val.IsTypedArray()) {
                     Napi::Uint8Array typed_array =
                         pk_val.As<Napi::Uint8Array>();
-                    std::string err_out{"BLST_ERROR: PublicKeyArg"};
-                    if (!blst_ts::is_valid_length(
-                            err_out,
-                            typed_array.ByteLength(),
-                            blst_ts::public_key_length_compressed,
-                            blst_ts::public_key_length_uncompressed)) {
-                        Napi::TypeError::New(env, err_out)
+                    if (std::optional<std::string> err_msg =
+                            blst_ts::is_valid_length(
+                                typed_array.ByteLength(),
+                                blst_ts::public_key_length_compressed,
+                                blst_ts::public_key_length_uncompressed)) {
+                        Napi::TypeError::New(
+                            env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                             .ThrowAsJavaScriptException();
                         has_error = true;
                         return;
@@ -675,13 +675,13 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 if (sig_val.IsTypedArray()) {
                     Napi::Uint8Array typed_array =
                         sig_val.As<Napi::Uint8Array>();
-                    std::string err_out{"BLST_ERROR: SignatureArg"};
-                    if (!blst_ts::is_valid_length(
-                            err_out,
-                            typed_array.ByteLength(),
-                            blst_ts::signature_length_compressed,
-                            blst_ts::signature_length_uncompressed)) {
-                        Napi::TypeError::New(env, err_out)
+                    if (std::optional<std::string> err_msg =
+                            blst_ts::is_valid_length(
+                                typed_array.ByteLength(),
+                                blst_ts::signature_length_compressed,
+                                blst_ts::signature_length_uncompressed)) {
+                        Napi::TypeError::New(
+                            env, "BLST_ERROR: SignatureArg"s + *err_msg)
                             .ThrowAsJavaScriptException();
                         has_error = true;
                         return;

@@ -97,10 +97,10 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
 
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
-    std::string err_out{"BLST_ERROR: skBytes"};
-    if (!blst_ts::is_valid_length(
-            err_out, sk_bytes.ByteLength(), secret_key_length)) {
-        Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
+    if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
+            sk_bytes.ByteLength(), secret_key_length)) {
+        Napi::TypeError::New(env, "BLST_ERROR: skBytes"s + *err_msg)
+            .ThrowAsJavaScriptException();
         return env.Undefined();
     }
 

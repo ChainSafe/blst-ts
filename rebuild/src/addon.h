@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -55,7 +56,7 @@ namespace blst_ts {
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        has_error = true;                                                    \
+        has_error = true;                                                      \
         return;                                                                \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
@@ -63,7 +64,7 @@ namespace blst_ts {
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        has_error = true;                                                    \
+        has_error = true;                                                      \
         return;                                                                \
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
@@ -98,11 +99,8 @@ bool is_zero_bytes(
  *
  * @return bool
  */
-bool is_valid_length(
-    std::string &error_out,
-    size_t byte_length,
-    size_t length1,
-    size_t length2 = 0) noexcept;
+[[nodiscard]] std::optional<std::string> is_valid_length(
+    size_t byte_length, size_t length1, size_t length2 = 0) noexcept;
 }  // namespace blst_ts
 
 class BlstTsAddon;

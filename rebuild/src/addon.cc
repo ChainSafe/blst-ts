@@ -48,26 +48,23 @@ bool is_zero_bytes(
  * If only one length is provided (the other being 0), the error message will
  * only reference the provided length.
  */
-bool is_valid_length(
-    std::string &error_out,
-    size_t byte_length,
-    size_t length1,
-    size_t length2) noexcept {
+[[nodiscard]] std::optional<std::string> is_valid_length(
+    size_t byte_length, size_t length1, size_t length2) noexcept {
     if (byte_length == length1 || (length2 != 0 && byte_length == length2)) {
-        return true;
+        return std::nullopt;
     }
-    error_out.append(" must be ");
+    std::string err_msg{" must be "};
     if (length1 != 0) {
-        error_out.append(std::to_string(length1));
+        err_msg.append(std::to_string(length1));
     };
     if (length2 != 0) {
         if (length1 != 0) {
-            error_out.append(" or ");
+            err_msg.append(" or ");
         }
-        error_out.append(std::to_string(length2));
+        err_msg.append(std::to_string(length2));
     };
-    error_out.append(" bytes long");
-    return false;
+    err_msg.append(" bytes long");
+    return err_msg;
 }
 }  // namespace blst_ts
 
