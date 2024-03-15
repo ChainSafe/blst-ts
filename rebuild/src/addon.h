@@ -73,15 +73,17 @@ namespace blst_ts {
 typedef enum { Affine, Jacobian } CoordType;
 
 /**
- * Checks a byte array to see if it is all zeros. Can pass start byte for the
- * cases where the first byte is the tag (infinity point and
- * compress/uncompressed).
+ * Checks if a specified range of bytes within a byte array consists only of
+ * zeros.
  *
- * @param data uint8_t*
- * @param start_byte size_t
- * @param byte_length size_t
+ * @param data A pointer to the first element of the byte array to be checked.
+ * @param starting_index The offset (index) from the beginning of the array
+ * where the check should start. (0 starts at *data)
+ * @param byte_length The total length of the data array
  *
- * @return bool
+ * @return Returns true if all bytes from start_byte to the end of the array are
+ * zeros. Returns false if the starting offset is beyond the array length or if
+ * any byte in the specified range is not zero.
  */
 bool is_zero_bytes(
     const uint8_t *data,
@@ -89,15 +91,26 @@ bool is_zero_bytes(
     const size_t byte_length) noexcept;
 
 /**
- * Checks if a byte array is a valid length. If not, sets the error message and
- * returns false.  If valid returns true for use in conditional statements.
+ * Validates that a given byte length matches one of two specified lengths,
+ * returning an optional error message if the validation fails.
  *
- * @param[out] error_out &std::string - error message to set if invalid
- * @param[in] byte_length size_t - length of the byte array to validate
- * @param[in] length1 size_t - first valid length
- * @param[in] length2 size_t - second valid length (optional)
+ * @param byte_length The length to be validated against length1 and length2.
+ * @param length1 The first valid length that byte_length can be. A value of 0
+ * is considered as not set and thus not compared.
+ * @param length2 The second valid length that byte_length can be. A value of 0
+ * is considered as not set and thus not compared.
  *
- * @return bool
+ * @return An std::optional<std::string> that contains an error message if
+ * byte_length does not match either length1 or (if length2 is not 0) length2.
+ * If byte_length is valid, std::nullopt is returned. The error message, if
+ * returned, specifies the valid lengths byte_length must match.
+ *
+ * @note If both length1 and length2 are provided (non-zero), and byte_length
+ * does not match, the error message indicates that the valid byte_length must
+ * be either length1 or length2. If only one length is provided (the other being
+ * 0), the error message will only reference the provided length. This function
+ * is marked with [[nodiscard]] to ensure that the caller handles the potential
+ * error message, promoting safer and more intentional error checking.
  */
 [[nodiscard]] std::optional<std::string> is_valid_length(
     size_t byte_length, size_t length1, size_t length2 = 0) noexcept;

@@ -1,19 +1,6 @@
 #include "addon.h"
 
 namespace blst_ts {
-/**
- * Checks if a specified range of bytes within a byte array consists only of
- * zeros.
- *
- * @param data A pointer to the first element of the byte array to be checked.
- * @param starting_index The offset (index) from the beginning of the array
- * where the check should start. (0 starts at *data)
- * @param byte_length The total length of the data array
- *
- * @return Returns true if all bytes from start_byte to the end of the array are
- * zeros. Returns false if the starting offset is beyond the array length or if
- * any byte in the specified range is not zero.
- */
 bool is_zero_bytes(
     const uint8_t *data,
     const size_t starting_index,
@@ -27,27 +14,6 @@ bool is_zero_bytes(
     return false;
 }
 
-/**
- * Validates that a given byte length matches one of two specified lengths,
- * optionally recording an error message if the validation fails.
- *
- * @param error_out A reference to a std::string where the error message is
- * appended if the byte length does not match either length1 or length2.
- * @param byte_length The length to be validated against length1 and length2.
- * @param length1 The first valid length that byte_length can be. A value of 0
- * is considered as not set and thus not compared.
- * @param length2 The second valid length that byte_length can be. A value of 0
- * is considered as not set and thus not compared.
- *
- * @return Returns true if byte_length matches length1 or (if length2 is not 0)
- * length2. Returns false if byte_length matches neither, appending an
- * appropriate error message to error_out.
- *
- * @note If both length1 and length2 are provided (non-zero), the error message
- * will indicate that the valid byte_length must be either length1 or length2.
- * If only one length is provided (the other being 0), the error message will
- * only reference the provided length.
- */
 [[nodiscard]] std::optional<std::string> is_valid_length(
     size_t byte_length, size_t length1, size_t length2) noexcept {
     if (byte_length == length1 || (length2 != 0 && byte_length == length2)) {
