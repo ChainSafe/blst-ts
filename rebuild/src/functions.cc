@@ -288,6 +288,9 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
           _ctx{new blst::Pairing(true, _module->dst)},
           _sig_point{},
           _sets{},
+          _msgs_ref{Napi::Persistent(info[0])},
+          _pks_ref{Napi::Persistent(info[1])},
+          _sig_ref{Napi::Persistent(info[2])},
           _is_invalid{false},
           _result{false} {
         Napi::Env env = Env();
@@ -455,6 +458,9 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
     std::unique_ptr<blst::Pairing> _ctx;
     blst_ts::P2AffineGroup _sig_point;
     std::vector<AggregateVerifySet> _sets;
+    Napi::Reference<Napi::Value> _msgs_ref;
+    Napi::Reference<Napi::Value> _pks_ref;
+    Napi::Reference<Napi::Value> _sig_ref;
     bool _is_invalid;
     bool _result;
 };
@@ -600,6 +606,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
           _module{Env().GetInstanceData<BlstTsAddon>()},
           _ctx{new blst::Pairing(true, _module->dst)},
           _sets{},
+          _sets_ref{Napi::Persistent(info[0])},
           _result{false} {
         Napi::Env env = Env();
         if (!info[0].IsArray()) {
@@ -748,6 +755,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
     BlstTsAddon *_module;
     std::unique_ptr<blst::Pairing> _ctx;
     std::vector<SignatureSet> _sets;
+    Napi::Reference<Napi::Value> _sets_ref;
     bool _result;
 };
 
