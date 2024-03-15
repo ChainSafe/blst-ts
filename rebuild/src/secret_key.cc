@@ -43,6 +43,7 @@ void SecretKey::Init(
 Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     Napi::Value ikm_value = info[0];
+    Napi::Value info_value = info[1];
 
     BLST_TS_UNWRAP_UINT_8_ARRAY(ikm_value, ikm, "ikm")
     // Check for less than 32 bytes so consumers don't accidentally create
@@ -61,8 +62,8 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     SecretKey *sk = SecretKey::Unwrap(wrapped);
 
     // If `info` string is passed use it otherwise use default without
-    if (!info[1].IsUndefined()) {
-        if (!info[1].IsString()) {
+    if (!info_value.IsUndefined()) {
+        if (!info_value.IsString()) {
             Napi::TypeError::New(env, "BLST_ERROR: info must be a string")
                 .ThrowAsJavaScriptException();
             return env.Undefined();
@@ -70,7 +71,7 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
         sk->key->keygen(
             ikm.Data(),
             ikm.ByteLength(),
-            info[1].As<Napi::String>().Utf8Value());
+            info_value.As<Napi::String>().Utf8Value());
     } else {
         sk->key->keygen(ikm.Data(), ikm.ByteLength());
     }
