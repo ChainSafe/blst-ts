@@ -55,7 +55,7 @@ namespace blst_ts {
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        m_has_error = true;                                                    \
+        has_error = true;                                                    \
         return;                                                                \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
@@ -63,7 +63,7 @@ namespace blst_ts {
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        m_has_error = true;                                                    \
+        has_error = true;                                                    \
         return;                                                                \
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
