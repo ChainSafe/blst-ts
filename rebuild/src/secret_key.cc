@@ -80,10 +80,9 @@ Napi::Value SecretKey::FromKeygen(const Napi::CallbackInfo &info) {
     // check (signing with zero key). Do after building instead of checking
     // incoming bytes incase info changes the key
     blst::byte key_bytes[secret_key_length];
+
     sk->key->to_bendian(key_bytes);
-    if (blst_ts::is_zero_bytes(key_bytes, 0, secret_key_length)) {
-        sk->is_zero_key = true;
-    }
+    sk->is_zero_key = blst_ts::is_zero_bytes(key_bytes, 0, secret_key_length);
 
     return scope.Escape(wrapped);
 }
@@ -94,7 +93,8 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
     Napi::Value sk_bytes_value = info[0];
     BLST_TS_UNWRAP_UINT_8_ARRAY(sk_bytes_value, sk_bytes, "skBytes")
     std::string err_out{"BLST_ERROR: skBytes"};
-    if (!blst_ts::is_valid_length(err_out, sk_bytes.ByteLength(), secret_key_length)) {
+    if (!blst_ts::is_valid_length(
+            err_out, sk_bytes.ByteLength(), secret_key_length)) {
         Napi::TypeError::New(env, err_out).ThrowAsJavaScriptException();
         return env.Undefined();
     }
@@ -106,9 +106,9 @@ Napi::Value SecretKey::Deserialize(const Napi::CallbackInfo &info) {
 
     // Check if key is zero and set flag if so. Several specs depend on this
     // check (signing with zero key)
-    if (blst_ts::is_zero_bytes(sk_bytes.Data(), 0, sk_bytes.ByteLength())) {
-        sk->is_zero_key = true;
-    }
+    sk->is_zero_key =
+        blst_ts::is_zero_bytes(sk_bytes.Data(), 0, sk_bytes.ByteLength());
+
     // Deserialize key
     sk->key->from_bendian(sk_bytes.Data());
 
