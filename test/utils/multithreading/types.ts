@@ -1,6 +1,5 @@
 import {Worker} from "@chainsafe/threads";
-import * as swig from "../../../src";
-import * as napi from "../../../lib";
+import {PublicKey, Signature} from "../../../lib";
 import {SignatureSetArray} from "../types";
 
 export enum SignatureSetType {
@@ -8,79 +7,37 @@ export enum SignatureSetType {
   aggregate = "aggregate",
 }
 
-export type SwigSingleSignatureSet = {
-  type: SignatureSetType.single;
-  pubkey: swig.PublicKey;
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-
-export type NapiSingleSignatureSet = {
-  type: SignatureSetType.single;
-  pubkey: napi.PublicKey;
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-
 export type SingleSignatureSet = {
   type: SignatureSetType.single;
-  pubkey: swig.PublicKey | napi.PublicKey;
+  pubkey: PublicKey;
   signingRoot: Uint8Array;
   signature: Uint8Array;
 };
 
-export type SwigAggregatedSignatureSet = {
+export type AggregatedSignatureSet = {
   type: SignatureSetType.aggregate;
-  pubkeys: swig.PublicKey[];
+  pubkeys: PublicKey[];
   signingRoot: Uint8Array;
   signature: Uint8Array;
 };
 
-export type NapiAggregatedSignatureSet = {
-  type: SignatureSetType.aggregate;
-  pubkeys: napi.PublicKey[];
-  signingRoot: Uint8Array;
-  signature: Uint8Array;
-};
-
-export type AggregatedSignatureSet = NapiAggregatedSignatureSet | SwigAggregatedSignatureSet;
-
-export type NapiSignatureSetGroups = (NapiSingleSignatureSet[] | NapiAggregatedSignatureSet[])[];
-
-export type SwigSignatureSetGroups = (SwigSingleSignatureSet[] | SwigAggregatedSignatureSet[])[];
+export type SignatureSetGroups = (SingleSignatureSet[] | AggregatedSignatureSet[])[];
 
 export type ISignatureSet = SingleSignatureSet | AggregatedSignatureSet;
 
-export interface NapiSameMessagePair {
-  publicKey: napi.PublicKey;
-  signature: napi.Signature;
+export interface SameMessagePair {
+  publicKey: PublicKey;
+  signature: Signature;
 }
-export interface NapiSameMessageSet {
-  sets: NapiSameMessagePair[];
+export interface SameMessageSet {
+  sets: SameMessagePair[];
   message: Uint8Array;
 }
 
-export interface SwigSameMessagePair {
-  publicKey: swig.PublicKey;
-  signature: swig.Signature;
-}
-export interface SwigSameMessageSet {
-  sets: SwigSameMessagePair[];
-  message: Uint8Array;
-}
-
-export type SameMessageSet = NapiSameMessageSet | SwigSameMessageSet;
-
-export type SameMessageSetArray = NapiSameMessageSet[] | SwigSameMessageSet[];
-
-export enum BlsPoolType {
-  workers = "workers",
-  libuv = "libuv",
-}
+export type SameMessageSetArray = SameMessageSet[];
 
 export type BlsMultiThreadWorkerPoolOptions = {
   blsVerifyAllInQueue?: boolean;
-  blsPoolType?: BlsPoolType;
   addVerificationRandomness?: boolean;
 };
 
@@ -93,22 +50,10 @@ export interface VerifySignatureOpts {
   addVerificationRandomness?: boolean;
 }
 
-export interface SerializedSwigSet {
-  msg: Uint8Array;
-  pk: Uint8Array;
-  sig: Uint8Array;
-}
-
-export interface NapiBlsWorkRequest {
+export interface BlsWorkRequest {
   opts: VerifySignatureOpts;
   sets: SignatureSetArray;
 }
-export interface SwigBlsWorkRequest {
-  opts: VerifySignatureOpts;
-  sets: SerializedSwigSet[];
-}
-
-export type BlsWorkRequest = NapiBlsWorkRequest | SwigBlsWorkRequest;
 
 export enum WorkResultCode {
   success = "success",
