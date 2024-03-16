@@ -8,7 +8,7 @@ import {
   verify,
 } from "../../lib";
 import {sullyUint8Array, makeNapiTestSets} from "../utils";
-import {NapiTestSet} from "../types";
+import {NapiTestSet} from "../utils/types";
 
 describe("Verify", () => {
   let testSet: NapiTestSet;
