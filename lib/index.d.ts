@@ -241,3 +241,13 @@ export function asyncAggregateVerify(
  * @throw {Error} - Invalid aggregation
  */
 export function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
+
+/**
+ * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
+ * See https://github.com/ChainSafe/blst-ts/issues/45
+ *
+ * @param {number} bytesCount - Number of bytes to generate
+ *
+ * @return {Buffer} - Random bytes
+ */
+export function randomBytesNonZero(bytesCount: number): Buffer;
