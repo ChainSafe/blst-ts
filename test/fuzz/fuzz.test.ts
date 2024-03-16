@@ -2,7 +2,7 @@ import fs from "fs";
 import {resolve} from "path";
 import {PromiseWithChild} from "child_process";
 import {testCases} from "./testCases";
-import {cmdStringExec} from "../../tools/exec";
+import {cmdStringExec} from "../../rebuild/tools/exec";
 
 // timeout for all fuzz tests
 const TEST_TIMEOUT_IN_MINUTES = 20;
