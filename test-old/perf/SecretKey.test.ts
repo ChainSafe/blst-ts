@@ -1,5 +1,5 @@
 import {itBench} from "@dapplion/benchmark";
-import * as napi from "../../rebuild/lib";
+import * as napi from "../../lib";
 import * as swig from "../../src";
 import {keygenMaterial, commonMessage, getNapiSet, getSwigSet} from "../utils";
 

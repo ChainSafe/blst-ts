@@ -1,6 +1,6 @@
 import {Worker} from "@chainsafe/threads";
 import * as swig from "../../../src";
-import * as napi from "../../../rebuild/lib";
+import * as napi from "../../../lib";
 import {SignatureSetArray} from "../types";
 
 export enum SignatureSetType {

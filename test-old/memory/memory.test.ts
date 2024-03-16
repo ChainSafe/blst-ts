@@ -1,5 +1,5 @@
 import {memoryTest} from "../utils/memory/testRunner";
-import * as napi from "../../rebuild/lib";
+import * as napi from "../../lib";
 import * as swig from "../../src";
 
 const sk = napi.SecretKey.fromKeygen(Buffer.alloc(32, "*&@#"));

@@ -1,5 +1,5 @@
 import * as swig from "../../../src";
-import {SignatureSet as NapiSignatureSet} from "../../../rebuild/lib";
+import {SignatureSet as NapiSignatureSet} from "../../../lib";
 
 import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest, SerializedSwigSet} from "./types";
 import {chunkifyMaximizeChunkSize} from "./helpers";

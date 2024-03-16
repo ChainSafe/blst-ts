@@ -1,5 +1,5 @@
 import * as swig from "../../../src";
-import napi from "../../../rebuild/lib";
+import napi from "../../../lib";
 import {PublicKey} from "../types";
 import {ISignatureSet, SignatureSetType} from "./types";
 

@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import {expect} from "chai";
 import * as swig from "../../src";
-import * as napi from "../../rebuild/lib";
+import * as napi from "../../lib";
 import {Bufferish, InstanceTestCases, NapiSet, SwigSet} from "./types";
 
 export function toHex(bytes: Bufferish): string {

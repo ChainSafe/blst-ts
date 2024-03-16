@@ -1,6 +1,6 @@
 import * as swig from "../../../src/lib";
 import * as swigBindings from "../../../src/bindings";
-import napi from "../../../rebuild/lib";
+import napi from "../../../lib";
 import {PublicKey} from "../types";
 import {BlsWorkRequest, ISignatureSet, SignatureSetType, VerifySignatureOpts} from "./types";
 import {LinkedList} from "./array";

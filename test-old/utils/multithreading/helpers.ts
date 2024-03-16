@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import * as swig from "../../../src";
-import * as napi from "../../../rebuild/lib";
+import * as napi from "../../../lib";
 import {NapiSet, SerializedSet, SwigSet} from "../types";
 import {getNapiSet, getSwigSet, shuffle} from "../helpers";
 import {
