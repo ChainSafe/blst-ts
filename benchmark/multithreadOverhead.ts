@@ -1,7 +1,7 @@
 import os from "os";
 import * as bls from "../src/lib";
-import {BlsMultiThreadNaive} from "../test/unit/multithread/naive";
-import {warmUpWorkers} from "../test/unit/multithread/naive/utils";
+import {BlsMultiThreadNaive} from "../test-old/unit/multithread/naive";
+import {warmUpWorkers} from "../test-old/unit/multithread/naive/utils";
 import {Csv} from "./utils/csv";
 import {BenchmarkRunner} from "./utils/runner";
 
