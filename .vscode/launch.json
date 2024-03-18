@@ -21,6 +21,18 @@
             "console": "integratedTerminal",
             "protocol": "inspector",
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug Native Code Using Mocha Test",
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "npm: build:debug",
+            "program": "node",
+            "args": [
+                "node_modules/.bin/mocha",
+                "test/unit/**/*.test.ts"
+            ]
         }
     ]
 }

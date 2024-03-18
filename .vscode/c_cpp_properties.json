@@ -1,10 +1,11 @@
 {
     "configurations": [
         {
-            "name": "Mac",
+            "name": "OSX - Napi Dependency Configuration",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/Users/matthewkeil/.node-gyp/**"
+                "${env:HOME}/.node-gyp/**",
+                "${env:HOME}/.nvm/versions/node/**"
             ],
             "defines": [],
             "macFrameworkPath": [
