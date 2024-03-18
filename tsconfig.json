@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "esnext",
-    "module": "commonjs",
-    "pretty": true,
+    "noEmit": true,
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "lib": [
-      "esnext",
-      "esnext.bigint",
+      "ESNext",
+      "ESNext.BigInt",
       "DOM"
     ],
+    "outDir": "dist",
+    "pretty": true,
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,

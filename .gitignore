@@ -3,10 +3,11 @@ coverage
 build
 dist
 node_modules
-prebuild/*.node
-
 npm-debug.log
 yarn-error.log
 
 # Eth2.0 spec tests data
 spec-tests
+
+# Fuzz testing build and results
+fuzz-tests

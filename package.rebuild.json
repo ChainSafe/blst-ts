@@ -8,10 +8,12 @@
     "clean:dist": "rm -rf dist",
     "clean:build": "node-gyp clean && node-gyp configure",
     "dev": "ts-node tools/dev",
+    
     "build": "node-gyp build",
     "build:clean": "npm run clean && npm run build",
     "build:debug": "node-gyp build --debug",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
+    
     "lint:ts": "eslint --color --ext .ts lib/ test/",
     "lint:c": "clang-format -i ./src/*",
     "lint": "npm run lint:c && npm run lint:ts",
