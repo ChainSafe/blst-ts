@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig",
+  "include": [
+    "scripts"
+  ],
+  "exclude": [
+    "blst",
+    "dist",
+    "doc",
+    "lib",
+    "fuzz-tests",
+    "node_modules",
+    "spec-tests",
+    "src",
+    "test",
+  ],
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist/cjs"
+  }
+}

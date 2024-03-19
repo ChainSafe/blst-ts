@@ -1,33 +1,28 @@
-/**
- * Points are represented in two ways in BLST:
- * - affine coordinates (x,y)
- * - jacobian coordinates (x,y,z)
- *
- * The jacobian coordinates allow to aggregate points more efficiently,
- * so if P1 points are aggregated often (Eth2.0) you want to keep the point
- * cached in jacobian coordinates.
- */
-export enum CoordType {
-  affine,
-  jacobian,
-}
+export const BINDINGS_NAME = "blst_ts_addon";
 
 export type BlstBuffer = Uint8Array;
 export type PublicKeyArg = BlstBuffer | PublicKey;
 export type SignatureArg = BlstBuffer | Signature;
+
 export interface SignatureSet {
   message: BlstBuffer;
   publicKey: PublicKeyArg;
   signature: SignatureArg;
 }
+
 export interface Serializable {
   serialize(): Uint8Array;
+}
+
+export enum CoordType {
+  affine = 0,
+  jacobian = 1,
 }
 
 /**
  * Critical constants for BLST public key infrastructure.
  */
-export const BLST_CONSTANTS: {
+export declare const BLST_CONSTANTS_TYPE: {
   DST: string;
   SECRET_KEY_LENGTH: number;
   PUBLIC_KEY_LENGTH_UNCOMPRESSED: number;
@@ -54,7 +49,7 @@ export const BLST_CONSTANTS: {
  * key = SecretKey.fromBytes(key.serialize());
  * ```
  */
-export class SecretKey implements Serializable {
+export declare class SecretKey implements Serializable {
   private constructor();
   /**
    * `fromKeygen` takes two parameters. The first parameter is a salt and is
@@ -76,7 +71,7 @@ export class SecretKey implements Serializable {
   sign(msg: BlstBuffer): Signature;
 }
 
-export class PublicKey implements Serializable {
+export declare class PublicKey implements Serializable {
   private constructor();
   static deserialize(pkBytes: BlstBuffer, coordType?: CoordType): PublicKey;
   serialize(compress?: boolean): Buffer;
@@ -86,7 +81,7 @@ export class PublicKey implements Serializable {
   multiplyBy(randomBytes: BlstBuffer): PublicKey;
 }
 
-export class Signature implements Serializable {
+export declare class Signature implements Serializable {
   private constructor();
   static deserialize(sigBytes: BlstBuffer, coordType?: CoordType): Signature;
   serialize(compress?: boolean): Buffer;
@@ -108,7 +103,7 @@ export class Signature implements Serializable {
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function aggregatePublicKeys(keys: PublicKeyArg[]): PublicKey;
+export declare function aggregatePublicKeys(keys: PublicKeyArg[]): PublicKey;
 
 /**
  * Aggregates an array of SignatureArgs.  Can pass mixed deserialized Signature
@@ -122,34 +117,7 @@ export function aggregatePublicKeys(keys: PublicKeyArg[]): PublicKey;
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function aggregateSignatures(signatures: SignatureArg[]): Signature;
-
-/**
- * Bls verification of a message against a public key and signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKey - Public key to verify against
- * @param {SignatureArg} signature - Signature of the message
- *
- * @return {boolean} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- */
-export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
-
-/**
- * Bls verification of a message against a set of public keys and an aggregated signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
- * @param {SignatureArg} signature - Aggregated signature of the message
- *
- * @return {boolean} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- * @throw {Error} - Invalid aggregation
- */
-export function fastAggregateVerify(msg: BlstBuffer, publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
+export declare function aggregateSignatures(signatures: SignatureArg[]): Signature;
 
 /**
  * Bls verification of a set of messages, with corresponding public keys, and a single
@@ -164,7 +132,11 @@ export function fastAggregateVerify(msg: BlstBuffer, publicKeys: PublicKeyArg[],
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function aggregateVerify(msgs: BlstBuffer[], publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
+export declare function aggregateVerify(
+  msgs: BlstBuffer[],
+  publicKeys: PublicKeyArg[],
+  signature: SignatureArg
+): boolean;
 
 /**
  * Bls batch verification for groups with a message and corresponding public key
@@ -177,38 +149,7 @@ export function aggregateVerify(msgs: BlstBuffer[], publicKeys: PublicKeyArg[], 
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean;
-
-/**
- * Bls verification of a message against a public key and signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKey - Public key to verify against
- * @param {SignatureArg} signature - Signature of the message
- *
- * @return {Promise<boolean>} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- */
-export function asyncVerify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
-
-/**
- * Bls verification of a message against a set of public keys and an aggregated signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
- * @param {SignatureArg} signature - Aggregated signature of the message
- *
- * @return {Promise<boolean>} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- * @throw {Error} - Invalid aggregation
- */
-export function asyncFastAggregateVerify(
-  msg: BlstBuffer,
-  publicKey: PublicKeyArg[],
-  signature: SignatureArg
-): Promise<boolean>;
+export declare function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean;
 
 /**
  * Bls verification of a set of messages, with corresponding public keys, and a single
@@ -223,7 +164,7 @@ export function asyncFastAggregateVerify(
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function asyncAggregateVerify(
+export declare function asyncAggregateVerify(
   msg: BlstBuffer[],
   publicKey: PublicKeyArg[],
   signature: SignatureArg
@@ -240,14 +181,17 @@ export function asyncAggregateVerify(
  * @throw {TypeError} - Invalid input
  * @throw {Error} - Invalid aggregation
  */
-export function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
+export declare function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
 
-/**
- * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
- * See https://github.com/ChainSafe/blst-ts/issues/45
- *
- * @param {number} bytesCount - Number of bytes to generate
- *
- * @return {Buffer} - Random bytes
- */
-export function randomBytesNonZero(bytesCount: number): Buffer;
+export interface BlstBindings {
+  BLST_CONSTANTS: typeof BLST_CONSTANTS_TYPE;
+  SecretKey: typeof SecretKey;
+  PublicKey: typeof PublicKey;
+  Signature: typeof Signature;
+  aggregatePublicKeys: typeof aggregatePublicKeys;
+  aggregateSignatures: typeof aggregateSignatures;
+  aggregateVerify: typeof aggregateVerify;
+  verifyMultipleAggregateSignatures: typeof verifyMultipleAggregateSignatures;
+  asyncAggregateVerify: typeof asyncAggregateVerify;
+  asyncVerifyMultipleAggregateSignatures: typeof asyncVerifyMultipleAggregateSignatures;
+}
