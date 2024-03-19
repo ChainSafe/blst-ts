@@ -1,6 +1,7 @@
 .nyc_output
 coverage
 build
+prebuild
 dist
 node_modules
 npm-debug.log
