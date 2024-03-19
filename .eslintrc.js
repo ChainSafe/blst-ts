@@ -34,10 +34,14 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["**/test/**/*.ts"],
+      files: ["test/**/*.ts"],
       rules: {
         "import/no-extraneous-dependencies": "off",
         "@typescript-eslint/no-explicit-any": "off",
+      },
+      files: ["scripts/**/*.ts"],
+      rules: {
+        "import/no-extraneous-dependencies": "off"
       },
     },
   ],
