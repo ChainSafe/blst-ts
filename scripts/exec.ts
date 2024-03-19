@@ -10,7 +10,7 @@ const defaultOptions: ExecPromiseOptions = {
   pipeInput: false,
 };
 
-export function cmdStringExec(
+export function exec(
   command: string,
   logToConsole = true,
   execOptions: ExecPromiseOptions = {}

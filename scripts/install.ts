@@ -1,64 +1,64 @@
-import fs from "fs";
-import {downloadBindings} from "./downloadBindings";
-import {buildBindings} from "./buildBindings";
-import {getBinaryPath} from "./paths";
-import {testBindings} from "./testBindings";
-
 /* eslint-disable no-console */
-
-const libName = "BLST native bindings";
+import {existsSync} from "fs";
+import {getBinaryName, getPrebuiltBinaryPath, testBindings, downloadBindings, buildBindings} from "./helpers";
 
 // CLI runner
 install().then(
   () => process.exit(0),
   (e) => {
-    console.log(e.stack);
+    console.error(e);
     process.exit(1);
   }
 );
 
 async function install(): Promise<void> {
-  const binaryPath = getBinaryPath();
+  const binaryName = getBinaryName();
 
-  // Check if bindings already downloaded or built
-  if (fs.existsSync(binaryPath)) {
+  // Check if bindings already bundled, downloaded or built
+  let binaryPath: string | undefined = getPrebuiltBinaryPath(binaryName);
+  if (existsSync(binaryPath)) {
     try {
       await testBindings(binaryPath);
-      console.log(`Using existing ${libName} from ${binaryPath}`);
       return;
-    } catch (e) {
-      console.log(`Cached ${libName} not OK`);
+    } catch {
+      console.log("Prebuilt and bundled bindings failed to load. Attempting to download.");
     }
   }
 
   // Fetch pre-built bindings from remote repo
   try {
-    console.log(`Retrieving ${libName} ${binaryPath} ...`);
-    await downloadBindings(binaryPath);
-    await testBindings(binaryPath);
-    console.log(`Successfully retrieved ${libName} ${binaryPath}`);
-    return;
-  } catch (e) {
-    if (e.statusCode === 404) {
-      console.error(`${libName} not available: ${e.message}`);
-    } else {
-      e.message = `Error importing ${libName}: ${e.message}`;
-      console.error(e);
+    binaryPath = await downloadBindings(binaryName);
+  } catch {
+    /* no-op */
+  }
+
+  if (existsSync(binaryPath)) {
+    try {
+      await testBindings(binaryPath);
+      return;
+    } catch {
+      console.log("Downloaded bindings failed to load. Attempting to build.");
     }
   }
 
   // Build bindings locally from source
   try {
-    console.log(`Building ${libName} ${binaryPath} from source...`);
-    await buildBindings(binaryPath);
-    await testBindings(binaryPath);
-    console.log(`Successfully built ${libName} from source`);
-    return;
+    binaryPath = await buildBindings(binaryPath);
   } catch (e) {
-    e.message = `Error building ${libName}: ${e.message}`;
-    console.error(e);
+    if (e instanceof Error) {
+      console.error(`Error building blst-ts binary:\n${e.message}`);
+    }
+    throw e;
   }
 
-  // Fallback?
-  throw Error(`Error downloading and building ${libName} ${binaryPath}. No fallback`);
+  if (existsSync(binaryPath)) {
+    try {
+      await testBindings(binaryPath);
+      return;
+    } catch {
+      console.log("Locally built bindings failed to load. No fallback available");
+    }
+  }
+
+  throw new Error("Failed to install blst-ts bindings");
 }
