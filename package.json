@@ -34,7 +34,8 @@
   },
   "dependencies": {
     "node-addon-api": "^6.1.0",
-    "node-gyp": "^10.0.1"
+    "node-gyp": "^10.0.1",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@chainsafe/threads": "^1.11.1",
@@ -53,11 +54,15 @@
     "eslint-plugin-prettier": "^5.0.1",
     "mocha": "^10.3.0",
     "prettier": "^3.1.1",
-    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/lib/index.js",
+  "types": "./dist/cjs/lib/index.d.ts",
+  "module": "./dist/esm/lib/index.mjs",
+  "exports": {
+    "import": "./dist/esm/lib/index.mjs",
+    "require": "./dist/cjs/lib/index.js"
+  },
   "files": [
     "build/bindings",
     "blst/bindings/blst_aux.h",
@@ -66,12 +71,14 @@
     "blst/build/*",
     "blst/src/*",
     "dist",
-    "scripts",
+    "prebuild",
+    "scripts/install.ts",
     "src",
     "utils",
     "binding.gyp",
     "LICENSE",
-    "package.json"
+    "package.json",
+    "tsconfig.json"
   ],
   "repository": {
     "type": "git",

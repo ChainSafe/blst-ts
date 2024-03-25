@@ -1,10 +1,9 @@
 {
   "extends": "./tsconfig",
   "files": [
-    "lib/index.cjs.ts",
+    "lib/index.ts",
     "lib/bindings.ts",
-    "lib/install.ts",
-    "lib/utils.ts"
+    "utils/index.ts"
   ],
   "exclude": [
     "blst",
@@ -21,6 +20,6 @@
     "noEmit": false,
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "./dist/cjs"
+    "outDir": "./dist/cjs",
   }
 }

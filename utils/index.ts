@@ -5,8 +5,6 @@ import {exec as EXEC, ExecOptions, ChildProcess, PromiseWithChild} from "node:ch
 export const BINDINGS_NAME = "blst_ts_addon";
 export const BINDINGS_FILE = `${BINDINGS_NAME}.node`;
 
-const ROOT_DIR = resolve(__dirname, "..");
-
 class NotNodeJsError extends Error {
   constructor(missingItem: string) {
     super(`blst-ts bindings only run in a NodeJS context. No ${missingItem} found.`);
@@ -32,13 +30,13 @@ export function getBinaryName(): string {
 /**
  * Builds a list of search paths to look for the bindings file
  */
-function buildSearchPaths(filename: string): string[] {
+function buildSearchPaths(rootDir: string, filename: string): string[] {
   const searchLocations: string[][] = [
-    [ROOT_DIR],
-    [ROOT_DIR, "prebuild"],
-    [ROOT_DIR, "build"],
-    [ROOT_DIR, "build", "Debug"],
-    [ROOT_DIR, "build", "Release"],
+    [rootDir],
+    [rootDir, "prebuild"],
+    [rootDir, "build"],
+    [rootDir, "build", "Debug"],
+    [rootDir, "build", "Release"],
   ];
 
   return searchLocations.map((location) => resolve(...location, filename));
@@ -48,12 +46,9 @@ function buildSearchPaths(filename: string): string[] {
  * Locates the bindings file using the blst-ts naming convention for prebuilt
  * bindings. Falls back to node-gyp naming if not found.
  */
-export function getBindingsPath(...names: string[]): string {
-  if (names.length === 0) {
-    names.push(getBinaryName());
-    names.push(BINDINGS_FILE);
-  }
-  const searchLocations = names.map((name) => buildSearchPaths(name)).flat();
+export function getBindingsPath(rootDir: string): string {
+  const names = [getBinaryName(), BINDINGS_FILE];
+  const searchLocations = names.map((name) => buildSearchPaths(rootDir, name)).flat();
   for (const filepath of searchLocations) {
     if (existsSync(filepath)) {
       return filepath;

@@ -5,8 +5,7 @@ import {finished} from "node:stream/promises";
 import {ReadableStream} from "node:stream/web";
 import {execSync} from "node:child_process";
 import {copyFileSync, createWriteStream, existsSync, mkdirSync} from "node:fs";
-import {exec} from "./utils";
-import {BINDINGS_FILE, getBinaryName, getBindingsPath} from "./utils";
+import {exec, getBinaryName, getBindingsPath} from "../utils";
 
 const ROOT_DIR = resolve(__dirname, "..");
 const PREBUILD_DIR = resolve(ROOT_DIR, "prebuild");
@@ -55,7 +54,7 @@ async function downloadBindings(binaryName: string): Promise<string> {
 async function buildBindings(binaryName: string): Promise<string> {
   await exec("npm run clean:gyp", true, {cwd: ROOT_DIR});
   await exec("npm run build:gyp", true, {cwd: ROOT_DIR});
-  const bindingPath = getBindingsPath(BINDINGS_FILE);
+  const bindingPath = getBindingsPath(ROOT_DIR);
 
   if (!existsSync(PREBUILD_DIR)) {
     mkdirSync(PREBUILD_DIR, {recursive: true});

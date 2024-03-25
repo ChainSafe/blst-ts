@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {resolve} from "path";
 import {watchWithCallback} from "./watch";
-import {exec} from "../lib/utils";
+import {exec} from "../utils";
 
 const DEBOUNCE_TIME = 500;
 const testCommand = "npm run test";

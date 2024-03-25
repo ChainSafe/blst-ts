@@ -1,9 +1,12 @@
-import {BINDINGS_NAME, getBindingsPath} from "./utils";
+import {resolve} from "node:path";
+import {getBindingsPath} from "../utils";
 import {prepareBindings} from "./bindings";
 export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./bindings";
 
-const bindings = await import(getBindingsPath(BINDINGS_NAME));
-const blstTs = prepareBindings(bindings);
+const rootDir = __dirname.includes("dist/cjs") ? resolve(__dirname, "..", "..", "..") : resolve(__dirname, "..");
+const bindingsPath = getBindingsPath(rootDir);
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+const blstTs = prepareBindings(require(bindingsPath));
 
 export default blstTs;
 
