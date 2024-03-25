@@ -1,7 +1,10 @@
 {
   "extends": "./tsconfig",
-  "include": [
-    "lib"
+  "files": [
+    "lib/index.cjs.ts",
+    "lib/bindings.ts",
+    "lib/install.ts",
+    "lib/utils.ts"
   ],
   "exclude": [
     "blst",

@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "noEmit": true,
-    "target": "ESNext",
-    "moduleResolution": "Node",
     "lib": [
       "ESNext",
       "ESNext.BigInt",

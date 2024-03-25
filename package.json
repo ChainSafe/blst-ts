@@ -12,11 +12,12 @@
     "clean": "npm run clean:dist; npm run clean:gyp",
     "clean:dist": "rm -rf dist",
     "clean:gyp": "node-gyp clean && node-gyp configure",
+    "build": "yarn build:gyp:full && yarn build:ts",
     "build:gyp": "node-gyp build",
+    "build:gyp:full": "node-gyp configure && node-gyp build",
     "build:cjs": "tsc --project tsconfig.cjs.json",
-    "build:scripts": "tsc --project tsconfig.scripts.json",
     "build:esm": "tsc --project tsconfig.mjs.json",
-    "build:ts": "npm run build:scripts && npm run build:cjs && npm run build:esm",
+    "build:ts": "npm run build:cjs && npm run build:esm",
     "build:debug": "node-gyp build --debug",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "dev": "ts-node tools/dev",
@@ -32,20 +33,16 @@
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
   },
   "dependencies": {
-    "bindings": "^1.5.0",
     "node-addon-api": "^6.1.0",
-    "node-fetch": "^2.6.1",
     "node-gyp": "^10.0.1"
   },
   "devDependencies": {
     "@chainsafe/threads": "^1.11.1",
     "@dapplion/benchmark": "^0.2.4",
     "@jazzer.js/core": "^2.1.0",
-    "@types/bindings": "^1.5.5",
     "@types/chai": "^4.3.12",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.28",
-    "@types/node-fetch": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "chai": "^5.1.0",
@@ -57,11 +54,7 @@
     "mocha": "^10.3.0",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2",
-    "@types/js-yaml": "^4.0.5",
-    "js-yaml": "^4.1.0",
-    "tar": "^6.1.14",
-    "threads": "^1.6.3"
+    "typescript": "^5.2.2"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -73,7 +66,12 @@
     "blst/build/*",
     "blst/src/*",
     "dist",
-    "src"
+    "scripts",
+    "src",
+    "utils",
+    "binding.gyp",
+    "LICENSE",
+    "package.json"
   ],
   "repository": {
     "type": "git",

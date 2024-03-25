@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig",
-  "include": [
-    "lib"
+  "files": [
+    "lib/index.mjs.ts",
+    "lib/bindings.ts",
+    "lib/utils.ts"
   ],
   "exclude": [
     "blst",
@@ -17,7 +19,16 @@
   "compilerOptions": {
     "noEmit": false,
     "module": "ESNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist/esm"
+    "target": "ESNext",
+    "outDir": "./dist/esm",
+    "paths": {
+      // This is solely to stop a bug with @types/node as of 12/15/2023
+      "undici-types": [
+        "./node_modules/undici-types/index.d.ts"
+      ],
+      "form-data": [
+        "./node_modules/form-data/index.d.ts"
+      ],
+    }
   }
 }
