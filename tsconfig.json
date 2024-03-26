@@ -18,6 +18,7 @@
     "sourceMap": true,
     "declarationMap": true,
     "esModuleInterop": true,
+    "downlevelIteration": true,
     "allowJs": true,
     "checkJs": true,
     "pretty": true,
