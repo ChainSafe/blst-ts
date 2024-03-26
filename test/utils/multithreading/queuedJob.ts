@@ -44,7 +44,7 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
         return {
           signature: set.signature,
           message: set.signingRoot,
-          publicKey: getAggregatePublicKey(set, false),
+          publicKey: getAggregatePublicKey(set),
         };
       }),
     };

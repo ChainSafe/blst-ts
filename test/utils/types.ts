@@ -2,14 +2,14 @@ import * as bindings from "../../lib";
 
 export type BufferLike = string | Uint8Array | Buffer | bindings.Serializable;
 
-export interface NapiTestSet {
+export interface TestSet {
   message: Uint8Array;
   secretKey: bindings.SecretKey;
   publicKey: bindings.PublicKey;
   signature: bindings.Signature;
 }
 
-export type SerializedSet = Record<keyof NapiTestSet, Uint8Array>;
+export type SerializedSet = Record<keyof TestSet, Uint8Array>;
 
 export type SignatureSetArray = bindings.SignatureSet[];
 
