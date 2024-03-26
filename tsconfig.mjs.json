@@ -3,6 +3,7 @@
   "files": [
     "lib/index.mts",
     "lib/bindings.ts",
+    "lib/types.d.ts",
     "utils/index.ts"
   ],
   "exclude": [
@@ -29,6 +30,9 @@
       "form-data": [
         "./node_modules/form-data/index.d.ts"
       ],
+      "minipass": [
+        "./node_modules/minipass/index.d.ts"
+      ]
     }
   }
 }

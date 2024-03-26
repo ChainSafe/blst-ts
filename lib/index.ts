@@ -1,7 +1,7 @@
 import {resolve} from "node:path";
 import {getBindingsPath} from "../utils";
 import {prepareBindings} from "./bindings";
-export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./bindings";
+export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./types";
 
 const rootDir = __dirname.includes("dist/cjs") ? resolve(__dirname, "..", "..", "..") : resolve(__dirname, "..");
 const bindingsPath = getBindingsPath(rootDir);

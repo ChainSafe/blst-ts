@@ -3,7 +3,7 @@ import {fileURLToPath} from "node:url";
 import {createRequire} from "node:module";
 import {getBindingsPath} from "../utils/index.js";
 import {prepareBindings} from "./bindings.js";
-export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./bindings.js";
+export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./types.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const rootDir = __dirname.includes("dist/esm") ? resolve(__dirname, "..", "..", "..") : resolve(__dirname, "..");

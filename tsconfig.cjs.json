@@ -3,6 +3,7 @@
   "files": [
     "lib/index.ts",
     "lib/bindings.ts",
+    "lib/types.d.ts",
     "utils/index.ts"
   ],
   "exclude": [
@@ -20,6 +21,6 @@
     "noEmit": false,
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "./dist/cjs",
+    "outDir": "./dist/cjs"
   }
 }
