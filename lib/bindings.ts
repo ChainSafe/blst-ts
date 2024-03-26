@@ -1,14 +1,34 @@
+import type {
+  CoordType,
+  BLST_CONSTANTS_TYPE,
+  PublicKey,
+  SecretKey,
+  Signature,
+  aggregatePublicKeys,
+  aggregateSignatures,
+  aggregateVerify,
+  verifyMultipleAggregateSignatures,
+  asyncAggregateVerify,
+  asyncVerifyMultipleAggregateSignatures,
+  verify,
+  asyncVerify,
+  fastAggregateVerify,
+  randomBytesNonZero,
+  asyncFastAggregateVerify,
+} from "./types";
 import {randomBytes} from "node:crypto";
-import type {BlstBuffer, BlstTsAddon, PublicKeyArg, SignatureArg} from "./types";
 
-/**
- * Enum value to specify the coordinate type of a point. The native side of the
- * library expects this to be passed as integers, with affine being 0 and
- * jacobian being 1.
- */
-export enum CoordType {
-  affine = 0,
-  jacobian = 1,
+export interface BlstTsAddon {
+  BLST_CONSTANTS: typeof BLST_CONSTANTS_TYPE;
+  SecretKey: typeof SecretKey;
+  PublicKey: typeof PublicKey;
+  Signature: typeof Signature;
+  aggregatePublicKeys: typeof aggregatePublicKeys;
+  aggregateSignatures: typeof aggregateSignatures;
+  aggregateVerify: typeof aggregateVerify;
+  verifyMultipleAggregateSignatures: typeof verifyMultipleAggregateSignatures;
+  asyncAggregateVerify: typeof asyncAggregateVerify;
+  asyncVerifyMultipleAggregateSignatures: typeof asyncVerifyMultipleAggregateSignatures;
 }
 
 /**
@@ -18,69 +38,11 @@ export enum CoordType {
  */
 export interface BlstTs extends BlstTsAddon {
   CoordType: typeof CoordType;
-  /**
-   * Bls verification of a message against a public key and signature.
-   *
-   * @param {BlstBuffer} msg - Message to verify
-   * @param {PublicKeyArg} publicKey - Public key to verify against
-   * @param {SignatureArg} signature - Signature of the message
-   *
-   * @return {boolean} - True if the signature is valid, false otherwise
-   *
-   * @throw {TypeError} - Invalid input
-   */
-  verify(message: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
-
-  /**
-   * Bls verification of a message against a public key and signature.
-   *
-   * @param {BlstBuffer} msg - Message to verify
-   * @param {PublicKeyArg} publicKey - Public key to verify against
-   * @param {SignatureArg} signature - Signature of the message
-   *
-   * @return {Promise<boolean>} - True if the signature is valid, false otherwise
-   *
-   * @throw {TypeError} - Invalid input
-   */
-  asyncVerify(message: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
-
-  /**
-   * Bls verification of a message against a set of public keys and an aggregated signature.
-   *
-   * @param {BlstBuffer} msg - Message to verify
-   * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
-   * @param {SignatureArg} signature - Aggregated signature of the message
-   *
-   * @return {boolean} - True if the signature is valid, false otherwise
-   *
-   * @throw {TypeError} - Invalid input
-   * @throw {Error} - Invalid aggregation
-   */
-  fastAggregateVerify(message: BlstBuffer, publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
-
-  /**
-   * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
-   * See https://github.com/ChainSafe/blst-ts/issues/45
-   *
-   * @param {number} bytesCount - Number of bytes to generate
-   *
-   * @return {Buffer} - Random bytes
-   */
-  randomBytesNonZero(bytesCount: number): Buffer;
-
-  /**
-   * Bls verification of a message against a set of public keys and an aggregated signature.
-   *
-   * @param {BlstBuffer} msg - Message to verify
-   * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
-   * @param {SignatureArg} signature - Aggregated signature of the message
-   *
-   * @return {Promise<boolean>} - True if the signature is valid, false otherwise
-   *
-   * @throw {TypeError} - Invalid input
-   * @throw {Error} - Invalid aggregation
-   */
-  asyncFastAggregateVerify(message: BlstBuffer, publicKeys: PublicKeyArg[], signature: SignatureArg): Promise<boolean>;
+  verify: typeof verify;
+  asyncVerify: typeof asyncVerify;
+  fastAggregateVerify: typeof fastAggregateVerify;
+  randomBytesNonZero: typeof randomBytesNonZero;
+  asyncFastAggregateVerify: typeof asyncFastAggregateVerify;
 }
 
 export function prepareBindings(bindings: BlstTsAddon): BlstTs {
@@ -88,17 +50,20 @@ export function prepareBindings(bindings: BlstTsAddon): BlstTs {
     return `0x${this.serialize().toString("hex")}`;
   };
 
-  bindings.PublicKey.prototype.toHex = function toHex(compress: boolean) {
+  bindings.PublicKey.prototype.toHex = function toHex(compress) {
     return `0x${this.serialize(compress).toString("hex")}`;
   };
 
-  bindings.Signature.prototype.toHex = function toHex(compress: boolean) {
+  bindings.Signature.prototype.toHex = function toHex(compress) {
     return `0x${this.serialize(compress).toString("hex")}`;
   };
 
   return {
     ...bindings,
-    CoordType,
+    CoordType: {
+      affine: 0,
+      jacobian: 1,
+    },
     randomBytesNonZero(bytesCount) {
       const rand = randomBytes(bytesCount);
       for (let i = 0; i < bytesCount; i++) {

@@ -1,11 +1,11 @@
 /**
- * Enum value to specify the coordinate type of a point. Declaration here is to
- * preserve type information in this file.  Actual declaration will be as a value
- * in bindings.ts.
+ * Enum value to specify the coordinate type of a point. The native side of the
+ * library expects this to be passed as integers, with affine being 0 and
+ * jacobian being 1.
  */
-declare enum CoordType {
-  affine,
-  jacobian,
+export enum CoordType {
+  affine = 0,
+  jacobian = 1,
 }
 
 /**
@@ -216,15 +216,78 @@ export declare function asyncAggregateVerify(
  */
 export declare function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
 
-export interface BlstTsAddon {
-  BLST_CONSTANTS: typeof BLST_CONSTANTS_TYPE;
-  SecretKey: typeof SecretKey;
-  PublicKey: typeof PublicKey;
-  Signature: typeof Signature;
-  aggregatePublicKeys: typeof aggregatePublicKeys;
-  aggregateSignatures: typeof aggregateSignatures;
-  aggregateVerify: typeof aggregateVerify;
-  verifyMultipleAggregateSignatures: typeof verifyMultipleAggregateSignatures;
-  asyncAggregateVerify: typeof asyncAggregateVerify;
-  asyncVerifyMultipleAggregateSignatures: typeof asyncVerifyMultipleAggregateSignatures;
-}
+/**
+ * Bls verification of a message against a public key and signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKey - Public key to verify against
+ * @param {SignatureArg} signature - Signature of the message
+ *
+ * @return {boolean} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ */
+export declare function verify(message: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
+
+/**
+ * Bls verification of a message against a public key and signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKey - Public key to verify against
+ * @param {SignatureArg} signature - Signature of the message
+ *
+ * @return {Promise<boolean>} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ */
+export declare function asyncVerify(
+  message: BlstBuffer,
+  publicKey: PublicKeyArg,
+  signature: SignatureArg
+): Promise<boolean>;
+
+/**
+ * Bls verification of a message against a set of public keys and an aggregated signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
+ * @param {SignatureArg} signature - Aggregated signature of the message
+ *
+ * @return {boolean} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ * @throw {Error} - Invalid aggregation
+ */
+export declare function fastAggregateVerify(
+  message: BlstBuffer,
+  publicKeys: PublicKeyArg[],
+  signature: SignatureArg
+): boolean;
+
+/**
+ * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
+ * See https://github.com/ChainSafe/blst-ts/issues/45
+ *
+ * @param {number} bytesCount - Number of bytes to generate
+ *
+ * @return {Buffer} - Random bytes
+ */
+export declare function randomBytesNonZero(bytesCount: number): Buffer;
+
+/**
+ * Bls verification of a message against a set of public keys and an aggregated signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
+ * @param {SignatureArg} signature - Aggregated signature of the message
+ *
+ * @return {Promise<boolean>} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ * @throw {Error} - Invalid aggregation
+ */
+export declare function asyncFastAggregateVerify(
+  message: BlstBuffer,
+  publicKeys: PublicKeyArg[],
+  signature: SignatureArg
+): Promise<boolean>;

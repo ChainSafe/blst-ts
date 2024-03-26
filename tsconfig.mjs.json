@@ -1,9 +1,10 @@
 {
   "extends": "./tsconfig",
   "files": [
-    "lib/index.mts",
+    "lib/index.mjs",
+    "lib/index.d.ts",
+    "lib/types.ts",
     "lib/bindings.ts",
-    "lib/types.d.ts",
     "utils/index.ts"
   ],
   "exclude": [

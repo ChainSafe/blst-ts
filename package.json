@@ -61,12 +61,13 @@
     "tar": "^6.1.4",
     "typescript": "^5.2.2"
   },
-  "main": "./dist/cjs/lib/index.js",
+  "main": "./dist/cjs/lib/index.cjs",
   "types": "./dist/cjs/lib/index.d.ts",
   "module": "./dist/esm/lib/index.mjs",
   "exports": {
     "import": "./dist/esm/lib/index.mjs",
-    "require": "./dist/cjs/lib/index.js"
+    "require": "./dist/cjs/lib/index.cjs",
+    "types": "./dist/cjs/lib/index.d.ts"
   },
   "files": [
     "build/bindings",
