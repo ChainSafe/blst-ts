@@ -8,6 +8,7 @@ describe("bindings", () => {
     exports.delete("default");
 
     const expectedFunctions = [
+      "randomBytesNonZero",
       "aggregatePublicKeys",
       "aggregateSignatures",
       "verify",
