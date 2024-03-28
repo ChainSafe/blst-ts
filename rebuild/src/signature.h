@@ -28,7 +28,7 @@ class P2Wrapper {
         const std::string &dst) = 0;
 };
 
-class P2 : public P2Wrapper {
+class P2 final : public P2Wrapper {
    private:
     blst::P2 _point;
 
@@ -49,7 +49,7 @@ class P2 : public P2Wrapper {
         const std::string &dst) final;
 };
 
-class P2Affine : public P2Wrapper {
+class P2Affine final : public P2Wrapper {
    private:
     blst::P2_Affine _point;
 

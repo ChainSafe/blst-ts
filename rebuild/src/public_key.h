@@ -23,7 +23,7 @@ class P1Wrapper {
         const blst::byte *rand_bytes, const size_t rand_bytes_length) const = 0;
 };
 
-class P1 : public P1Wrapper {
+class P1 final : public P1Wrapper {
    private:
     blst::P1 _point;
 
@@ -39,7 +39,7 @@ class P1 : public P1Wrapper {
         const size_t rand_bytes_length) const final;
 };
 
-class P1Affine : public P1Wrapper {
+class P1Affine final : public P1Wrapper {
    private:
     blst::P1_Affine _point;
 
