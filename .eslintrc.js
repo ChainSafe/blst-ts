@@ -11,8 +11,9 @@ module.exports = {
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    ecmaVersion: 12,
+    ecmaVersion: "latest",
     project: "./tsconfig.json",
+    sourceType: "script",
   },
   plugins: ["@typescript-eslint", "eslint-plugin-import", "eslint-plugin-node", "prettier"],
   extends: [
@@ -78,9 +79,20 @@ module.exports = {
     semi: "off",
   },
   settings: {
-    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"]
+    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"],
   },
   overrides: [
+    {
+      files: ["lib/index.mjs"],
+      parserOptions: {
+        sourceType: "module"
+      },
+      rules: {
+        // The imports are all resolved via tsconfig.mjs.json but the root tsconfig that eslint uses
+        // shows them as unresolved.
+        "import/no-unresolved": "off",
+      },
+    }, 
     {
       files: ["test/**/*.ts"],
       rules: {

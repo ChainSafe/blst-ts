@@ -22,7 +22,7 @@
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "dev": "ts-node tools/dev",
     "lint": "npm run lint:c && npm run lint:ts",
-    "lint:ts": "eslint --color --ext .ts lib/ test/",
+    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts lib/ scripts/ test/ utils/",
     "lint:c": "clang-format -i ./src/*",
     "test": "yarn test:unit && yarn test:spec",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
