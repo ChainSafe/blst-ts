@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fs from "fs";
 import {resolve} from "path";
 import {PromiseWithChild} from "child_process";

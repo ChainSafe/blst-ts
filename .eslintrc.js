@@ -22,31 +22,6 @@ module.exports = {
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
   ],
-  settings: {
-    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"],
-    // found this in rebuild eslint.  not sure why i put it there though.... perhaps this will job my memory
-    // 'import/resolver': {
-    //   node: {
-    //     extensions: [".js", ".ts"],
-    //     moduleDirectory: ["lib/", "test/", "node_modules/"]
-    //   }
-    // },
-  },
-  overrides: [
-    {
-      files: ["test/**/*.ts"],
-      rules: {
-        "import/no-extraneous-dependencies": "off",
-        "@typescript-eslint/no-explicit-any": "off",
-      },
-    }, 
-    {
-      files: ["scripts/**/*.ts"],
-      rules: {
-        "import/no-extraneous-dependencies": "off"
-      },
-    },
-  ],
   rules: {
     "prettier/prettier": "error",
     //doesnt work, it reports false errors
@@ -102,4 +77,23 @@ module.exports = {
     quotes: ["error", "double"],
     semi: "off",
   },
+  settings: {
+    "import/core-modules": ["node:child_process", "node:crypto", "node:fs", "node:os", "node:path", "node:util"]
+  },
+  overrides: [
+    {
+      files: ["test/**/*.ts"],
+      rules: {
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+      },
+    }, 
+    {
+      // Is a dev file and squacks about chokidar being a devDependency
+      files: ["scripts/watch.ts"],
+      rules: {
+        "import/no-extraneous-dependencies": "off"
+      },
+    },
+  ],
 };
