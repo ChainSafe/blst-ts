@@ -1,6 +1,6 @@
-import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
 import {SignatureSet} from "../../../lib";
-import {chunkifyMaximizeChunkSize} from "./helpers";
+import {chunkifyMaximizeChunkSize} from "../../utils";
+import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
 import {asyncVerifyNapiSignatureSets} from "./verify";
 
 const BATCHABLE_MIN_PER_CHUNK = 16;

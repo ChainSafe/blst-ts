@@ -1,3 +1,5 @@
+import {PublicKey} from "../../../lib";
+import {chunkifyMaximizeChunkSize} from "../../utils";
 import {
   BlsMultiThreadWorkerPoolOptions,
   BlsWorkRequest,
@@ -14,9 +16,8 @@ import {
   jobItemSameMessageToMultiSet,
 } from "./queuedJob";
 import {runWorkRequests} from "./runWorkRequests";
-import {chunkifyMaximizeChunkSize, countSignatures, getJobResultError} from "./helpers";
+import {countSignatures, getJobResultError} from "./helpers";
 import {verifySignatureSets} from "./verify";
-import {PublicKey} from "../../../lib";
 
 const MAX_SIGNATURE_SETS_PER_JOB = 128;
 const MAX_BUFFERED_SIGS = 32;
