@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig",
+  "files": [
+    "lib/index.js",
+    "lib/index.cjs",
+    "lib/index.d.ts",
+    "lib/types.ts",
+    "lib/bindings.ts",
+    "utils/index.ts"
+  ],
+  "include": [
+    "test/fuzz"
+  ],
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "./fuzz-tests",
+    "module": "CommonJS",
+    "allowJs": true
+  }
+}

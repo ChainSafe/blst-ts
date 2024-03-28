@@ -1,12 +1,10 @@
 {
-  "include": ["src", "test"],
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "esnext",
-    "module": "commonjs",
-    "pretty": true,
-    "lib": ["esnext.bigint", "DOM"],
-
+    "noEmit": true,
+    "lib": [
+      "ESNext",
+      "ESNext.BigInt",
+    ],
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
@@ -16,10 +14,13 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-
     "declaration": true,
     "sourceMap": true,
     "declarationMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "allowJs": true,
+    "checkJs": true,
+    "pretty": true,
   }
 }

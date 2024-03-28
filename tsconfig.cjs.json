@@ -1,0 +1,27 @@
+{
+  "extends": "./tsconfig",
+  "files": [
+    "lib/index.cjs",
+    "lib/index.d.ts",
+    "lib/types.ts",
+    "lib/bindings.ts",
+    "utils/index.ts"
+  ],
+  "exclude": [
+    "blst",
+    "dist",
+    "doc",
+    "fuzz-tests",
+    "node_modules",
+    "scripts",
+    "spec-tests",
+    "src",
+    "test",
+  ],
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "./dist/cjs"
+  }
+}

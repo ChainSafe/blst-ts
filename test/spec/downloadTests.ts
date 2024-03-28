@@ -1,14 +1,10 @@
-import fs from "fs";
-import path from "path";
+/* eslint-disable no-console */
+import fs from "node:fs";
+import path from "node:path";
+import {execSync} from "node:child_process";
 import tar from "tar";
 import fetch from "node-fetch";
-
-import {execSync} from "child_process";
-import {createWriteStream} from "fs";
-
 import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
-
-/* eslint-disable no-console */
 
 const specVersion = SPEC_TEST_VERSION;
 const outputDir = SPEC_TEST_LOCATION;
@@ -56,25 +52,12 @@ async function downloadAndExtract(urls: string[], outputDir: string): Promise<vo
   for (const url of urls) {
     const fileName = url.split("/").pop();
     const filePath = path.resolve(outputDir, String(fileName));
-
-    const fileStream = createWriteStream(filePath);
-
     const response = await fetch(url);
-    if (!response.ok) {
+    if (!response.ok || !response.body) {
       throw new Error(`Failed to download ${url}`);
     }
 
-    await new Promise((resolve, reject) => {
-      response.body.pipe(fileStream);
-
-      response.body.on("error", (err: any) => {
-        reject(err);
-      });
-
-      fileStream.on("finish", () => {
-        resolve(0);
-      });
-    });
+    await fs.promises.writeFile(filePath, response.body);
 
     await tar.x({
       file: filePath,
