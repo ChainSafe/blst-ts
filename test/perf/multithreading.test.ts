@@ -1,25 +1,18 @@
 import {itBench} from "@dapplion/benchmark";
 import {expect} from "chai";
-import {BlsMultiThreading, BlsPoolType, getGroupsOfBatchesOfSignatureSets} from "../utils";
+import {BlsMultiThreading, getGroupsOfBatchesOfSignatureSets} from "../utils";
 
 const minutes = 10;
-const getGroupsInfo = (isSwig: boolean): Parameters<typeof getGroupsOfBatchesOfSignatureSets> => [
-  isSwig,
-  16,
-  128,
-  256,
-  256,
-];
 
 for (const addVerificationRandomness of [true, false]) {
-  describe.only(`multithreading perf - addVerificationRandomness ${addVerificationRandomness}`, function () {
+  describe(`multithreading perf - addVerificationRandomness ${addVerificationRandomness}`, function () {
     this.timeout(minutes * 60 * 1000);
     let libuvPool: BlsMultiThreading;
     let napiGroups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
 
     before(async () => {
-      libuvPool = new BlsMultiThreading({blsPoolType: BlsPoolType.libuv, addVerificationRandomness});
-      napiGroups = getGroupsOfBatchesOfSignatureSets(...getGroupsInfo(false));
+      libuvPool = new BlsMultiThreading({addVerificationRandomness});
+      napiGroups = getGroupsOfBatchesOfSignatureSets(16, 128, 256, 256);
     });
 
     itBench({
