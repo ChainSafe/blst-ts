@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
-import {resolve} from "node:path";
-import {Readable} from "node:stream";
-import {finished} from "node:stream/promises";
-import {ReadableStream} from "node:stream/web";
-import {execSync} from "node:child_process";
-import {copyFileSync, createWriteStream, existsSync, mkdirSync} from "node:fs";
+import {resolve} from "path";
+import {Readable} from "stream";
+import {finished} from "stream/promises";
+import {ReadableStream} from "stream/web";
+import {execSync} from "child_process";
+import {copyFileSync, createWriteStream, existsSync, mkdirSync} from "fs";
 import {exec, getBinaryName, getBindingsPath} from "../utils";
 
 const ROOT_DIR = resolve(__dirname, "..");

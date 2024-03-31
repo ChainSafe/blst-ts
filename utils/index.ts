@@ -1,6 +1,6 @@
-import {resolve} from "node:path";
-import {existsSync} from "node:fs";
-import {exec as EXEC, ExecOptions, ChildProcess, PromiseWithChild} from "node:child_process";
+import {resolve} from "path";
+import {existsSync} from "fs";
+import {exec as EXEC, ExecOptions, ChildProcess, PromiseWithChild} from "child_process";
 
 export const BINDINGS_NAME = "blst_ts_addon";
 export const BINDINGS_FILE = `${BINDINGS_NAME}.node`;

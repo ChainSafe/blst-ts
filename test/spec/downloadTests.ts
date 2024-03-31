@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import fs from "node:fs";
-import path from "node:path";
-import {execSync} from "node:child_process";
+import fs from "fs";
+import path from "path";
+import {execSync} from "child_process";
 import tar from "tar";
 import fetch from "node-fetch";
 import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
