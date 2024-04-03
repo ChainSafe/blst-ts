@@ -1,6 +1,8 @@
 import {resolve} from "node:path";
 import {existsSync} from "node:fs";
 import {exec as EXEC, ExecOptions, ChildProcess, PromiseWithChild} from "node:child_process";
+import {BlstTs, BlstTsAddon, CoordType} from "./types.js";
+import {randomBytes} from "node:crypto";
 
 export const BINDINGS_NAME = "blst_ts_addon";
 export const BINDINGS_FILE = `${BINDINGS_NAME}.node`;
@@ -111,4 +113,57 @@ export function exec(
 
   promise.child = child;
   return promise;
+}
+
+export function prepareBindings(bindings: BlstTsAddon): BlstTs {
+  bindings.SecretKey.prototype.toHex = function () {
+    return `0x${this.serialize().toString("hex")}`;
+  };
+
+  bindings.PublicKey.prototype.toHex = function (compress) {
+    return `0x${this.serialize(compress).toString("hex")}`;
+  };
+
+  bindings.Signature.prototype.toHex = function (compress) {
+    return `0x${this.serialize(compress).toString("hex")}`;
+  };
+
+  return {
+    ...bindings,
+    CoordType,
+    randomBytesNonZero(bytesCount) {
+      const rand = randomBytes(bytesCount);
+      for (let i = 0; i < bytesCount; i++) {
+        if (rand[i] !== 0) return rand;
+      }
+      rand[0] = 1;
+      return rand;
+    },
+    verify(message, publicKey, signature) {
+      return bindings.aggregateVerify([message], [publicKey], signature);
+    },
+    asyncVerify(message, publicKey, signature) {
+      return bindings.asyncAggregateVerify([message], [publicKey], signature);
+    },
+    fastAggregateVerify(message, publicKeys, signature) {
+      let key;
+      try {
+        // this throws for invalid key, catch and return false
+        key = bindings.aggregatePublicKeys(publicKeys);
+      } catch {
+        return false;
+      }
+      return bindings.aggregateVerify([message], [key], signature);
+    },
+    asyncFastAggregateVerify(message, publicKeys, signature) {
+      let key;
+      try {
+        // this throws for invalid key, catch and return false
+        key = bindings.aggregatePublicKeys(publicKeys);
+      } catch {
+        return Promise.resolve(false);
+      }
+      return bindings.asyncAggregateVerify([message], [key], signature);
+    },
+  };
 }

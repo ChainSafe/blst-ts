@@ -1,12 +1,15 @@
-import {resolve} from "node:path";
-import {getBindingsPath} from "../utils";
-import {prepareBindings} from "./bindings";
-export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./bindings";
+import {createRequire} from "node:module";
+import {getBindingsPath, prepareBindings} from "./utils.js";
+import {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable} from "./types.js";
+import {dirname, join, resolve} from "node:path";
+import {fileURLToPath} from "node:url";
 
-const rootDir = __dirname.includes("dist/cjs") ? resolve(__dirname, "..", "..", "..") : resolve(__dirname, "..");
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = resolve(join(__dirname, "..", ".."));
 const bindingsPath = getBindingsPath(rootDir);
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-const blstTs = prepareBindings(require(bindingsPath));
+const customRequire = createRequire(__dirname);
+const bindings = customRequire(bindingsPath);
+const blstTs = prepareBindings(bindings);
 
 export default blstTs;
 
@@ -28,6 +31,8 @@ const {
   verify,
   verifyMultipleAggregateSignatures,
 } = blstTs;
+
+export type {BlstBuffer, PublicKeyArg, SignatureArg, SignatureSet, Serializable};
 
 export {
   BLST_CONSTANTS,
