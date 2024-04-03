@@ -1,26 +1,14 @@
 {
   "extends": "./tsconfig",
-  "files": [
-    "lib/index.mts",
-    "lib/bindings.ts",
-    "utils/index.ts"
-  ],
-  "exclude": [
-    "blst",
-    "dist",
-    "doc",
-    "fuzz-tests",
-    "node_modules",
-    "scripts",
-    "spec-tests",
-    "src",
-    "test",
-  ],
+  "exclude": ["src/ts/index.cts"],
+  "include": ["src/ts/index.mts"],
   "compilerOptions": {
+    "module": "esnext",
+    "target": "esnext",
     "noEmit": false,
-    "module": "ESNext",
-    "target": "ESNext",
-    "outDir": "./dist/esm",
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./lib/esm",
     "paths": {
       // This is solely to stop a bug with @types/node as of 12/15/2023
       "undici-types": [

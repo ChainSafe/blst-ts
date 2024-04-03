@@ -5,7 +5,7 @@ import {finished} from "node:stream/promises";
 import {ReadableStream} from "node:stream/web";
 import {execSync} from "node:child_process";
 import {copyFileSync, createWriteStream, existsSync, mkdirSync} from "node:fs";
-import {exec, getBinaryName, getBindingsPath} from "../utils";
+import {exec, getBinaryName, getBindingsPath} from "../src/ts/utils";
 
 const ROOT_DIR = resolve(__dirname, "..");
 const PREBUILD_DIR = resolve(ROOT_DIR, "prebuild");

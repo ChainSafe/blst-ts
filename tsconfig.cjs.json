@@ -1,25 +1,13 @@
 {
   "extends": "./tsconfig",
-  "files": [
-    "lib/index.ts",
-    "lib/bindings.ts",
-    "utils/index.ts"
-  ],
-  "exclude": [
-    "blst",
-    "dist",
-    "doc",
-    "fuzz-tests",
-    "node_modules",
-    "scripts",
-    "spec-tests",
-    "src",
-    "test",
-  ],
+  "exclude": ["src/ts/index.mts"],
+  "include": ["src/ts/index.cts"],
   "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2015",
     "noEmit": false,
-    "module": "CommonJS",
-    "moduleResolution": "Node",
-    "outDir": "./dist/cjs",
+		"declaration": true,
+    "declarationMap": true,
+    "outDir": "./lib/cjs",
   }
 }

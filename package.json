@@ -15,9 +15,9 @@
     "build": "yarn build:gyp:full && yarn build:ts",
     "build:gyp": "node-gyp build",
     "build:gyp:full": "node-gyp configure && node-gyp build",
+    "build:ts": "rm -fr lib/* && npm run build:esm && npm run build:cjs && ./scripts/fix-build.sh",
+    "build:esm": "tsc --project tsconfig.esm.json",
     "build:cjs": "tsc --project tsconfig.cjs.json",
-    "build:esm": "tsc --project tsconfig.mjs.json",
-    "build:ts": "npm run build:cjs && npm run build:esm",
     "build:debug": "node-gyp build --debug",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "dev": "ts-node tools/dev",
@@ -61,13 +61,14 @@
     "tar": "^6.1.4",
     "typescript": "^5.2.2"
   },
-  "main": "./dist/cjs/lib/index.js",
-  "types": "./dist/cjs/lib/index.d.ts",
-  "module": "./dist/esm/lib/index.mjs",
-  "exports": {
-    "import": "./dist/esm/lib/index.mjs",
-    "require": "./dist/cjs/lib/index.js"
-  },
+  "main": "./lib/cjs/index.cjs",
+	"module": "./lib/esm/index.mjs",
+	"exports": {
+		".": {
+			"import": "./lib/esm/index.mjs",
+			"require": "./lib/cjs/index.cjs"
+		}
+	},
   "files": [
     "build/bindings",
     "blst/bindings/blst_aux.h",

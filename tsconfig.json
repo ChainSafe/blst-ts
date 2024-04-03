@@ -1,5 +1,19 @@
 {
+  "include": ["src/ts"],
+  "exclude": [
+    "blst",
+    "dist",
+    "doc",
+    "fuzz-tests",
+    "node_modules",
+    "scripts",
+    "spec-tests",
+    "test",
+  ],
   "compilerOptions": {
+    "baseUrl": "src/ts",
+    "rootDir": "src/ts",
+    "moduleResolution": "node",        
     "noEmit": true,
     "lib": [
       "ESNext",
@@ -19,5 +33,5 @@
     "sourceMap": true,
     "declarationMap": true,
     "esModuleInterop": true
-  }
+  },
 }
