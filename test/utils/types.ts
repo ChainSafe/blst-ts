@@ -1,5 +1,17 @@
-import * as swig from "../../src";
-import * as napi from "../../rebuild/lib";
+import * as bindings from "../../rebuild/lib";
+
+export type BufferLike = string | Uint8Array | Buffer | bindings.Serializable;
+
+export interface TestSet {
+  message: Uint8Array;
+  secretKey: bindings.SecretKey;
+  publicKey: bindings.PublicKey;
+  signature: bindings.Signature;
+}
+
+export type SerializedSet = Record<keyof TestSet, Uint8Array>;
+
+export type SignatureSetArray = bindings.SignatureSet[];
 
 /**
  * Enforce tests for all instance methods
@@ -12,25 +24,3 @@ export type InstanceTestCases<InstanceType extends {[key: string]: any}> = {
     res?: ReturnType<InstanceType[P]>;
   }[];
 };
-
-export type Bufferish = string | Uint8Array | Buffer | napi.Serializable;
-
-export interface SwigSet {
-  msg: Uint8Array;
-  sk: swig.SecretKey;
-  pk: swig.PublicKey;
-  sig: swig.Signature;
-}
-
-export interface NapiSet {
-  message: Uint8Array;
-  secretKey: napi.SecretKey;
-  publicKey: napi.PublicKey;
-  signature: napi.Signature;
-}
-
-export type SerializedSet = Record<keyof NapiSet, Uint8Array>;
-
-export type PublicKey = swig.PublicKey | napi.PublicKey;
-
-export type SignatureSetArray = swig.SignatureSet[] | napi.SignatureSet[];

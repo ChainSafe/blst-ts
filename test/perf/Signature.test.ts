@@ -1,52 +1,29 @@
 import {itBench} from "@dapplion/benchmark";
-import * as napi from "../../rebuild/lib";
-import * as swig from "../../src";
-import {arrayOfIndexes, getNapiSet, getSerializedSet, getSwigSet} from "../utils";
+import * as blst from "../../rebuild/lib";
+import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
-const napiTestSignature = getNapiSet(0).signature;
-const swigTestSignature = getSwigSet(0).sig;
+const napiTestSignature = getTestSet(0).signature;
 
 describe("Signature", () => {
-  itBench("Signature serialization- Napi", () => {
+  itBench("Signature serialization", () => {
     napiTestSignature.serialize();
-  });
-  itBench("Signature serialization - Swig", () => {
-    swigTestSignature.toBytes();
   });
 
   itBench({
-    id: "Signature deserialize - Napi",
+    id: "Signature deserialize",
     beforeEach: () => napiTestSignature.serialize(),
     fn: (serialized) => {
-      napi.Signature.deserialize(serialized, napi.CoordType.jacobian);
-    },
-  });
-  itBench({
-    id: "Signature deserialize - Swig",
-    beforeEach: () => swigTestSignature.toBytes(),
-    fn: (serialized) => {
-      swig.Signature.fromBytes(serialized, swig.CoordType.jacobian);
+      blst.Signature.deserialize(serialized, blst.CoordType.jacobian);
     },
   });
 
   for (const count of [1, 100, 10_000]) {
     itBench({
-      id: `Signatures deserialize and validate - Napi - ${count} sets`,
-      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedSet(i % 256).signature),
+      id: `Signatures deserialize and validate - ${count} sets`,
+      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).signature),
       fn: (signatures) => {
         for (const signature of signatures) {
-          const sig = napi.Signature.deserialize(signature, napi.CoordType.affine);
-          sig.sigValidate();
-        }
-      },
-    });
-
-    itBench({
-      id: `Signatures deserialize and validate - Swig - ${count} sets`,
-      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedSet(i % 256).signature),
-      fn: (signatures) => {
-        for (const signature of signatures) {
-          const sig = swig.Signature.fromBytes(signature, swig.CoordType.affine);
+          const sig = blst.Signature.deserialize(signature, blst.CoordType.affine);
           sig.sigValidate();
         }
       },
