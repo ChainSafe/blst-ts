@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {resolve} from "path";
 import {watchWithCallback} from "./watch";
-import {cmdStringExec} from "./exec";
+import {cmdStringExec} from "../rebuild/tools/exec";
 
 const DEBOUNCE_TIME = 500;
 const testCommand = "npm run test:unit";
