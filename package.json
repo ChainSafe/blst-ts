@@ -10,12 +10,14 @@
     "blst"
   ],
   "scripts": {
-    "install": "node dist/scripts/install.js",
-    "lint": "eslint --color --ext .ts src/ test/",
-    "build": "tsc --project tsconfig.build.json",
-    "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "bootstrap": "yarn install --ignore-scripts && yarn build && yarn install",
+    "build": "tsc --project tsconfig.build.json",
+    "build:gyp": "node-gyp build",
+    "build:gyp:debug": "node-gyp build --debug",
+    "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "clean": "rm -rf prebuild/*.node dist blst/libblst.a blst/bindings/libblst.a blst/bindings/node.js/blst.node blst/bindings/node.js/blst_wrap.cpp",
+    "clean:gyp": "node-gyp clean && node-gyp configure",
+    "lint": "eslint --color --ext .ts src/ test/",
     "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
@@ -59,7 +61,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "node-addon-api": "^6.1.0",
     "node-fetch": "^2.6.1",
-    "node-gyp": "^8.4.0"
+    "node-gyp": "^10.0.1"
   }
 }
