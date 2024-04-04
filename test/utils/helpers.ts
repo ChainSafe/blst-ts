@@ -1,29 +1,45 @@
-import crypto from "crypto";
 import {expect} from "chai";
-import * as swig from "../../src";
-import * as napi from "../../rebuild/lib";
-import {Bufferish, InstanceTestCases, NapiSet, SwigSet} from "./types";
+import {BufferLike, InstanceTestCases} from "./types";
 
-export function toHex(bytes: Bufferish): string {
-  const hex = toHexNoPrefix(bytes);
-  if (hex.startsWith("0x")) return hex;
-  else return "0x" + hex;
-}
-
-function toHexNoPrefix(bytes: Bufferish): string {
+function toHexString(bytes: BufferLike): string {
   if (typeof bytes === "string") return bytes;
+  if (bytes instanceof Buffer) return bytes.toString("hex");
   if (bytes instanceof Uint8Array) return Buffer.from(bytes).toString("hex");
   if (typeof bytes.serialize === "function") return Buffer.from(bytes.serialize()).toString("hex");
-  throw Error("Unknown arg");
+  throw Error("toHexString only accepts BufferLike types");
 }
 
-export function expectHex(value: Bufferish, expected: Bufferish): void {
-  expect(toHexNoPrefix(value)).to.equal(toHexNoPrefix(expected));
+export function toHex(bytes: BufferLike): string {
+  const hex = toHexString(bytes);
+  if (hex.startsWith("0x")) return hex;
+  return "0x" + hex;
 }
 
-export function fromHex(hexString: string): Uint8Array {
+export function fromHex(hexString: string): Buffer {
   if (hexString.startsWith("0x")) hexString = hexString.slice(2);
   return Buffer.from(hexString, "hex");
+}
+
+export function isEqualBytes(value: BufferLike, expected: BufferLike): boolean {
+  return toHex(value) === toHex(expected);
+}
+
+export function expectEqualHex(value: BufferLike, expected: BufferLike): void {
+  expect(toHex(value)).to.equal(toHex(expected));
+}
+
+export function expectNotEqualHex(value: BufferLike, expected: BufferLike): void {
+  expect(toHex(value)).to.not.equal(toHex(expected));
+}
+
+export function getFilledUint8(length: number, fillWith: string | number | Buffer = "*"): Uint8Array {
+  return Uint8Array.from(Buffer.alloc(length, fillWith));
+}
+
+export function sullyUint8Array(bytes: Uint8Array): Uint8Array {
+  return Uint8Array.from(
+    Buffer.from([...Uint8Array.prototype.slice.call(bytes, 8), ...Buffer.from("0123456789abcdef", "hex")])
+  );
 }
 
 export function arrayOfIndexes(start: number, end: number): number[] {
@@ -32,7 +48,7 @@ export function arrayOfIndexes(start: number, end: number): number[] {
   return arr;
 }
 
-export function shuffle(array: any[]): any[] {
+export function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length,
     randomIndex;
 
@@ -46,48 +62,21 @@ export function shuffle(array: any[]): any[] {
   return array;
 }
 
-const napiSets = new Map<number, NapiSet>();
-export function buildNapiSet(i: number): NapiSet {
-  const message = crypto.randomBytes(32);
-  const secretKey = napi.SecretKey.fromKeygen(crypto.randomBytes(32));
-  const set = {
-    message,
-    secretKey,
-    publicKey: secretKey.toPublicKey(),
-    signature: secretKey.sign(message),
-  };
-  napiSets.set(i, set);
-  return set;
-}
-
-export function getNapiSet(i: number): NapiSet {
-  const set = napiSets.get(i);
-  if (set) {
-    return set;
+export function chunkifyMaximizeChunkSize<T>(arr: T[], minPerChunk: number): T[][] {
+  const chunkCount = Math.floor(arr.length / minPerChunk);
+  if (chunkCount <= 1) {
+    return [arr];
   }
-  return buildNapiSet(i);
-}
 
-const swigSets = new Map<number, SwigSet>();
-export function buildSwigSet(i: number): SwigSet {
-  const message = crypto.randomBytes(32);
-  const secretKey = swig.SecretKey.fromKeygen(crypto.randomBytes(32));
-  const set = {
-    msg: message,
-    sk: secretKey,
-    pk: secretKey.toPublicKey(),
-    sig: secretKey.sign(message),
-  };
-  swigSets.set(i, set);
-  return set;
-}
+  // Prefer less chunks of bigger size
+  const perChunk = Math.ceil(arr.length / chunkCount);
+  const arrArr: T[][] = [];
 
-export function getSwigSet(i: number): SwigSet {
-  const set = swigSets.get(i);
-  if (set) {
-    return set;
+  for (let i = 0; i < arr.length; i += perChunk) {
+    arrArr.push(arr.slice(i, i + perChunk));
   }
-  return buildSwigSet(i);
+
+  return arrArr;
 }
 
 /**
@@ -108,7 +97,7 @@ export function runInstanceTestCases<InstanceType extends {[key: string]: any}>(
         if (!res) {
           // OK
         } else if (res.serialize || res instanceof Uint8Array) {
-          expectHex(res, testCase.res);
+          expectEqualHex(res, testCase.res);
         } else {
           expect(res).to.deep.equal(testCase.res);
         }
