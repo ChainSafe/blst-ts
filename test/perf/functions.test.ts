@@ -1,13 +1,13 @@
 import {itBench} from "@dapplion/benchmark";
 import * as blst from "../../rebuild/lib";
-import {arrayOfIndexes, getNapiSet, getNapiSetSameMessage} from "../utils";
+import {arrayOfIndexes, getTestSet, getTestSetSameMessage} from "../utils";
 
 describe("functions", () => {
   describe("aggregatePublicKeys", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
         id: `aggregatePublicKeys - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i).publicKey),
+        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).publicKey),
         fn: (publicKeys) => {
           blst.aggregatePublicKeys(publicKeys);
         },
@@ -18,7 +18,7 @@ describe("functions", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
         id: `aggregateSignatures - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i).signature),
+        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).signature),
         fn: (signatures) => {
           blst.aggregateSignatures(signatures);
         },
@@ -31,7 +31,7 @@ describe("functions", () => {
         id: `aggregateVerify - ${count} sets`,
         beforeEach: () => {
           const sets = arrayOfIndexes(0, count - 1)
-            .map((i) => getNapiSet(i))
+            .map((i) => getTestSet(i))
             .reduce(
               (sets, set) => ({
                 messages: [...sets.messages, set.message],
@@ -60,7 +60,7 @@ describe("functions", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
         id: `verifyMultipleAggregateSignatures - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i)),
+        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i)),
         fn: (sets) => {
           blst.verifyMultipleAggregateSignatures(sets);
         },
@@ -73,7 +73,7 @@ describe("functions", () => {
         id: `Same message - ${count} sets`,
         beforeEach: () =>
           arrayOfIndexes(0, count - 1)
-            .map((i) => getNapiSetSameMessage(i))
+            .map((i) => getTestSetSameMessage(i))
             .map((set) => {
               return {
                 message: set.message,

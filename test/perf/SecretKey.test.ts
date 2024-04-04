@@ -1,8 +1,8 @@
 import {itBench} from "@dapplion/benchmark";
 import * as blst from "../../rebuild/lib";
-import {keygenMaterial, commonMessage, getNapiSet} from "../utils";
+import {keygenMaterial, commonMessage, getTestSet} from "../utils";
 
-const napiTestKey = getNapiSet(0).secretKey;
+const napiTestKey = getTestSet(0).secretKey;
 
 describe("SecretKey", () => {
   itBench("SecretKey.fromKeygen", () => {
