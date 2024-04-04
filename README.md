@@ -2,7 +2,7 @@
 
 ![ETH2.0_Spec_Version 0.12.0](https://img.shields.io/badge/ETH2.0_Spec_Version-0.12.0-2e86c1.svg)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
-![Node Version](https://img.shields.io/badge/node-12.x-green)
+![Node Version](https://img.shields.io/badge/node-14.x-green)
 
 Typescript wrapper for [supranational/blst](https://github.com/supranational/blst) native bindings, a highly performant BLS12-381 signature library.
 
@@ -10,11 +10,11 @@ Typescript wrapper for [supranational/blst](https://github.com/supranational/bls
 
 | OS / Arch     | binary name | Node                               |
 | ------------- | ----------- | ---------------------------------- |
-| Linux / x64   | linux-x64   | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
-| Linux / arm64 | linux-arm64 | 10, 11, 12, 13, 14, 15, 16, 18     |
-| Windows / x64 | win32-x64   | 12, 14, 16, 17                     |
-| OSX / x64     | darwin-x64  | 10, 11, 12, 13, 14, 15, 16, 17, 18 |
-| OSX / M1      | -\*         | -\*                                |
+| Linux / x64   | linux-x64   | 18, 20 |
+| Linux / arm64 | linux-arm64 | 18, 20 |
+| Windows / x64 | win32-x64   | 18, 20 |
+| macOS / x64     | darwin-x64  | 18, 20 |
+| macOS / arm64      | darwin-arm64  | 18, 20 |
 
 \* No Github nor docker buildx setup to build this environment in CI. Source may compile locally after installation but it's not guaranteed
 
@@ -64,6 +64,16 @@ Note that this repo contains a git submodule. Make sure the git submodule `blst`
 ```
 git submodule update --init --recursive
 ```
+
+## Release
+
+The release process is automatically [triggered](.github/workflows/main.yml#195) when a tagged commit is pushed.
+
+To create a new release: 
+
+1. First, increment the project version in [package.json](package.json#3) and merge the associated commit
+2. Then tag this commit with `git tag v${NEW_VERSION}`
+3. Finally push the new tag with `git push ${REMOTE} v${NEW_VERSION}`
 
 ## License
 
