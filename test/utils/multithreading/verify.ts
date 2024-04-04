@@ -1,81 +1,56 @@
-import * as swig from "../../../src";
-import napi from "../../../rebuild/lib";
-import {PublicKey} from "../types";
+import {
+  PublicKey,
+  Signature,
+  SignatureSet,
+  aggregatePublicKeys,
+  asyncVerify,
+  asyncVerifyMultipleAggregateSignatures,
+  verify,
+  verifyMultipleAggregateSignatures,
+} from "../../../rebuild/lib";
 import {ISignatureSet, SignatureSetType} from "./types";
 
 const MIN_SET_COUNT_TO_BATCH = 2;
 
-export function getAggregatePublicKey(set: ISignatureSet, isSwig: true): swig.PublicKey;
-export function getAggregatePublicKey(set: ISignatureSet, isSwig: false): napi.PublicKey;
-export function getAggregatePublicKey<T extends boolean>(set: ISignatureSet, isSwig: T): PublicKey {
+export function getAggregatePublicKey(set: ISignatureSet): PublicKey {
   switch (set.type) {
     case SignatureSetType.single:
       return set.pubkey;
 
     case SignatureSetType.aggregate:
-      return isSwig
-        ? swig.aggregatePubkeys(set.pubkeys as swig.PublicKey[])
-        : napi.aggregatePublicKeys(set.pubkeys as napi.PublicKey[]);
+      return aggregatePublicKeys(set.pubkeys);
 
     default:
       throw Error("Unknown signature set type");
   }
 }
 
-export function verifySignatureSets(sets: ISignatureSet[], isSwig: boolean): boolean {
-  return isSwig
-    ? verifySwigSignatureSets(
-        sets.map((set) => ({
-          pk: getAggregatePublicKey(set, isSwig),
-          msg: set.signingRoot.valueOf(),
-          sig: swig.Signature.fromBytes(set.signature),
-        }))
-      )
-    : verifyNapiSignatureSets(
-        sets.map((set) => ({
-          publicKey: getAggregatePublicKey(set, isSwig),
-          message: set.signingRoot.valueOf(),
-          signature: napi.Signature.deserialize(set.signature),
-        }))
-      );
-}
-
-export function verifySwigSignatureSets(sets: swig.SignatureSet[]): boolean {
+export function verifySignatureSets(sets: ISignatureSet[]): boolean {
   try {
+    const aggregatedSets = sets.map((set) => ({
+      publicKey: getAggregatePublicKey(set),
+      message: set.signingRoot.valueOf(),
+      signature: Signature.deserialize(set.signature),
+    }));
+
     if (sets.length >= MIN_SET_COUNT_TO_BATCH) {
-      return swig.verifyMultipleAggregateSignatures(sets);
+      return verifyMultipleAggregateSignatures(aggregatedSets);
     }
 
     if (sets.length === 0) {
       throw Error("Empty signature set");
     }
 
-    return sets.every((set) => swig.verify(set.msg, set.pk, set.sig));
+    return aggregatedSets.every((set) => verify(set.message, set.publicKey, set.signature));
   } catch {
     return false;
   }
 }
 
-export function verifyNapiSignatureSets(sets: napi.SignatureSet[]): boolean {
+export async function asyncVerifyNapiSignatureSets(sets: SignatureSet[]): Promise<boolean> {
   try {
     if (sets.length >= MIN_SET_COUNT_TO_BATCH) {
-      return napi.verifyMultipleAggregateSignatures(sets);
-    }
-
-    if (sets.length === 0) {
-      throw Error("Empty signature set");
-    }
-
-    return sets.every((set) => napi.verify(set.message, set.publicKey, set.signature));
-  } catch {
-    return false;
-  }
-}
-
-export async function asyncVerifyNapiSignatureSets(sets: napi.SignatureSet[]): Promise<boolean> {
-  try {
-    if (sets.length >= MIN_SET_COUNT_TO_BATCH) {
-      return await napi.asyncVerifyMultipleAggregateSignatures(sets);
+      return await asyncVerifyMultipleAggregateSignatures(sets);
     }
 
     if (sets.length === 0) {
@@ -83,7 +58,7 @@ export async function asyncVerifyNapiSignatureSets(sets: napi.SignatureSet[]): P
     }
 
     const verifications = await Promise.all(
-      sets.map((set) => napi.asyncVerify(set.message, set.publicKey, set.signature).catch(() => false))
+      sets.map((set) => asyncVerify(set.message, set.publicKey, set.signature).catch(() => false))
     );
 
     return verifications.every((v) => v);
