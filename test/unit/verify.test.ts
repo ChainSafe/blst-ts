@@ -6,14 +6,14 @@ import {
   asyncVerify,
   fastAggregateVerify,
   verify,
-} from "../../lib";
-import {sullyUint8Array, makeNapiTestSets} from "../utils";
-import {NapiTestSet} from "../types";
+} from "../../rebuild/lib";
+import {sullyUint8Array, getTestSet} from "../utils";
+import {TestSet} from "../utils/types";
 
 describe("Verify", () => {
-  let testSet: NapiTestSet;
+  let testSet: TestSet;
   before(() => {
-    testSet = makeNapiTestSets(1)[0];
+    testSet = getTestSet();
   });
   describe("verify", () => {
     it("should return a boolean", () => {
@@ -49,9 +49,9 @@ describe("Verify", () => {
 });
 
 describe("Aggregate Verify", () => {
-  let testSet: NapiTestSet;
+  let testSet: TestSet;
   before(() => {
-    testSet = makeNapiTestSets(1)[0];
+    testSet = getTestSet();
   });
   describe("aggregateVerify", () => {
     it("should return a boolean", () => {
@@ -100,9 +100,9 @@ describe("Aggregate Verify", () => {
 });
 
 describe("Fast Aggregate Verify", () => {
-  let testSet: NapiTestSet;
+  let testSet: TestSet;
   before(() => {
-    testSet = makeNapiTestSets(1)[0];
+    testSet = getTestSet();
   });
   describe("fastAggregateVerify", () => {
     it("should return a boolean", () => {

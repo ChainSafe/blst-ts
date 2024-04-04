@@ -1,10 +1,10 @@
 import {expect} from "chai";
-import {aggregatePublicKeys, PublicKey} from "../../lib";
-import {isEqualBytes, makeNapiTestSets} from "../utils";
+import {aggregatePublicKeys, PublicKey} from "../../rebuild/lib";
+import {isEqualBytes, getTestSets} from "../utils";
 import {badPublicKey} from "../__fixtures__";
 
 describe("Aggregate Public Keys", () => {
-  const sets = makeNapiTestSets(10);
+  const sets = getTestSets(10);
   const keys = sets.map(({publicKey}) => publicKey);
 
   describe("aggregatePublicKeys()", () => {

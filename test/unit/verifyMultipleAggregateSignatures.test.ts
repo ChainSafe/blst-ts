@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../lib";
-import {makeNapiTestSets} from "../utils";
+import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../rebuild/lib";
+import {getTestSets} from "../utils";
 
 describe("Verify Multiple Aggregate Signatures", () => {
   describe("verifyMultipleAggregateSignatures", () => {
@@ -11,7 +11,7 @@ describe("Verify Multiple Aggregate Signatures", () => {
       expect(verifyMultipleAggregateSignatures([])).to.be.false;
     });
     it("should return true for valid sets", () => {
-      expect(verifyMultipleAggregateSignatures(makeNapiTestSets(6))).to.be.true;
+      expect(verifyMultipleAggregateSignatures(getTestSets(6))).to.be.true;
     });
   });
   describe("asyncVerifyMultipleAggregateSignatures", () => {
@@ -25,7 +25,7 @@ describe("Verify Multiple Aggregate Signatures", () => {
       expect(await asyncVerifyMultipleAggregateSignatures([])).to.be.false;
     });
     it("should return true for valid sets", async () => {
-      expect(await asyncVerifyMultipleAggregateSignatures(makeNapiTestSets(6))).to.be.true;
+      expect(await asyncVerifyMultipleAggregateSignatures(getTestSets(6))).to.be.true;
     });
   });
 });
