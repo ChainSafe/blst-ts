@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {aggregatePublicKeys, PublicKey} from "../../lib";
+import {aggregatePublicKeys, PublicKey} from "../../rebuild/lib";
 import {isEqualBytes, getTestSets} from "../utils";
 import {badPublicKey} from "../__fixtures__";
 

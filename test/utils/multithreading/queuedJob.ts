@@ -1,14 +1,8 @@
-import {
-  CoordType,
-  PublicKey,
-  Signature,
-  aggregatePublicKeys,
-  aggregateSignatures,
-  randomBytesNonZero,
-} from "../../../lib";
+import {CoordType, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures} from "../../../rebuild/lib";
 import {BlsWorkRequest, ISignatureSet, SignatureSetType, VerifySignatureOpts} from "./types";
 import {LinkedList} from "./array";
 import {getAggregatePublicKey} from "./verify";
+import {randomBytesNonZero} from "./helpers";
 
 export enum QueuedJobType {
   default = "default",

@@ -1,31 +1,31 @@
 import {itBench} from "@dapplion/benchmark";
-import {SecretKey} from "../../lib";
+import * as blst from "../../rebuild/lib";
 import {keygenMaterial, commonMessage, getTestSet} from "../utils";
 
-const testKey = getTestSet(0).secretKey;
+const napiTestKey = getTestSet(0).secretKey;
 
 describe("SecretKey", () => {
   itBench("SecretKey.fromKeygen", () => {
-    SecretKey.fromKeygen(keygenMaterial);
+    blst.SecretKey.fromKeygen(keygenMaterial);
   });
 
-  itBench("SecretKey serialization", () => {
-    testKey.serialize();
+  itBench("SecretKey serialization- Napi", () => {
+    napiTestKey.serialize();
   });
 
   itBench({
     id: "SecretKey deserialization",
-    beforeEach: () => testKey.serialize(),
+    beforeEach: () => napiTestKey.serialize(),
     fn: (serialized) => {
-      SecretKey.deserialize(serialized);
+      blst.SecretKey.deserialize(serialized);
     },
   });
 
   itBench("SecretKey.toPublicKey", () => {
-    testKey.toPublicKey();
+    napiTestKey.toPublicKey();
   });
 
   itBench("SecretKey.sign", () => {
-    testKey.sign(commonMessage);
+    napiTestKey.sign(commonMessage);
   });
 });

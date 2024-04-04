@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import * as bindings from "../../lib";
+import * as bindings from "../../rebuild/lib";
 
 describe("bindings", () => {
   describe("exports", () => {
@@ -8,7 +8,7 @@ describe("bindings", () => {
     exports.delete("default");
 
     const expectedFunctions = [
-      "randomBytesNonZero",
+      // "randomBytesNonZero",
       "aggregatePublicKeys",
       "aggregateSignatures",
       "verify",

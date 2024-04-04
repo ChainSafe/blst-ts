@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {PublicKey, SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
+import {PublicKey, SecretKey, Signature, BLST_CONSTANTS} from "../../rebuild/lib";
 import {KEY_MATERIAL, SECRET_KEY_BYTES, invalidInputs} from "../__fixtures__";
 import {expectEqualHex, expectNotEqualHex} from "../utils";
 

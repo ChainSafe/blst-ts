@@ -1,14 +1,7 @@
 {
   "extends": "./tsconfig",
-  "files": [
-    "lib/index.js",
-    "lib/index.cjs",
-    "lib/index.d.ts",
-    "lib/types.ts",
-    "lib/bindings.ts",
-    "utils/index.ts"
-  ],
   "include": [
+    "lib",
     "test/fuzz"
   ],
   "compilerOptions": {

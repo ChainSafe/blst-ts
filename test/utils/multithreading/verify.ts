@@ -7,7 +7,7 @@ import {
   asyncVerifyMultipleAggregateSignatures,
   verify,
   verifyMultipleAggregateSignatures,
-} from "../../../lib";
+} from "../../../rebuild/lib";
 import {ISignatureSet, SignatureSetType} from "./types";
 
 const MIN_SET_COUNT_TO_BATCH = 2;

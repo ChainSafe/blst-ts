@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib";
+import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../rebuild/lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
 import {G2_POINT_AT_INFINITY, KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
 

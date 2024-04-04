@@ -1,4 +1,4 @@
-import {PublicKey} from "../../../lib";
+import {PublicKey} from "../../../rebuild/lib";
 import {chunkifyMaximizeChunkSize} from "../../utils";
 import {
   BlsMultiThreadWorkerPoolOptions,

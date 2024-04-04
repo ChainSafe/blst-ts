@@ -1,15 +1,5 @@
 import {itBench} from "@dapplion/benchmark";
-import {
-  CoordType,
-  PublicKeyArg,
-  Signature,
-  SignatureArg,
-  aggregatePublicKeys,
-  aggregateSignatures,
-  aggregateVerify,
-  verify,
-  verifyMultipleAggregateSignatures,
-} from "../../lib";
+import * as blst from "../../rebuild/lib";
 import {arrayOfIndexes, getTestSet, getTestSetSameMessage} from "../utils";
 
 describe("functions", () => {
@@ -19,7 +9,7 @@ describe("functions", () => {
         id: `aggregatePublicKeys - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).publicKey),
         fn: (publicKeys) => {
-          aggregatePublicKeys(publicKeys);
+          blst.aggregatePublicKeys(publicKeys);
         },
       });
     }
@@ -30,7 +20,7 @@ describe("functions", () => {
         id: `aggregateSignatures - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).signature),
         fn: (signatures) => {
-          aggregateSignatures(signatures);
+          blst.aggregateSignatures(signatures);
         },
       });
     }
@@ -50,18 +40,18 @@ describe("functions", () => {
               }),
               {
                 messages: [] as Uint8Array[],
-                publicKeys: [] as PublicKeyArg[],
-                signatures: [] as SignatureArg[],
+                publicKeys: [] as blst.PublicKeyArg[],
+                signatures: [] as blst.SignatureArg[],
               }
             );
           return {
             messages: sets.messages,
             publicKeys: sets.publicKeys,
-            signature: aggregateSignatures(sets.signatures),
+            signature: blst.aggregateSignatures(sets.signatures),
           };
         },
         fn: ({messages, publicKeys, signature}) => {
-          aggregateVerify(messages, publicKeys, signature);
+          blst.aggregateVerify(messages, publicKeys, signature);
         },
       });
     }
@@ -72,7 +62,7 @@ describe("functions", () => {
         id: `verifyMultipleAggregateSignatures - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i)),
         fn: (sets) => {
-          verifyMultipleAggregateSignatures(sets);
+          blst.verifyMultipleAggregateSignatures(sets);
         },
       });
     }
@@ -93,15 +83,15 @@ describe("functions", () => {
               };
             }),
         fn: (sets) => {
-          const aggregatedPubkey = aggregatePublicKeys(sets.map((set) => set.publicKey));
-          const aggregatedSignature = aggregateSignatures(
+          const aggregatedPubkey = blst.aggregatePublicKeys(sets.map((set) => set.publicKey));
+          const aggregatedSignature = blst.aggregateSignatures(
             sets.map((set) => {
-              const sig = Signature.deserialize(set.signature, CoordType.affine);
+              const sig = blst.Signature.deserialize(set.signature, blst.CoordType.affine);
               sig.sigValidate();
               return sig;
             })
           );
-          const isValid = verify(sets[0].message, aggregatedPubkey, aggregatedSignature);
+          const isValid = blst.verify(sets[0].message, aggregatedPubkey, aggregatedSignature);
           if (!isValid) throw Error("Invalid");
         },
       });

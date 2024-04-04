@@ -1,19 +1,19 @@
 import {itBench} from "@dapplion/benchmark";
-import {CoordType, PublicKey} from "../../lib";
+import * as blst from "../../rebuild/lib";
 import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
-const testKey = getTestSet(0).publicKey;
+const napiTestKey = getTestSet(0).publicKey;
 
 describe("PublicKey", () => {
-  itBench("PublicKey serialization", () => {
-    testKey.serialize();
+  itBench("PublicKey serialization- Napi", () => {
+    napiTestKey.serialize();
   });
 
   itBench({
     id: "PublicKey deserialize",
-    beforeEach: () => testKey.serialize(),
+    beforeEach: () => napiTestKey.serialize(),
     fn: (serialized) => {
-      PublicKey.deserialize(serialized, CoordType.jacobian);
+      blst.PublicKey.deserialize(serialized, blst.CoordType.jacobian);
     },
   });
 
@@ -23,7 +23,7 @@ describe("PublicKey", () => {
       beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).publicKey),
       fn: (publicKeys) => {
         for (const publicKey of publicKeys) {
-          const key = PublicKey.deserialize(publicKey, CoordType.affine);
+          const key = blst.PublicKey.deserialize(publicKey, blst.CoordType.affine);
           key.keyValidate();
         }
       },

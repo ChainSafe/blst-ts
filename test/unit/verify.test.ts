@@ -6,7 +6,7 @@ import {
   asyncVerify,
   fastAggregateVerify,
   verify,
-} from "../../lib";
+} from "../../rebuild/lib";
 import {sullyUint8Array, getTestSet} from "../utils";
 import {TestSet} from "../utils/types";
 

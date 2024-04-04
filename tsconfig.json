@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
-    "noEmit": true,
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "lib": [
       "ESNext",
-      "ESNext.BigInt",
+      "ESNext.BigInt"
     ],
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "noEmit": true,
+    "pretty": true,
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,

@@ -1,19 +1,19 @@
 import {itBench} from "@dapplion/benchmark";
-import {CoordType, Signature} from "../../lib";
+import * as blst from "../../rebuild/lib";
 import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
-const testSignature = getTestSet(0).signature;
+const napiTestSignature = getTestSet(0).signature;
 
 describe("Signature", () => {
   itBench("Signature serialization", () => {
-    testSignature.serialize();
+    napiTestSignature.serialize();
   });
 
   itBench({
     id: "Signature deserialize",
-    beforeEach: () => testSignature.serialize(),
+    beforeEach: () => napiTestSignature.serialize(),
     fn: (serialized) => {
-      Signature.deserialize(serialized, CoordType.jacobian);
+      blst.Signature.deserialize(serialized, blst.CoordType.jacobian);
     },
   });
 
@@ -23,7 +23,7 @@ describe("Signature", () => {
       beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).signature),
       fn: (signatures) => {
         for (const signature of signatures) {
-          const sig = Signature.deserialize(signature, CoordType.affine);
+          const sig = blst.Signature.deserialize(signature, blst.CoordType.affine);
           sig.sigValidate();
         }
       },

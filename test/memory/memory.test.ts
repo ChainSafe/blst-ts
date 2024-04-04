@@ -1,5 +1,5 @@
-import {memoryTest, getSerializedTestSet} from "../utils";
-import * as napi from "../../lib";
+import {memoryTest} from "../utils/memory/testRunner";
+import * as napi from "../../rebuild/lib";
 
 const testSet = getSerializedTestSet();
 
