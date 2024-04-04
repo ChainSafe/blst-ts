@@ -1,24 +1,15 @@
 import {itBench} from "@dapplion/benchmark";
-import * as napi from "../../rebuild/lib";
-import * as swig from "../../src";
-import {arrayOfIndexes, getNapiSet, getNapiSetSameMessage, getSwigSet, getSwigSetSameMessage} from "../utils";
+import * as blst from "../../rebuild/lib";
+import {arrayOfIndexes, getNapiSet, getNapiSetSameMessage} from "../utils";
 
 describe("functions", () => {
   describe("aggregatePublicKeys", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
-        id: `aggregatePublicKeys - Napi - ${count} sets`,
+        id: `aggregatePublicKeys - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i).publicKey),
         fn: (publicKeys) => {
-          napi.aggregatePublicKeys(publicKeys);
-        },
-      });
-
-      itBench({
-        id: `aggregatePublicKeys - Swig - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSwigSet(i).pk),
-        fn: (publicKeys) => {
-          swig.aggregatePubkeys(publicKeys);
+          blst.aggregatePublicKeys(publicKeys);
         },
       });
     }
@@ -26,18 +17,10 @@ describe("functions", () => {
   describe("aggregateSignatures", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
-        id: `aggregateSignatures - Napi - ${count} sets`,
+        id: `aggregateSignatures - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i).signature),
         fn: (signatures) => {
-          napi.aggregateSignatures(signatures);
-        },
-      });
-
-      itBench({
-        id: `aggregateSignatures - Swig - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSwigSet(i).sig),
-        fn: (signatures) => {
-          swig.aggregateSignatures(signatures);
+          blst.aggregateSignatures(signatures);
         },
       });
     }
@@ -45,7 +28,7 @@ describe("functions", () => {
   describe("aggregateVerify", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
-        id: `aggregateVerify - Napi - ${count} sets`,
+        id: `aggregateVerify - ${count} sets`,
         beforeEach: () => {
           const sets = arrayOfIndexes(0, count - 1)
             .map((i) => getNapiSet(i))
@@ -57,45 +40,18 @@ describe("functions", () => {
               }),
               {
                 messages: [] as Uint8Array[],
-                publicKeys: [] as napi.PublicKeyArg[],
-                signatures: [] as napi.SignatureArg[],
+                publicKeys: [] as blst.PublicKeyArg[],
+                signatures: [] as blst.SignatureArg[],
               }
             );
           return {
             messages: sets.messages,
             publicKeys: sets.publicKeys,
-            signature: napi.aggregateSignatures(sets.signatures),
+            signature: blst.aggregateSignatures(sets.signatures),
           };
         },
         fn: ({messages, publicKeys, signature}) => {
-          napi.aggregateVerify(messages, publicKeys, signature);
-        },
-      });
-      itBench({
-        id: `aggregateVerify - Swig - ${count} sets`,
-        beforeEach: () => {
-          const sets = arrayOfIndexes(0, count - 1)
-            .map((i) => getSwigSet(i))
-            .reduce(
-              (sets, set) => ({
-                messages: [...sets.messages, set.msg],
-                publicKeys: [...sets.publicKeys, set.pk],
-                signatures: [...sets.signatures, set.sig],
-              }),
-              {
-                messages: [] as Uint8Array[],
-                publicKeys: [] as swig.PublicKey[],
-                signatures: [] as swig.Signature[],
-              }
-            );
-          return {
-            messages: sets.messages,
-            publicKeys: sets.publicKeys,
-            signature: swig.aggregateSignatures(sets.signatures),
-          };
-        },
-        fn: ({messages, publicKeys, signature}) => {
-          swig.aggregateVerify(messages, publicKeys, signature);
+          blst.aggregateVerify(messages, publicKeys, signature);
         },
       });
     }
@@ -103,17 +59,10 @@ describe("functions", () => {
   describe("verifyMultipleAggregateSignatures", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
-        id: `verifyMultipleAggregateSignatures - Napi - ${count} sets`,
+        id: `verifyMultipleAggregateSignatures - ${count} sets`,
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getNapiSet(i)),
         fn: (sets) => {
-          napi.verifyMultipleAggregateSignatures(sets);
-        },
-      });
-      itBench({
-        id: `verifyMultipleAggregateSignatures - Swig - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSwigSet(i)),
-        fn: (sets) => {
-          swig.verifyMultipleAggregateSignatures(sets);
+          blst.verifyMultipleAggregateSignatures(sets);
         },
       });
     }
@@ -121,7 +70,7 @@ describe("functions", () => {
   describe("verifyMultipleAggregateSignatures same message", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
-        id: `Same message - Napi - ${count} sets`,
+        id: `Same message - ${count} sets`,
         beforeEach: () =>
           arrayOfIndexes(0, count - 1)
             .map((i) => getNapiSetSameMessage(i))
@@ -134,41 +83,15 @@ describe("functions", () => {
               };
             }),
         fn: (sets) => {
-          const aggregatedPubkey = napi.aggregatePublicKeys(sets.map((set) => set.publicKey));
-          const aggregatedSignature = napi.aggregateSignatures(
+          const aggregatedPubkey = blst.aggregatePublicKeys(sets.map((set) => set.publicKey));
+          const aggregatedSignature = blst.aggregateSignatures(
             sets.map((set) => {
-              const sig = napi.Signature.deserialize(set.signature, napi.CoordType.affine);
+              const sig = blst.Signature.deserialize(set.signature, blst.CoordType.affine);
               sig.sigValidate();
               return sig;
             })
           );
-          const isValid = napi.verify(sets[0].message, aggregatedPubkey, aggregatedSignature);
-          if (!isValid) throw Error("Invalid");
-        },
-      });
-      itBench({
-        id: `Same message - Swig - ${count} sets`,
-        beforeEach: () =>
-          arrayOfIndexes(0, count - 1)
-            .map((i) => getSwigSetSameMessage(i))
-            .map((set) => {
-              return {
-                msg: set.msg,
-                sk: set.sk,
-                pk: set.pk,
-                sig: set.sig.toBytes(),
-              };
-            }),
-        fn: (sets) => {
-          const aggregatedPubkey = swig.aggregatePubkeys(sets.map((set) => set.pk));
-          const aggregatedSignature = swig.aggregateSignatures(
-            sets.map((set) => {
-              const sig = swig.Signature.fromBytes(set.sig, swig.CoordType.affine);
-              sig.sigValidate();
-              return sig;
-            })
-          );
-          const isValid = swig.verify(sets[0].msg, aggregatedPubkey, aggregatedSignature);
+          const isValid = blst.verify(sets[0].message, aggregatedPubkey, aggregatedSignature);
           if (!isValid) throw Error("Invalid");
         },
       });
