@@ -19,7 +19,7 @@
     "clean:gyp": "node-gyp clean && node-gyp configure",
     "lint": "npm run lint:c && npm run lint:ts",
     "lint:c": "clang-format -i ./src/*",
-    "lint:ts": "eslint --color --ext .ts src/ test/",
+    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts lib/ scripts/ test/ utils/",
     "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
@@ -63,6 +63,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "bindings": "^1.5.0",
     "node-addon-api": "^6.1.0",
     "node-fetch": "^2.6.1",
     "node-gyp": "^10.0.1"
