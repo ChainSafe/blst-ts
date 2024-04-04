@@ -6,7 +6,7 @@ const minutes = 10;
 const groupsInfo: Parameters<typeof getGroupsOfBatchesOfSignatureSets> = [16, 128, 256, 256];
 
 for (const addVerificationRandomness of [true, false]) {
-  describe.only(`multithreading perf - addVerificationRandomness ${addVerificationRandomness}`, function () {
+  describe(`multithreading perf - addVerificationRandomness ${addVerificationRandomness}`, function () {
     this.timeout(minutes * 60 * 1000);
     let blsPool: BlsMultiThreading;
     let signatureGroups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
