@@ -29,6 +29,7 @@ for (const addVerificationRandomness of [true, false]) {
     });
 
     after(async () => {
+      // eslint-disable-next-line no-console
       console.log({
         blsPoolSize: blsPool.blsPoolSize,
       });

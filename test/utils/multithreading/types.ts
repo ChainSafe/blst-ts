@@ -1,4 +1,4 @@
-import {PublicKey, Signature} from "../../../rebuild/lib";
+import {PublicKey, Signature} from "../../../lib";
 import {SignatureSetArray} from "../types";
 
 export enum SignatureSetType {

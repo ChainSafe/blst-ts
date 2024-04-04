@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {aggregateSignatures, Signature} from "../../rebuild/lib";
+import {aggregateSignatures, Signature} from "../../lib";
 import {isEqualBytes, getTestSets} from "../utils";
 import {badSignature} from "../__fixtures__";
 

@@ -1,5 +1,5 @@
 import {itBench} from "@dapplion/benchmark";
-import * as blst from "../../rebuild/lib";
+import * as blst from "../../lib";
 import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
 const napiTestSignature = getTestSet(0).signature;
