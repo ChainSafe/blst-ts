@@ -1,0 +1,15 @@
+.nyc_output
+.vscode/settings.json
+coverage
+build
+dist
+deps
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Eth2.0 spec tests data
+spec-tests
+
+# Fuzz testing build and results
+fuzz-tests
