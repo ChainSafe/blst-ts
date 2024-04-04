@@ -1,7 +1,7 @@
 import {expect} from "chai";
-import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../lib";
+import {BLST_CONSTANTS, CoordType, SecretKey, Signature} from "../../rebuild/lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
+import {G2_POINT_AT_INFINITY, KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
 
 describe("Signature", () => {
   it("should exist", () => {
@@ -80,6 +80,12 @@ describe("Signature", () => {
           Uint8Array.from([...pkSeed.serialize().subarray(0, 94), ...Buffer.from("a1")])
         );
         expect(() => sig.sigValidate()).to.throw("BLST_ERROR::BLST_POINT_NOT_IN_GROUP");
+      });
+    });
+    describe("signature.IsInfinity()", () => {
+      it("G2_POINT_AT_INFINITY", () => {
+        const sig = Signature.deserialize(G2_POINT_AT_INFINITY);
+        expect(sig.isInfinity()).to.be.true;
       });
     });
   });

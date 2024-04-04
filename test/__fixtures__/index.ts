@@ -1,4 +1,4 @@
-import {fromHex, getFilledUint8, makeNapiTestSet, makeNapiTestSets, sullyUint8Array} from "../utils";
+import {fromHex, getFilledUint8, getTestSet, sullyUint8Array} from "../utils";
 
 export const invalidInputs: [string, any][] = [
   ["boolean", true],
@@ -40,13 +40,20 @@ export const validPublicKey = {
 };
 export const badPublicKey = Uint8Array.from(
   Buffer.from([
-    ...Uint8Array.prototype.slice.call(makeNapiTestSet().publicKey.serialize(false), 8),
+    ...Uint8Array.prototype.slice.call(getTestSet().publicKey.serialize(false), 8),
     ...Buffer.from("0123456789abcdef", "hex"),
   ])
 );
 
 export const G1_POINT_AT_INFINITY =
   "c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+export const G2_POINT_AT_INFINITY = Buffer.from(
+  "c000000000000000000000000000000000000000000000000000000000000000" +
+    "0000000000000000000000000000000000000000000000000000000000000000" +
+    "0000000000000000000000000000000000000000000000000000000000000000",
+  "hex"
+);
 
 export const validSignature = {
   keygen: "********************************", // Must be at least 32 bytes
@@ -58,14 +65,4 @@ export const validSignature = {
   ),
 };
 
-export const badSignature = sullyUint8Array(makeNapiTestSet().signature.serialize(false));
-
-export const validSignatureSet = makeNapiTestSets(1).map((set) => {
-  const {message, secretKey, publicKey, signature} = set;
-  return {
-    message,
-    secretKey,
-    publicKey,
-    signature,
-  };
-})[0];
+export const badSignature = sullyUint8Array(getTestSet().signature.serialize(false));

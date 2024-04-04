@@ -1,4 +1,4 @@
-import { join } from "path";
+import {join} from "path";
 
 // WARNING! Don't move or rename this file !!!
 //

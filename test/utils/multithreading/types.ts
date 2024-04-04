@@ -1,4 +1,3 @@
-import {Worker} from "@chainsafe/threads";
 import {PublicKey, Signature} from "../../../rebuild/lib";
 import {SignatureSetArray} from "../types";
 
@@ -64,41 +63,9 @@ export type WorkResultError = {code: WorkResultCode.error; error: Error};
 export type WorkResult<R> = {code: WorkResultCode.success; result: R} | WorkResultError;
 
 export interface BlsWorkResult {
-  /** Ascending integer identifying the worker for metrics */
-  workerId?: number;
   /** Total num of batches that had to be retried */
   batchRetries: number;
   /** Total num of sigs that have been successfully verified with batching */
   batchSigsSuccess: number;
   results: WorkResult<boolean>[];
-}
-
-export type WorkerApi = {
-  runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<BlsWorkResult>;
-};
-
-export enum WorkerStatusCode {
-  notInitialized,
-  initializing,
-  initializationError,
-  idle,
-  running,
-}
-
-export type IdleWorkerStatus = {code: WorkerStatusCode.idle; workerApi: WorkerApi};
-export type WorkerStatus =
-  | {code: WorkerStatusCode.notInitialized}
-  | {code: WorkerStatusCode.initializing; initPromise: Promise<WorkerApi>}
-  | {code: WorkerStatusCode.initializationError; error: Error}
-  | IdleWorkerStatus
-  | {code: WorkerStatusCode.running; workerApi: WorkerApi};
-
-export type WorkerDescriptor = {
-  worker: Worker;
-  status: WorkerStatus;
-};
-export type WorkRequestHandler = (workReqs: BlsWorkRequest[]) => Promise<BlsWorkResult>;
-
-export interface WorkerData {
-  workerId: number;
 }
