@@ -1,4 +1,4 @@
-import {verify, SecretKey, PublicKey, Signature} from "../../lib";
+import {verify, SecretKey, PublicKey, Signature} from "../../rebuild/lib";
 
 export interface FuzzTestCase {
   name: string;
