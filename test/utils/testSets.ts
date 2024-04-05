@@ -1,4 +1,5 @@
-import {SecretKey, Signature, BLST_CONSTANTS} from "../../rebuild/lib";
+import crypto from "crypto";
+import {SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
 import {TestSet, SerializedSet} from "./types";
 import {arrayOfIndexes} from "./helpers";
 

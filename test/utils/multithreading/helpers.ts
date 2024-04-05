@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import {aggregateSignatures} from "../../../rebuild/lib";
+import {aggregateSignatures} from "../../../lib";
 import {getTestSet, getTestSetSameMessage} from "../testSets";
 import {shuffle} from "../helpers";
 import {

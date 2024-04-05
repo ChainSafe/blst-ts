@@ -1,4 +1,4 @@
-import * as bindings from "../../rebuild/lib";
+import * as bindings from "../../lib";
 
 export type BufferLike = string | Uint8Array | Buffer | bindings.Serializable;
 

@@ -3,8 +3,8 @@
     {
       'target_name': 'blst_ts_addon',
       'sources': [
-        'deps/blst/src/server.c',
-        'deps/blst/build/assembly.S',
+        'blst/src/server.c',
+        'blst/build/assembly.S',
         'src/addon.cc',
         'src/secret_key.cc',
         'src/public_key.cc',
@@ -12,7 +12,7 @@
         'src/functions.cc',
       ],
       'include_dirs': [
-        'deps/blst/bindings',
+        'blst/bindings',
         "<!@(node -p \"require('node-addon-api').include_dir\")",
       ],
       'dependencies': [ "<!(node -p \"require('node-addon-api').gyp\")" ],

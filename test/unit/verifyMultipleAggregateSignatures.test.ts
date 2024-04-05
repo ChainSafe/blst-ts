@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../rebuild/lib";
+import {asyncVerifyMultipleAggregateSignatures, verifyMultipleAggregateSignatures} from "../../lib";
 import {getTestSets} from "../utils";
 
 describe("Verify Multiple Aggregate Signatures", () => {

@@ -1,4 +1,4 @@
-import {SignatureSet} from "../../../rebuild/lib";
+import {SignatureSet} from "../../../lib";
 import {chunkifyMaximizeChunkSize} from "../../utils";
 import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
 import {asyncVerifyNapiSignatureSets} from "./verify";

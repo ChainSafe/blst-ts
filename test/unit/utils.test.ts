@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import {aggregateSignatures, fastAggregateVerify, verify, verifyMultipleAggregateSignatures} from "../../rebuild/lib";
+import {aggregateSignatures, fastAggregateVerify, verify, verifyMultipleAggregateSignatures} from "../../lib";
 import {
   BlsMultiThreading,
   arrayOfIndexes,

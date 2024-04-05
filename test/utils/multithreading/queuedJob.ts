@@ -1,4 +1,4 @@
-import {CoordType, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures} from "../../../rebuild/lib";
+import {CoordType, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures} from "../../../lib";
 import {BlsWorkRequest, ISignatureSet, SignatureSetType, VerifySignatureOpts} from "./types";
 import {LinkedList} from "./array";
 import {getAggregatePublicKey} from "./verify";

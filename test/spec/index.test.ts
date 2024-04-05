@@ -12,7 +12,7 @@ import {
   verify as VERIFY,
   aggregateVerify,
   fastAggregateVerify,
-} from "../../rebuild/lib";
+} from "../../lib";
 import {fromHex, toHex} from "../utils";
 
 // Example full path
