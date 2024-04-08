@@ -33,20 +33,13 @@
     "test:unit": "mocha test/unit/**/*.test.ts",
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ChainSafe/blst-ts.git"
+  "dependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^6.1.0",
+    "node-gyp": "^10.0.1"
   },
-  "keywords": [],
-  "author": "ChainSafe Systems",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/ChainSafe/blst-ts/issues"
-  },
-  "homepage": "https://github.com/ChainSafe/blst-ts#readme",
   "devDependencies": {
     "@dapplion/benchmark": "^0.2.4",
-    "@jazzer.js/core": "^2.1.0",
     "@types/chai": "^4.2.13",
     "@types/js-yaml": "^4.0.5",
     "@types/mocha": "^8.0.3",
@@ -67,10 +60,18 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
-  "dependencies": {
-    "bindings": "^1.5.0",
-    "node-addon-api": "^6.1.0",
-    "node-fetch": "^2.6.1",
-    "node-gyp": "^10.0.1"
-  }
+  "optionalDependencies": {
+    "@jazzer.js/core": "^2.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChainSafe/blst-ts.git"
+  },
+  "keywords": [],
+  "author": "ChainSafe Systems",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ChainSafe/blst-ts/issues"
+  },
+  "homepage": "https://github.com/ChainSafe/blst-ts#readme"
 }

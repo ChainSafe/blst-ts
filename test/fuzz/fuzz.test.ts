@@ -27,6 +27,10 @@ if (!fs.existsSync(resolve(ROOT_DIR, "fuzz-tests", "test", "fuzz", "fuzzTarget.j
   throw new Error("fuzzTarget.js not found.  Run `yarn build:fuzz` to generate the fuzzing framework files");
 }
 
+if (!fs.existsSync(resolve(ROOT_DIR, "node_modules", ".bin", "jazzer"))) {
+  throw new Error("optionalDependency jazzer not found.  Run `yarn install`");
+}
+
 /**
  * Setup of graceful exit for the child processes.  When this script is run by
  * the test:fuzz command it will be possible to ctrl+c to exit the script
