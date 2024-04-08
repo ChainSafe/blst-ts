@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import fs from "fs";
 import path from "path";
+import {Readable} from "stream";
+import {finished} from "stream/promises";
+import {ReadableStream} from "stream/web";
 import {execSync} from "child_process";
 import tar from "tar";
-import fetch from "node-fetch";
 import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
 
 const specVersion = SPEC_TEST_VERSION;
@@ -52,12 +54,12 @@ async function downloadAndExtract(urls: string[], outputDir: string): Promise<vo
   for (const url of urls) {
     const fileName = url.split("/").pop();
     const filePath = path.resolve(outputDir, String(fileName));
-    const response = await fetch(url);
-    if (!response.ok || !response.body) {
+    const {body, ok} = await fetch(url);
+    if (!ok || !body) {
       throw new Error(`Failed to download ${url}`);
     }
 
-    await fs.promises.writeFile(filePath, response.body);
+    await finished(Readable.fromWeb(body as ReadableStream<Uint8Array>).pipe(fs.createWriteStream(filePath)));
 
     await tar.x({
       file: filePath,
