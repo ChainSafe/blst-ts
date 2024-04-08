@@ -220,6 +220,7 @@ jobs:
         run: yarn ts-node scripts/makeRelease
       
       - name: Create Github release with prebuilds
+        if: steps.tag.outputs.tagcreated == 'yes'
         uses: softprops/action-gh-release@v2
         with:
           files: release/*
@@ -229,6 +230,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NPM
+        if: steps.tag.outputs.tagcreated == 'yes'
         run: yarn publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
