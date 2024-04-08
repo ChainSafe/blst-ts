@@ -3,9 +3,7 @@ on:
   pull_request:
   push:
     branches:
-      - "*"
-    tags:
-      - v*.*.*
+      - master
 
 env:
   # When building the bundle for npm we only want to include the prebuilds for
@@ -168,7 +166,7 @@ jobs:
 
   publish:
     needs: ["build", "build-arm"]
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -186,6 +184,21 @@ jobs:
         with:
           node-version: ${{env.NPM_PREBUILT_NODE_VERSION}}
           registry-url: "https://registry.npmjs.org"
+
+      - name: Create tag
+        id: tag
+        uses: butlerlogic/action-autotag@stable
+        with:
+          strategy: package
+          tag_prefix: "v"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+
+      - name: Exit if no version change
+        if: steps.tag.outputs.tagcreated == 'no'
+        uses: actions/github-script@v3
+        with:
+          script: core.setFailed('package.json version not changed. not creating release')
 
       - name: Get pre-built binding.node files
         uses: actions/download-artifact@v4
@@ -205,11 +218,12 @@ jobs:
         # faster install time for the most common version that Lodestar is supporting
       - name: Prepare for Release and Publishing
         run: yarn ts-node scripts/makeRelease
-
+      
       - name: Create Github release with prebuilds
         uses: softprops/action-gh-release@v2
         with:
           files: release/*
+          tag_name: ${{ steps.tag.outputs.tagname }}
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
