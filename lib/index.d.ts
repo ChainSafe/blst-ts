@@ -12,20 +12,10 @@ export enum CoordType {
   jacobian,
 }
 
-export type BlstBuffer = Uint8Array;
-export type PublicKeyArg = BlstBuffer | PublicKey;
-export type SignatureArg = BlstBuffer | Signature;
-export interface SignatureSet {
-  message: BlstBuffer;
-  publicKey: PublicKeyArg;
-  signature: SignatureArg;
-}
-export interface Serializable {
-  serialize(): Uint8Array;
-}
-
 /**
- * Critical constants for BLST public key infrastructure.
+ * Critical constants for BLST public key infrastructure. Values are declared
+ * and used in native C++ code.  Exported to ensure consistency between
+ * environments.
  */
 export const BLST_CONSTANTS: {
   DST: string;
@@ -35,6 +25,42 @@ export const BLST_CONSTANTS: {
   SIGNATURE_LENGTH_UNCOMPRESSED: number;
   SIGNATURE_LENGTH_COMPRESSED: number;
 };
+
+/**
+ * Buffers in blst-ts should be passed as Uint8Array or a child class like Buffer
+ */
+export type BlstBuffer = Uint8Array;
+
+/**
+ * It is possible to pass PublicKeys to the library as either serialized
+ * Uint8Array or deserialized PublicKey objects
+ */
+export type PublicKeyArg = BlstBuffer | PublicKey;
+
+/**
+ * It is possible to pass Signatures to the library as either serialized
+ * Uint8Array or deserialized Signature objects
+ */
+export type SignatureArg = BlstBuffer | Signature;
+
+/**
+ * A set for verification including the message to be verified, in BlstBuffer
+ * format, the SignatureArg and the corresponding PublicKeyArg for the SecretKey
+ * that generated the signature
+ */
+export interface SignatureSet {
+  message: BlstBuffer;
+  publicKey: PublicKeyArg;
+  signature: SignatureArg;
+}
+
+/**
+ * All BlsTs objects implement the Serializable interface
+ */
+export interface Serializable {
+  serialize(): Uint8Array;
+  toHex(): string;
+}
 
 /*
  * Private constructor. Randomly generate ikm when new'ing a key if no
@@ -57,16 +83,16 @@ export const BLST_CONSTANTS: {
 export class SecretKey implements Serializable {
   private constructor();
   /**
+   * Convert a serialized secret key into a SecretKey object.
+   */
+  static deserialize(skBytes: BlstBuffer): SecretKey;
+  /**
    * `fromKeygen` takes two parameters. The first parameter is a salt and is
    * required. IKM MUST be at least 32 bytes long, but it MAY be longer. The
    * second parameter, info, is optional and may be used to derive multiple
    * independent keys from the same IKM. By default, info is the empty string.
    */
   static fromKeygen(ikm: BlstBuffer, info?: string): SecretKey;
-  /**
-   * Convert a serialized secret key into a SecretKey object.
-   */
-  static deserialize(skBytes: BlstBuffer): SecretKey;
   /**
    * Serialize a secret key into a Buffer.
    */
@@ -78,6 +104,9 @@ export class SecretKey implements Serializable {
 
 export class PublicKey implements Serializable {
   private constructor();
+  /**
+   * Convert a serialized public key into a PublicKey object.
+   */
   static deserialize(pkBytes: BlstBuffer, coordType?: CoordType): PublicKey;
   serialize(compress?: boolean): Buffer;
   toHex(compress?: boolean): string;
@@ -88,6 +117,9 @@ export class PublicKey implements Serializable {
 
 export class Signature implements Serializable {
   private constructor();
+  /**
+   * Convert a serialized signature into a Signature object.
+   */
   static deserialize(sigBytes: BlstBuffer, coordType?: CoordType): Signature;
   serialize(compress?: boolean): Buffer;
   toHex(compress?: boolean): string;
@@ -135,21 +167,20 @@ export function aggregateSignatures(signatures: SignatureArg[]): Signature;
  *
  * @throw {TypeError} - Invalid input
  */
-export function verify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
+export function verify(message: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): boolean;
 
 /**
- * Bls verification of a message against a set of public keys and an aggregated signature.
+ * Bls verification of a message against a public key and signature.
  *
  * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
- * @param {SignatureArg} signature - Aggregated signature of the message
+ * @param {PublicKeyArg} publicKey - Public key to verify against
+ * @param {SignatureArg} signature - Signature of the message
  *
- * @return {boolean} - True if the signature is valid, false otherwise
+ * @return {Promise<boolean>} - True if the signature is valid, false otherwise
  *
  * @throw {TypeError} - Invalid input
- * @throw {Error} - Invalid aggregation
  */
-export function fastAggregateVerify(msg: BlstBuffer, publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
+export function asyncVerify(message: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
 
 /**
  * Bls verification of a set of messages, with corresponding public keys, and a single
@@ -165,50 +196,6 @@ export function fastAggregateVerify(msg: BlstBuffer, publicKeys: PublicKeyArg[],
  * @throw {Error} - Invalid aggregation
  */
 export function aggregateVerify(msgs: BlstBuffer[], publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
-
-/**
- * Bls batch verification for groups with a message and corresponding public key
- * and signature. Only returns true if all signatures are valid.
- *
- * @param {SignatureSet} signatureSets - Array of SignatureSet objects to batch verify
- *
- * @return {boolean} - True if all signatures are valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- * @throw {Error} - Invalid aggregation
- */
-export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean;
-
-/**
- * Bls verification of a message against a public key and signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKey - Public key to verify against
- * @param {SignatureArg} signature - Signature of the message
- *
- * @return {Promise<boolean>} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- */
-export function asyncVerify(msg: BlstBuffer, publicKey: PublicKeyArg, signature: SignatureArg): Promise<boolean>;
-
-/**
- * Bls verification of a message against a set of public keys and an aggregated signature.
- *
- * @param {BlstBuffer} msg - Message to verify
- * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
- * @param {SignatureArg} signature - Aggregated signature of the message
- *
- * @return {Promise<boolean>} - True if the signature is valid, false otherwise
- *
- * @throw {TypeError} - Invalid input
- * @throw {Error} - Invalid aggregation
- */
-export function asyncFastAggregateVerify(
-  msg: BlstBuffer,
-  publicKey: PublicKeyArg[],
-  signature: SignatureArg
-): Promise<boolean>;
 
 /**
  * Bls verification of a set of messages, with corresponding public keys, and a single
@@ -230,6 +217,51 @@ export function asyncAggregateVerify(
 ): Promise<boolean>;
 
 /**
+ * Bls verification of a message against a set of public keys and an aggregated signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
+ * @param {SignatureArg} signature - Aggregated signature of the message
+ *
+ * @return {boolean} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ * @throw {Error} - Invalid aggregation
+ */
+export function fastAggregateVerify(message: BlstBuffer, publicKeys: PublicKeyArg[], signature: SignatureArg): boolean;
+
+/**
+ * Bls verification of a message against a set of public keys and an aggregated signature.
+ *
+ * @param {BlstBuffer} msg - Message to verify
+ * @param {PublicKeyArg} publicKeys - Public keys to aggregate and verify against
+ * @param {SignatureArg} signature - Aggregated signature of the message
+ *
+ * @return {Promise<boolean>} - True if the signature is valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ * @throw {Error} - Invalid aggregation
+ */
+export function asyncFastAggregateVerify(
+  message: BlstBuffer,
+  publicKeys: PublicKeyArg[],
+  signature: SignatureArg
+): Promise<boolean>;
+
+/**
+ * Bls batch verification for groups with a message and corresponding public key
+ * and signature. Only returns true if all signatures are valid.
+ *
+ * @param {SignatureSet} signatureSets - Array of SignatureSet objects to batch verify
+ *
+ * @return {boolean} - True if all signatures are valid, false otherwise
+ *
+ * @throw {TypeError} - Invalid input
+ * @throw {Error} - Invalid aggregation
+ */
+export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): boolean;
+
+/**
  * Bls batch verification for groups with a message and corresponding public key
  * and signature. Only returns true if all signatures are valid.
  *
@@ -241,3 +273,14 @@ export function asyncAggregateVerify(
  * @throw {Error} - Invalid aggregation
  */
 export function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
+
+
+/**
+ * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
+ * See https://github.com/ChainSafe/blst-ts/issues/45
+ *
+ * @param {number} bytesCount - Number of bytes to generate
+ *
+ * @return {Buffer} - Random bytes
+ */
+export function randomBytesNonZero(bytesCount: number): Buffer;

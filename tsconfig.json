@@ -9,6 +9,9 @@
     ],
     "noEmit": true,
     "pretty": true,
+    "allowJs": true,
+    "checkJs": false,
+    "esModuleInterop": true,
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
@@ -21,6 +24,5 @@
     "declaration": true,
     "sourceMap": true,
     "declarationMap": true,
-    "esModuleInterop": true
   }
 }
