@@ -4,73 +4,54 @@ on:
   pull_request:
   push:
     branches:
-      - "**"
+      - master
     tags:
-      - "v*.*.*"
+      - v*.*.*
+
+env:
+  # When building the bundle for npm we only want to include the prebuilds for
+  # the current node version we are supporting for Lodestar. The makeRelease
+  # script that builds the release and builds the npm package will select ONLY
+  # the version of node in this setup for publishing to npm.  The rest will be
+  # added to the release on github and will be downloaded by the install script
+  # if they are using a version of node that is different then the one in this
+  # setup action.
+  NPM_PREBUILT_NODE_VERSION: 20
+
+# YAML Expansion for supported node versions. These are the versions of node that
+# will be tested against and will have bindings prebuilt and published to the 
+# github release.  Only the version listed above will be included in the npm
+# tarball though.
+x-node-versions: &node_versions
+  node:
+    - 16
+    - 18
+    - 20
+    - 21
 
 jobs:
-  build-swig:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: Setup SWIG
-        run: |
-          git clone -b v8-isolate-aware-init https://github.com/dot-asm/swig;
-          cd swig;
-          ./autogen.sh;
-          ./configure --prefix=$HOME/swig;
-          make;
-          make install;
-
-      - name: Install && Build TS + bindings
-        run: |
-          export PATH=~/swig/bin:$PATH SWIG_LIB=~/swig/share/swig/$(grep -r AC_INIT ~/work/blst-ts/blst-ts/swig/configure.ac | grep -Eo '[0-9]+.[0-9]+.[0-9]+')
-          yarn bootstrap
-          ls -ltrh .
-        working-directory: blst/bindings/node.js
-        env:
-          BLST_WRAP_CPP_FORCE_BUILD: true
-
-      - name: Upload binding.node
-        uses: actions/upload-artifact@v2
-        with:
-          name: blst_wrap.cpp
-          path: prebuild/blst_wrap.cpp
-          if-no-files-found: error
-
-      - name: Lint
-        run: yarn lint
-
   build:
-    needs: ["build-swig"]
-    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-12, macos-14, windows-latest]
-        node: [16, 17, 18, 20]
+        <<: *node_versions
+        os:
+          - ubuntu-22.04 # linux x64
+          - macos-12 # osx x64
+          - macos-14 # osx arm
+          - windows-latest # windows x64
+    runs-on: ${{matrix.os}}
     defaults:
       run:
         shell: bash
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Get SWIG pre-built
-        uses: actions/download-artifact@v2
-        with:
-          name: blst_wrap.cpp
-          path: prebuild/
-
       - name: Setup Node.js ${{matrix.node}}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{matrix.node}}
 
@@ -78,33 +59,39 @@ jobs:
         with:
           # More recent versions of python require more recent node-gyp
           # See https://github.com/nodejs/node-gyp/issues/2869
-          python-version: '3.11' 
+          python-version: "3.11"
 
       - name: Install && Build TS + bindings
-        run: |
-          yarn config set ignore-engines true
-          yarn bootstrap
-        env:
-          SWIG_SKIP_RUN: true
+        run: yarn
 
-      # Download spec tests with cache
+      - name: Run Unit Tests
+        run: yarn test:unit
+
+      - name: Run Memory Tests
+        run: yarn test:memory
+
+      - name: Run Perf Tests
+        run: yarn test:perf
+
+      # Attempt to pull spec-tests from cache
       - name: Restore spec tests cache
-        uses: actions/cache@master
+        if: matrix.os != 'windows-latest'
+        uses: actions/cache@v4
         with:
           path: spec-tests
           key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
-      - name: Download spec tests
-        run: yarn download-spec-tests
-        if: matrix.os != 'windows-latest'
 
-      - name: Test unit
-        run: yarn test:unit
-      - name: Test spec
-        run: yarn test:spec
+      # Download spec tests if not persisted
+      - name: Download spec tests
         if: matrix.os != 'windows-latest'
+        run: yarn download-spec-tests
+
+      - name: Run spec tests
+        if: matrix.os != 'windows-latest'
+        run: yarn test:spec
 
       - name: Upload binding.node
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding.node
@@ -115,48 +102,43 @@ jobs:
   # https://resources.github.com/devops/accelerate-your-cicd-with-arm-and-gpu-runners-in-github-actions/
   # https://github.com/actions/runner-images/issues/5631
   build-arm:
-    needs: ["build-swig"]
-    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        node: [14, 16, 18, 20]
+        <<: *node_versions
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
 
-      - name: Get SWIG pre-built
-        uses: actions/download-artifact@v2
-        with:
-          name: blst_wrap.cpp
-          path: prebuild/
-
       # Download spec tests with cache
       - name: Restore spec tests cache
-        uses: actions/cache@master
+        uses: actions/cache@v4
         with:
           path: spec-tests
           key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
 
       # https://github.com/docker/setup-qemu-action
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v3
+
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build test arm binding
+      - name: Build arm64 Binding, Run Tests and Copy Build Artifact to Host
         run: |
-          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t armbuild:latest --load --progress=plain .
-          docker create --name armbuild armbuild:latest
-          docker cp armbuild:/prebuild .
+          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t blst-ts-armbuild:latest --load --progress=plain .
+          docker create --name temp-container blst-ts-armbuild:latest
+          docker cp temp-container:/usr/src/blst-ts/prebuild ./prebuild
 
       - name: Upload binding.node
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding.node
@@ -164,65 +146,66 @@ jobs:
           if-no-files-found: error
 
   benchmark:
-    needs: ["build-swig"]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v3
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Get SWIG pre-built
-        uses: actions/download-artifact@v2
-        with:
-          name: blst_wrap.cpp
-          path: prebuild/
+      - name: Install
+        run: yarn
 
-      - name: Install && Build TS + bindings
-        run: yarn bootstrap
-        env:
-          SWIG_SKIP_RUN: true
-
-      - name: Benchmark
-        run: |
-          node_modules/.bin/ts-node benchmark/blstOps.ts
-          node_modules/.bin/ts-node benchmark/batchVerify.ts
-          node_modules/.bin/ts-node benchmark/multithread.ts
-          node_modules/.bin/ts-node benchmark/multithreadOverhead.ts
+      - name: Run Perf Tests
+        run: yarn test:perf
 
   publish:
-    needs: ["build-swig", "build", "build-arm"]
+    needs: ["build", "build-arm"]
     if: startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
-      - uses: actions/setup-node@v3 # Necessary for 'yarn publish'
+
+      # When building the bundle for npm we only want to include the prebuilds for
+      # the current node version we are supporting for Lodestar.  The script below
+      # that builds the release and builds the npm package will select ONLY the
+      # version of node in this setup for publishing to npm.  The rest will be
+      # added to the release on github and will be downloaded by the install script
+      # if they are using a version of node that is different then the one in this
+      # setup action.
+      - uses: actions/setup-node@v4
         with:
-          node-version: "12.x"
+          node-version: ${{env.NPM_PREBUILT_NODE_VERSION}}
           registry-url: "https://registry.npmjs.org"
 
-      - name: Get SWIG pre-built
-        uses: actions/download-artifact@v2
-        with:
-          name: blst_wrap.cpp
-          path: prebuild/
-      - name: Get binding.node pre-builts
-        uses: actions/download-artifact@v2
+      - name: Get pre-built binding.node files
+        uses: actions/download-artifact@v4
         with:
           name: binding.node
           path: prebuild/
 
-      - name: Build .ts source for release
-        run: yarn bootstrap
+      - name: Install
+        run: yarn
+
+      - name: Build TS
+        run: yarn build:ts
+
+        # Moves all prebuilds to the `release` folder and then only moves the
+        # prebuilds for the current node version into the `prebuild` folder for
+        # publishing to npm.  Goal is to reduce bundle size and to also provide
+        # faster install time for the most common version that Lodestar is supporting
+      - name: Prepare for Release and Publishing
+        run: yarn ts-node scripts/makeRelease
 
       - name: Create Github release with prebuilds
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: prebuild/*
+          files: release/*
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

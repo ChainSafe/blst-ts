@@ -1,12 +1,13 @@
 .nyc_output
 coverage
 build
+release
 dist
 node_modules
-prebuild/*.node
+prebuild
 
 npm-debug.log
 yarn-error.log
 
-# Eth2.0 spec tests data
-spec-tests
+# Fuzz Test Meta
+fuzz-tests
