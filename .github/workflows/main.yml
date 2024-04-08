@@ -17,23 +17,16 @@ env:
   # setup action.
   NPM_PREBUILT_NODE_VERSION: 20
 
-# YAML Expansion for supported node versions. These are the versions of node that
-# will be tested against and will have bindings prebuilt and published to the 
-# github release.  Only the version listed above will be included in the npm
-# tarball though.
-x-node-versions: &node_versions
-  node:
-    - 16
-    - 18
-    - 20
-    - 21
-
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        <<: *node_versions
+        node:
+          - 16
+          - 18
+          - 20
+          - 21
         os:
           - ubuntu-22.04 # linux x64
           - macos-12 # osx x64
@@ -104,7 +97,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        <<: *node_versions
+        node:
+          - 16
+          - 18
+          - 20
+          - 21
     runs-on: ubuntu-22.04
     defaults:
       run:
