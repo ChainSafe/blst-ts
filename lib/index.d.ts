@@ -274,7 +274,6 @@ export function verifyMultipleAggregateSignatures(signatureSets: SignatureSet[])
  */
 export function asyncVerifyMultipleAggregateSignatures(signatureSets: SignatureSet[]): Promise<boolean>;
 
-
 /**
  * `rand` must not be exactly zero. Otherwise it would allow the verification of invalid signatures
  * See https://github.com/ChainSafe/blst-ts/issues/45
