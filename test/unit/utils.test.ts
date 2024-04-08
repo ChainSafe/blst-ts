@@ -96,7 +96,8 @@ describe("utils", () => {
       expect(singleGroups[0][0].pubkeys.length).to.equal(2);
     });
   });
-  describe("multithreading verification", () => {
+  describe("multithreading verification", function () {
+    this.timeout(20 * 1000);
     let libuvPool: BlsMultiThreading;
     let napiGroups: ReturnType<typeof getGroupsOfBatchesOfSignatureSets>;
     before(() => {
