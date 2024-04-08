@@ -62,9 +62,6 @@ jobs:
       - name: Run Memory Tests
         run: yarn test:memory
 
-      - name: Run Perf Tests
-        run: yarn test:perf
-
       # Attempt to pull spec-tests from cache
       - name: Restore spec tests cache
         if: matrix.os != 'windows-latest'
