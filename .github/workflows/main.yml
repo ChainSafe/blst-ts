@@ -64,8 +64,9 @@ jobs:
 
       # Attempt to pull spec-tests from cache
       - name: Restore spec tests cache
+        id: cache-restore
         if: matrix.os != 'windows-latest'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: spec-tests
           key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
@@ -74,6 +75,14 @@ jobs:
       - name: Download spec tests
         if: matrix.os != 'windows-latest'
         run: yarn download-spec-tests
+
+        # Cache Spec Tests if not already cached
+      - name: Save spec tests to cache
+        if: matrix.os != 'windows-latest' && steps.cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: spec-tests
+          key: spec-test-data-${{ hashFiles('test/spec/specTestVersioning.ts') }}
 
       - name: Run spec tests
         if: matrix.os != 'windows-latest'
