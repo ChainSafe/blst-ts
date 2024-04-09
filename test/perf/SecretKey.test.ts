@@ -9,7 +9,7 @@ describe("SecretKey", () => {
     blst.SecretKey.fromKeygen(keygenMaterial);
   });
 
-  itBench("SecretKey serialization- Napi", () => {
+  itBench("SecretKey serialization", () => {
     napiTestKey.serialize();
   });
 

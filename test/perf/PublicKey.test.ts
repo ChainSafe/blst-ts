@@ -5,7 +5,7 @@ import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 const napiTestKey = getTestSet(0).publicKey;
 
 describe("PublicKey", () => {
-  itBench("PublicKey serialization- Napi", () => {
+  itBench("PublicKey serialization", () => {
     napiTestKey.serialize();
   });
 

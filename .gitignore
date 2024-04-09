@@ -1,9 +1,10 @@
 .nyc_output
 coverage
 build
+release
 dist
 node_modules
-prebuild/*.node
+prebuild
 
 npm-debug.log
 yarn-error.log

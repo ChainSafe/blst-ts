@@ -1,4 +1,59 @@
+import {resolve} from "path";
+import {existsSync} from "fs";
 import {exec as EXEC, ExecOptions, ChildProcess, PromiseWithChild} from "child_process";
+
+export const BINDINGS_NAME = "blst_ts_addon";
+export const BINDINGS_FILE = `${BINDINGS_NAME}.node`;
+
+class NotNodeJsError extends Error {
+  constructor(missingItem: string) {
+    super(`blst-ts bindings only run in a NodeJS context. No ${missingItem} found.`);
+  }
+}
+
+/**
+ * Get binary name.
+ * name: {platform}-{arch}-{v8 version}-blst_ts_addon.node
+ */
+export function getBinaryName(): string {
+  if (!process) throw new NotNodeJsError("global object");
+  const platform = process.platform;
+  if (!platform) throw new NotNodeJsError("process.platform");
+  const arch = process.arch;
+  if (!arch) throw new NotNodeJsError("process.arch");
+  const nodeApiVersion = process.versions.modules;
+  if (!nodeApiVersion) throw new NotNodeJsError("process.versions.modules");
+
+  return [platform, arch, nodeApiVersion, BINDINGS_FILE].join("-");
+}
+
+/**
+ * Builds a list of search paths to look for the bindings file
+ */
+function buildSearchPaths(rootDir: string): string[] {
+  const searchLocations: string[][] = [
+    [rootDir, "prebuild", getBinaryName()],
+    [rootDir, "build", "Debug", BINDINGS_FILE],
+    [rootDir, "build", "Release", BINDINGS_FILE],
+  ];
+
+  return searchLocations.map((location) => resolve(...location));
+}
+
+/**
+ * Locates the bindings file using the blst-ts naming convention for prebuilt
+ * bindings. Falls back to node-gyp naming if not found.
+ */
+export function getBindingsPath(rootDir: string): string {
+  const searchLocations = buildSearchPaths(rootDir);
+  for (const filepath of searchLocations) {
+    if (existsSync(filepath)) {
+      return filepath;
+    }
+  }
+
+  throw Error(`Could not find bindings file. Tried:\n${searchLocations.join("\n")}`);
+}
 
 export interface ExecPromiseOptions extends ExecOptions {
   pipeInput?: boolean;

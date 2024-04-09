@@ -1,16 +1,19 @@
 /* eslint-disable no-console */
+import fs from "fs";
 import {resolve} from "path";
 import {watchWithCallback} from "./watch";
 import {exec} from "../utils";
 
 const DEBOUNCE_TIME = 500;
-const testCommand = "npm run test:unit";
+const testCommand = "npm run test:unit && npm run test:spec";
 const buildCommand = "npm run build:debug";
 
 const ROOT_FOLDER = resolve(__dirname, "..");
 const SRC_FOLDER = resolve(ROOT_FOLDER, "src");
 const TESTS_FOLDER = resolve(ROOT_FOLDER, "test");
-// const UNIT_TESTS_FOLDER = resolve(TESTS_FOLDER, "unit");
+
+// make sure code is using most recently built bindings
+fs.rmdirSync(resolve(ROOT_FOLDER, "prebuild"));
 
 /**
  * Builds addon and then starts watch.
