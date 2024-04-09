@@ -88,6 +88,7 @@ jobs:
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v4
+        if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding-${{ matrix.os }}-${{ matrix.node }}
           path: prebuild/*.node
@@ -101,10 +102,10 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - 16
-          - 18
+          # - 16
+          # - 18
           - 20
-          - 21
+          # - 21
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -138,6 +139,7 @@ jobs:
 
       - name: Upload binding.node
         uses: actions/upload-artifact@v4
+        if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
           name: binding-linux-arm-${{ matrix.node }}
           path: prebuild/*.node
@@ -166,18 +168,18 @@ jobs:
     needs: ["build", "build-arm"]
     runs-on: ubuntu-22.04
     steps:
-      - name: Get pre-built binding.node files
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
         with:
-          path: prebuild/
-          merge-multiple: true
-
-      - name: List files in prebuild/
-        run: ls -R prebuild
+          submodules: true
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{env.NPM_PREBUILT_NODE_VERSION}}
+          registry-url: "https://registry.npmjs.org"
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@stable
+        uses: butlerlogic/action-autotag@1.1.3
         with:
           strategy: package
           tag_prefix: "v"
@@ -189,6 +191,35 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: core.setFailed('The package.json version did not change. Workflow will not create a release.')
+
+      - name: Get pre-built binding.node files
+        uses: actions/download-artifact@v4
+        with:
+          path: prebuild/
+          merge-multiple: true
+
+      - name: Install
+        run: yarn
+
+      - name: Build TS
+        run: yarn build:ts
+
+        # Moves all prebuilds to the `release` folder and then only moves the
+        # prebuilds for the current node version into the `prebuild` folder for
+        # publishing to npm.  Goal is to reduce bundle size and to also provide
+        # faster install time for the most common version that Lodestar is supporting
+      - name: Prepare for Release and Publishing
+        run: yarn ts-node scripts/makeRelease
+
+      - name: List files in ROOT/
+        run: ls -R .
+  
+      - name: List files in prebuild/
+        run: ls -R prebuild
+  
+      - name: List files in release/
+        run: ls -R release
+
 
   publish:
     needs: ["build", "build-arm"]
@@ -213,7 +244,7 @@ jobs:
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@stable
+        uses: butlerlogic/action-autotag@1.1.3
         with:
           strategy: package
           tag_prefix: "v"
@@ -249,7 +280,7 @@ jobs:
         if: steps.tag.outputs.tagcreated == 'yes'
         uses: softprops/action-gh-release@v2
         with:
-          files: release/*
+          files: release/*.node
           tag_name: ${{ steps.tag.outputs.tagname }}
           fail_on_unmatched_files: true
         env:
