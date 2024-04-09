@@ -198,7 +198,7 @@ jobs:
         if: steps.tag.outputs.tagcreated == 'no'
         uses: actions/github-script@v3
         with:
-          script: core.setFailed('package.json version not changed. not creating release')
+          script: core.setFailed('The package.json version did not change. Workflow will not create a release.')
 
       - name: Get pre-built binding.node files
         uses: actions/download-artifact@v4
