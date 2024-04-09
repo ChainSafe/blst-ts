@@ -2,7 +2,12 @@
 
 ## Welcome
 
-Thank you for your interest in contribution to the `blst-ts` project.  This file will serve as your guide using the repo and some of the nuances of the architecture used within
+Thank you for your interest in contribution to the `blst-ts` project.  This file will serve as your guide using the repo and some of the nuances of the architecture used within.  Note that this repo contains a git submodule. Make sure the git submodule `blst` is populated before attempting to build locally.
+
+```sh
+git submodule update --init --recursive
+yarn
+```
 
 ### Scripts
 
