@@ -11,7 +11,7 @@
     "build": "yarn build:gyp && yarn build:ts",
     "build:gyp": "node-gyp build",
     "build:gyp:debug": "node-gyp build --debug",
-    "build:ts": "tsc --project tsconfig.build.json",
+    "build:ts": "tsc --project tsconfig.build.json && cp lib/index.d.ts dist/lib/index.d.ts",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "build:clean": "npm run clean && npm run install && npm run build:ts",
     "dev": "ts-node tools/dev",
