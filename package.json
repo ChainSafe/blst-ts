@@ -51,9 +51,6 @@
     "tar": "^6.1.14",
     "typescript": "^5.2.2"
   },
-  "optionalDependencies": {
-    "@jazzer.js/core": "^2.1.0"
-  },
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
   "files": [
