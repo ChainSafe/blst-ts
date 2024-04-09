@@ -133,8 +133,8 @@ jobs:
 
       - name: Build arm64 Binding, Run Tests and Copy Build Artifact to Host
         run: |
-          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t blst-ts-test-armbuild:${{matrix.node}} --load --progress=plain .
-          docker create --name temp-container blst-ts-test-armbuild:${{matrix.node}}
+          docker buildx build --build-arg NODE_VERSION=${{matrix.node}} --platform linux/arm64 -t blst-ts-temp-armbuild:${{matrix.node}} --load --progress=plain .
+          docker create --name temp-container blst-ts-temp-armbuild:${{matrix.node}}
           docker cp temp-container:/usr/src/blst-ts/prebuild ./prebuild
 
       - name: Upload binding.node
