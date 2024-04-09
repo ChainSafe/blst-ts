@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
-          name: binding.node
+          name: binding-${{ matrix.os }}-${{ matrix.node }}
           path: prebuild/*.node
           if-no-files-found: error
 
@@ -141,7 +141,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
         with:
-          name: binding.node
+          name: binding-linux-arm-${{ matrix.node }}
           path: prebuild/*.node
           if-no-files-found: error
 
@@ -163,6 +163,18 @@ jobs:
         run: yarn test:perf
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-download:
+    needs: ["build", "build-arm"]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Get pre-built binding.node files
+        uses: actions/download-artifact@v4
+        with:
+          path: prebuild/
+          merge-multiple: true
+      - name: List files in prebuild/
+        run: ls -R prebuild 
 
   publish:
     needs: ["build", "build-arm"]
@@ -203,8 +215,8 @@ jobs:
       - name: Get pre-built binding.node files
         uses: actions/download-artifact@v4
         with:
-          name: binding.node
           path: prebuild/
+          merge-multiple: true
 
       - name: Install
         run: yarn
