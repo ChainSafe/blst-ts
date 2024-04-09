@@ -12,10 +12,10 @@
       ],
       'include_dirs': [
         'blst/bindings',
-        '<!@(node -p \"require("node-addon-api").include\")',
+        "<!@(node -p \"require('node-addon-api').include\")",
       ],
       'dependencies': [
-        '<!(node -p \"require("node-addon-api").gyp\")'
+        "<!(node -p \"require('node-addon-api').gyp\")"
       ],
       'defines': [ 
         'NAPI_CPP_EXCEPTIONS'
