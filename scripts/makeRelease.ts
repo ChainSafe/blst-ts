@@ -1,10 +1,11 @@
 import {resolve} from "path";
-import {cpSync, readdirSync, rmSync} from "fs";
+import {mkdirSync, cpSync, readdirSync, rmSync} from "fs";
 import {BINDINGS_FILE} from "../utils";
 
 const RELEASE_FOLDER = resolve(__dirname, "..", "release");
 const PREBUILD_FOLDER = resolve(__dirname, "..", "prebuild");
 
+mkdirSync(RELEASE_FOLDER);
 /**
  * Reads through the files in the PREBUILD_FOLDER.  Copies all to the
  * RELEASE_FOLDER and then deletes the ones that are not slated for publishing
