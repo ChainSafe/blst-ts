@@ -1,4 +1,10 @@
-# This is used to build bindings for arm64
+# This is used to build and test bindings for linux-arm64
+
+# The container that this is run FROM is hosted here
+# https://hub.docker.com/repository/docker/matthewkeil/blst-ts-armbuild/general
+#
+# See the notes in Dockerfile.armEnv for more information on how to build and
+# publish new versions
 
 ARG NODE_VERSION
 FROM matthewkeil/blst-ts-armbuild:${NODE_VERSION}

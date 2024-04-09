@@ -1,4 +1,14 @@
-# This is used to build bindings for arm64
+# The container that this is run FROM is hosted here
+# https://hub.docker.com/repository/docker/matthewkeil/blst-ts-armbuild/general
+#
+# It is built using the Dockerfile.armEnv and can be updated via the following commands
+#
+# > docker buildx build --build-arg NODE_VERSION=20 --platform linux/arm64 -t matthewkeil/blst-ts-armbuild:20 -f Dockerfile.armEnv --load .
+# > docker push matthewkeil/blst-ts-armbuild:20
+#
+# If anyone other than me (@matthewkeil) is publishing this the username will need to be changed. I will work with Peter
+# to get a token for the chainsafe namespace and a workflow setup to build new versions via CI.  This will probably
+# not be needed though as linux-arm64 hosts will be releases soon by GitHub.
 
 ARG NODE_VERSION
 FROM node:${NODE_VERSION}
