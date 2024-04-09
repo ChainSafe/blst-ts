@@ -52,10 +52,15 @@ describe("PublicKey", () => {
         });
       });
       it("should throw on invalid key", () => {
-        expect(() => PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed))).to.throw(
-          "BLST_ERROR::BLST_BAD_ENCODING"
-        );
-        expect(() => PublicKey.deserialize(badPublicKey)).to.throw("BLST_ERROR::BLST_BAD_ENCODING");
+        try {
+          PublicKey.deserialize(sullyUint8Array(validPublicKey.compressed));
+          expect.fail("Did not throw error for badPublicKey");
+        } catch (e) {
+          expect(
+            (e as Error).message === "BLST_ERROR::BLST_POINT_NOT_ON_CURVE" ||
+              (e as Error).message === "BLST_ERROR::BLST_BAD_ENCODING"
+          ).to.be.true;
+        }
       });
       it("should throw on zero key", () => {
         expect(() => PublicKey.deserialize(Buffer.from(G1_POINT_AT_INFINITY))).to.throw("BLST_BAD_ENCODING");

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import fs from "fs";
 import {resolve} from "path";
-import {PromiseWithChild} from "child_process";
+import {PromiseWithChild, execSync} from "child_process";
 import {testCases} from "./testCases";
 import {exec} from "../../utils";
 
@@ -28,7 +28,7 @@ if (!fs.existsSync(resolve(ROOT_DIR, "fuzz-tests", "test", "fuzz", "fuzzTarget.j
 }
 
 if (!fs.existsSync(resolve(ROOT_DIR, "node_modules", ".bin", "jazzer"))) {
-  throw new Error("optionalDependency jazzer not found.  Run `yarn install`");
+  execSync("npm i --no-package-lock --no-save @jazzer.js/core", {stdio: "inherit"});
 }
 
 /**

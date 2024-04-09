@@ -87,10 +87,10 @@ jobs:
         run: yarn test:spec
 
       - name: Upload binding.node
-        uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
         with:
-          name: binding.node
+          name: binding-${{ matrix.os }}-${{ matrix.node }}
           path: prebuild/*.node
           if-no-files-found: error
 
@@ -138,10 +138,10 @@ jobs:
           docker cp temp-container:/usr/src/blst-ts/prebuild ./prebuild
 
       - name: Upload binding.node
-        uses: actions/upload-artifact@v4
         if: github.repository_owner == 'chainsafe' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
         with:
-          name: binding.node
+          name: binding-linux-arm-${{ matrix.node }}
           path: prebuild/*.node
           if-no-files-found: error
 
@@ -166,7 +166,7 @@ jobs:
 
   publish:
     needs: ["build", "build-arm"]
-    if: github.ref == 'refs/heads/master'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -187,7 +187,7 @@ jobs:
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@stable
+        uses: butlerlogic/action-autotag@1.1.2
         with:
           strategy: package
           tag_prefix: "v"
@@ -203,8 +203,8 @@ jobs:
       - name: Get pre-built binding.node files
         uses: actions/download-artifact@v4
         with:
-          name: binding.node
           path: prebuild/
+          merge-multiple: true
 
       - name: Install
         run: yarn

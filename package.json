@@ -11,7 +11,7 @@
     "build": "yarn build:gyp && yarn build:ts",
     "build:gyp": "node-gyp build",
     "build:gyp:debug": "node-gyp build --debug",
-    "build:ts": "tsc --project tsconfig.build.json",
+    "build:ts": "tsc --project tsconfig.build.json && cp lib/index.d.ts dist/lib/index.d.ts",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "build:clean": "npm run clean && npm run install && npm run build:ts",
     "dev": "ts-node tools/dev",
@@ -50,9 +50,6 @@
     "prettier": "^3.1.1",
     "tar": "^6.1.14",
     "typescript": "^5.2.2"
-  },
-  "optionalDependencies": {
-    "@jazzer.js/core": "^2.1.0"
   },
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
