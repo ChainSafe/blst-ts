@@ -13,6 +13,15 @@ const PREBUILD_DIR = resolve(ROOT_DIR, "prebuild");
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const VERSION: string = require(resolve(ROOT_DIR, "package.json")).version;
 
+// CLI runner and entrance for this file when called by npm/yarn
+install().then(
+  () => process.exit(0),
+  (e) => {
+    console.error(e);
+    process.exit(1);
+  }
+);
+
 /**
  * Loading prebuilt bindings may fail in any number of unhappy ways, including a
  * segfault. We use child processes to catch these unrecoverable process-level
@@ -110,12 +119,3 @@ async function install(): Promise<void> {
     throw new Error("Locally built bindings failed to load. No fallback available");
   }
 }
-
-// CLI runner
-install().then(
-  () => process.exit(0),
-  (e) => {
-    console.error(e);
-    process.exit(1);
-  }
-);
