@@ -177,7 +177,7 @@ jobs:
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@1.1.1
+        uses: butlerlogic/action-autotag@1.1.2
         with:
           strategy: package
           tag_prefix: "v"
@@ -242,7 +242,7 @@ jobs:
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@1.1.3
+        uses: butlerlogic/action-autotag@1.1.2
         with:
           strategy: package
           tag_prefix: "v"
