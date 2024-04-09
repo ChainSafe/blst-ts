@@ -179,7 +179,7 @@ jobs:
 
       - name: Create tag
         id: tag
-        uses: butlerlogic/action-autotag@1.1.3
+        uses: butlerlogic/action-autotag@1.1.1
         with:
           strategy: package
           tag_prefix: "v"
@@ -223,7 +223,7 @@ jobs:
 
   publish:
     needs: ["build", "build-arm"]
-    if: github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
