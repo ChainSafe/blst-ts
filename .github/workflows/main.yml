@@ -173,8 +173,24 @@ jobs:
         with:
           path: prebuild/
           merge-multiple: true
+
       - name: List files in prebuild/
-        run: ls -R prebuild 
+        run: ls -R prebuild
+
+      - name: Create tag
+        id: tag
+        uses: butlerlogic/action-autotag@stable
+        with:
+          strategy: package
+          tag_prefix: "v"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+
+      - name: Exit if no version change
+        if: steps.tag.outputs.tagcreated == 'no'
+        uses: actions/github-script@v3
+        with:
+          script: core.setFailed('The package.json version did not change. Workflow will not create a release.')
 
   publish:
     needs: ["build", "build-arm"]
