@@ -30,16 +30,14 @@ export function getBinaryName(): string {
 /**
  * Builds a list of search paths to look for the bindings file
  */
-function buildSearchPaths(rootDir: string, filename: string): string[] {
+function buildSearchPaths(rootDir: string): string[] {
   const searchLocations: string[][] = [
-    [rootDir],
-    [rootDir, "prebuild"],
-    [rootDir, "build"],
-    [rootDir, "build", "Debug"],
-    [rootDir, "build", "Release"],
+    [rootDir, "prebuild", getBinaryName()],
+    [rootDir, "build", "Debug", BINDINGS_FILE],
+    [rootDir, "build", "Release", BINDINGS_FILE],
   ];
 
-  return searchLocations.map((location) => resolve(...location, filename));
+  return searchLocations.map((location) => resolve(...location));
 }
 
 /**
@@ -47,8 +45,7 @@ function buildSearchPaths(rootDir: string, filename: string): string[] {
  * bindings. Falls back to node-gyp naming if not found.
  */
 export function getBindingsPath(rootDir: string): string {
-  const names = [getBinaryName(), BINDINGS_FILE];
-  const searchLocations = names.map((name) => buildSearchPaths(rootDir, name)).flat();
+  const searchLocations = buildSearchPaths(rootDir);
   for (const filepath of searchLocations) {
     if (existsSync(filepath)) {
       return filepath;
