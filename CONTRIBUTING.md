@@ -37,7 +37,7 @@ Uses `@dapplion/benchmark` to run the test in `test/perf`.  Results from these t
 
 ## Background for Installation and Publishing Workflows
 
-It is necessary for node-gyp to compile the native code for each combination os architecture and node version.  When compilation happens the file is output to one of a few places depending on what flags are passed to the build process. Generally node-gyp places the build configuration and artifacts in the `build` folder.  For release builds the assemblies are output to `build/Release` and for debug builds they go to `build/Debug`.  There are lots of intermediate assemblies in those folders but the one that is most important is the final assembled compilation artifact, the `.node` file.  This is the one that can be `require()` in a JS file.
+It is necessary for node-gyp to compile the native code for each combination of os architecture and node version.  When compilation happens the file is output to one of a few places depending on what flags are passed to the build process. Generally node-gyp places the build configuration and artifacts in the `build` folder.  For release builds the assemblies are output to `build/Release` and for debug builds they go to `build/Debug`.  There are lots of intermediate assemblies in those folders but the one that is most important is the final assembled compilation artifact, the `.node` file.  This is the one that can be `require()` in a JS file.
 
 `node-gyp` names the final binary the same as the `target_name` in the `binding.gyp` file.  In our case that is `blst_ts_addon.node`.  So it will usually be found in `build/Release/blst_ts_addon.node`.  This is the default development case.
 
@@ -61,7 +61,7 @@ When running `npm install` in a consuming library the `node_modules` will first 
 
 There is a test that we run after each step to check that the binding can successfully be imported/required by node.  If the import throws, we go to the next step in the flow.
 
-For both the download step and the build step, the binary is placed in the `prebuild` folder and renamed accordingly.  That way it will be easily accessible at runtime by the `lib`.
+For both the download step and the build step, the binary is placed in the `prebuild` folder and renamed accordingly.  That way it will be easily accessible at runtime by the `lib` and by the workflow for publishing.
 
 ## Development and Testing
 
@@ -84,3 +84,5 @@ To avoid this `scripts/makeRelease.ts` copies all of the bindings to the `releas
 The workflow then creates the release and includes `release` assets to the release and publishes the npm package with only the `prebuild` bindings that were selected for inclusion.
 
 The workflow has a variable `env.NPM_PREBUILT_NODE_VERSION` for setting the currently bundled version and this generally should match the currently supported version of node that `@chainsafe/lodestar` uses.
+
+In the rare instance that the publish job fails but a tag and/or release are created the issue can be resolved via 

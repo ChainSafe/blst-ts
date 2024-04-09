@@ -1,7 +1,7 @@
-# The container that this is run FROM is hosted here
+# The containers build from this are hosted here
 # https://hub.docker.com/repository/docker/matthewkeil/blst-ts-armbuild/general
 #
-# It is built using the Dockerfile.armEnv and can be updated via the following:
+# To update the containers or build new ones run:
 # > docker buildx build --build-arg NODE_VERSION=20 --platform linux/arm64 -t matthewkeil/blst-ts-armbuild:20 -f Dockerfile.armEnv --load .
 # > docker push matthewkeil/blst-ts-armbuild:20
 #
