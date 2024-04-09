@@ -184,12 +184,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
-      - name: Exit if no version change
-        if: steps.tag.outputs.tagcreated == 'no'
-        uses: actions/github-script@v3
-        with:
-          script: core.setFailed('The package.json version did not change. Workflow will not create a release.')
-
       - name: Get pre-built binding.node files
         uses: actions/download-artifact@v4
         with:
@@ -217,6 +211,12 @@ jobs:
   
       - name: List files in release/
         run: ls -R release
+
+      - name: Exit if no version change
+        if: steps.tag.outputs.tagcreated == 'no'
+        uses: actions/github-script@v3
+        with:
+          script: core.setFailed('The package.json version did not change. Workflow will not create a release.')
 
 
   publish:
