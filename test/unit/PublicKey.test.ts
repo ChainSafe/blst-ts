@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {BLST_CONSTANTS, CoordType, PublicKey, SecretKey} from "../../lib";
 import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, badPublicKey, G1_POINT_AT_INFINITY} from "../__fixtures__";
+import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("PublicKey", () => {
   it("should exist", () => {
@@ -71,6 +71,9 @@ describe("PublicKey", () => {
     describe("serialize", () => {
       const sk = SecretKey.deserialize(SECRET_KEY_BYTES);
       const pk = sk.toPublicKey();
+      it("should serialize the key to Uint8Array", () => {
+        expect(pk.serialize()).to.be.instanceof(Uint8Array);
+      });
       it("should default to compressed serialization", () => {
         expectEqualHex(pk.serialize(), pk.serialize(true));
         expectNotEqualHex(pk.serialize(), pk.serialize(false));
@@ -86,6 +89,12 @@ describe("PublicKey", () => {
         const affine = PublicKey.deserialize(pk.serialize(), CoordType.affine);
         expectEqualHex(jacobian.serialize(true), affine.serialize(true));
         expectEqualHex(jacobian.serialize(false), affine.serialize(false));
+      });
+    });
+    describe("toHex", () => {
+      it("should toHex string correctly", () => {
+        const key = PublicKey.deserialize(validPublicKey.compressed);
+        expectEqualHex(key.toHex(true), validPublicKey.compressed);
       });
     });
     describe("keyValidate()", () => {
