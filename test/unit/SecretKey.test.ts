@@ -80,6 +80,12 @@ describe("SecretKey", () => {
         expectEqualHex(SecretKey.deserialize(serialized).serialize(), serialized);
       });
     });
+    describe("toHex", () => {
+      it("should toHex string correctly", () => {
+        const key = SecretKey.deserialize(SECRET_KEY_BYTES);
+        expectEqualHex(key.toHex(), SECRET_KEY_BYTES);
+      });
+    });
     describe("toPublicKey", () => {
       it("should create a valid PublicKey", () => {
         const pk = key.toPublicKey();

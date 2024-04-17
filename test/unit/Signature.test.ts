@@ -69,6 +69,12 @@ describe("Signature", () => {
         expectEqualHex(jacobian.serialize(false), affine.serialize(false));
       });
     });
+    describe("toHex", () => {
+      it("should toHex string correctly", () => {
+        const key = Signature.deserialize(validSignature.compressed);
+        expectEqualHex(key.toHex(true), validSignature.compressed);
+      });
+    });
     describe("sigValidate()", () => {
       it("should return undefined for valid", () => {
         const sig = Signature.deserialize(validSignature.compressed);
