@@ -71,6 +71,9 @@ describe("PublicKey", () => {
     describe("serialize", () => {
       const sk = SecretKey.deserialize(SECRET_KEY_BYTES);
       const pk = sk.toPublicKey();
+      it("should serialize the key to Uint8Array", () => {
+        expect(pk.serialize()).to.be.instanceof(Uint8Array);
+      });
       it("should default to compressed serialization", () => {
         expectEqualHex(pk.serialize(), pk.serialize(true));
         expectNotEqualHex(pk.serialize(), pk.serialize(false));

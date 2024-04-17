@@ -70,7 +70,7 @@ describe("SecretKey", () => {
     });
     describe("serialize", () => {
       it("should serialize the key to Uint8Array", () => {
-        expect(key.serialize()).to.be.instanceof(Buffer);
+        expect(key.serialize()).to.be.instanceof(Uint8Array);
       });
       it("should be the correct length", () => {
         expect(key.serialize().length).to.equal(BLST_CONSTANTS.SECRET_KEY_LENGTH);

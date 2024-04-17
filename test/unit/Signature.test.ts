@@ -52,6 +52,9 @@ describe("Signature", () => {
   describe("methods", () => {
     describe("serialize", () => {
       const sig = SecretKey.fromKeygen(KEY_MATERIAL).sign(Buffer.from("some fancy message"));
+      it("should serialize the signature to Uint8Array", () => {
+        expect(sig.serialize()).to.be.instanceof(Uint8Array);
+      });
       it("should default to compressed serialization", () => {
         expectEqualHex(sig.serialize(), sig.serialize(true));
         expectNotEqualHex(sig.serialize(), sig.serialize(false));
