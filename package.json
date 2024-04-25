@@ -1,6 +1,6 @@
 {
   "name": "@chainsafe/blst",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
   "scripts": {
     "install": "ts-node scripts/install",
