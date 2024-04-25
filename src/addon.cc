@@ -62,7 +62,7 @@ BlstTsAddon::BlstTsAddon(Napi::Env env, Napi::Object exports)
 
     // Check that openssl PRNG is seeded
     blst::byte seed{0};
-    if (!this->GetRandomBytes(&seed, 0)) {
+    if (!this->GetRandomNonZeroBytes(&seed, 0)) {
         Napi::Error::New(
             env, "BLST_ERROR: Error seeding pseudo-random number generator")
             .ThrowAsJavaScriptException();
@@ -81,13 +81,16 @@ std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err) {
     return _blst_error_strings[err];
 }
 
-bool BlstTsAddon::GetRandomBytes(blst::byte *bytes, size_t length) {
+bool BlstTsAddon::GetRandomNonZeroBytes(blst::byte *bytes, size_t length) {
     // [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
     // [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
     // [RandomBytesTraits::DeriveBits](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_random.cc#L65)
     // [CSPRNG](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_util.cc#L63)
     do {
         if ((1 == RAND_status()) && (1 == RAND_bytes(bytes, length))) {
+            if (blst_ts::is_zero_bytes(bytes, 0, length)) {
+                bytes[0] = 0xff;
+            }
             return true;
         }
     } while (1 == RAND_poll());

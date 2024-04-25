@@ -177,7 +177,7 @@ class BlstTsAddon : public Napi::Addon<BlstTsAddon> {
      * MUST check the return value for success!
      *
      * As a special case, |length == 0| can be used to check if the
-     * GetRandomBytes is properly seeded without consuming entropy.
+     * GetRandomNonZeroBytes is properly seeded without consuming entropy.
      */
-    bool GetRandomBytes(blst::byte *ikm, size_t length);
+    bool GetRandomNonZeroBytes(blst::byte *bytes, size_t length);
 };
