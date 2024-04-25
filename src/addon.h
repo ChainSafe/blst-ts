@@ -27,7 +27,7 @@ namespace blst_ts {
     if (!info[0].IsUndefined()) {                                              \
         compressed = info[0].ToBoolean().Value();                              \
     }                                                                          \
-    Napi::Uint8Array serialized = Napi::Uint8Array::New(             \
+    Napi::Uint8Array serialized = Napi::Uint8Array::New(                       \
         env,                                                                   \
         compressed ? snake_case_name##_length_compressed                       \
                    : snake_case_name##_length_uncompressed);                   \
