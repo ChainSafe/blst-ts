@@ -89,7 +89,7 @@ bool BlstTsAddon::GetRandomNonZeroBytes(blst::byte *bytes, size_t length) {
     do {
         if ((1 == RAND_status()) && (1 == RAND_bytes(bytes, length))) {
             if (blst_ts::is_zero_bytes(bytes, 0, length)) {
-                bytes[0] = 0xff;
+                bytes[0] = 0x01;
             }
             return true;
         }
