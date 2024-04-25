@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig",
   "include": [
-    "lib",
+    "utils",
+    "lib/index.js",
+    "lib/bindings.ts",
     "test/fuzz"
   ],
   "compilerOptions": {

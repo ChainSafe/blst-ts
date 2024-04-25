@@ -1,24 +1,21 @@
 {
   "extends": "./tsconfig",
   "include": [
-    "lib",
-    "utils"
+    "utils",
+    "lib/index.js",
+    "lib/bindings.ts",
   ],
   "exclude": [
-    "blst",
-    "dist",
-    "doc",
-    "fuzz-tests",
-    "node_modules",
     "scripts",
-    "spec-tests",
-    "src",
     "test",
   ],
   "compilerOptions": {
     "noEmit": false,
+    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "outDir": "./dist"
+    "outDir": "./dist/cjs"
   }
 }

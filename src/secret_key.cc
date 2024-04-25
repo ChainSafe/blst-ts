@@ -140,8 +140,7 @@ Napi::Value SecretKey::Serialize(const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
     Napi::EscapableHandleScope scope(env);
 
-    Napi::Uint8Array serialized =
-        Napi::Uint8Array::New(env, secret_key_length);
+    Napi::Uint8Array serialized = Napi::Uint8Array::New(env, secret_key_length);
     key->to_bendian(serialized.Data());
 
     return scope.Escape(serialized);

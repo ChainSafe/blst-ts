@@ -1,7 +1,15 @@
 {
+  "exclude": [
+    "blst",
+    "dist",
+    "doc",
+    "fuzz-tests",
+    "node_modules",
+    "spec-tests",
+    "src",
+  ],
   "compilerOptions": {
     "target": "ESNext",
-    "module": "CommonJS",
     "moduleResolution": "Node",
     "lib": [
       "ESNext",
@@ -10,7 +18,7 @@
     "noEmit": true,
     "pretty": true,
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "esModuleInterop": true,
     "strict": true,
     "alwaysStrict": true,
@@ -21,8 +29,5 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-    "declaration": true,
-    "sourceMap": true,
-    "declarationMap": true,
   }
 }
