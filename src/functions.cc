@@ -569,7 +569,7 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
                 pk_point.raw_point,
                 sig_point.raw_point,
                 rand,
-                BLST_TS_RANDOM_BYTES_LENGTH,
+                BLST_TS_RANDOM_BYTES_LENGTH * 8,
                 msg.Data(),
                 msg.ByteLength());
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
@@ -730,7 +730,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
                 _sets[i].pk_point.raw_point,
                 _sets[i].sig_point.raw_point,
                 rand,
-                BLST_TS_RANDOM_BYTES_LENGTH,
+                BLST_TS_RANDOM_BYTES_LENGTH * 8,
                 _sets[i].msg,
                 _sets[i].msg_len);
             if (err != blst::BLST_ERROR::BLST_SUCCESS) {
