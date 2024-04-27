@@ -2,7 +2,7 @@
 coverage
 build
 release
-dist
+# dist
 node_modules
 prebuild
 
@@ -14,3 +14,7 @@ spec-tests
 
 # Fuzz Test Meta
 fuzz-tests
+
+# benchmark_data
+
+# chainsafe-blst-*.tgz
