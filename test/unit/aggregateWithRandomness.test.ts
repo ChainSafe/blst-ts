@@ -10,12 +10,16 @@ import {
   verifyMultipleAggregateSignatures,
 } from "../../lib";
 import {expectNotEqualHex, getTestSet, getTestSetsSameMessage} from "../utils";
+import {G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("Aggregate With Randomness", () => {
   const {message, sets} = getTestSetsSameMessage(10);
   const randomSet = getTestSet(20);
+  const infinityPublicKey = Buffer.from(G1_POINT_AT_INFINITY, "hex");
+
   before(() => {
     // make sure sets are valid before starting
+    expect(() => PublicKey.deserialize(infinityPublicKey).keyValidate()).to.throw("BLST_ERROR::BLST_PK_IS_INFINITY");
     expect(verify(message, sets[0].publicKey, sets[0].signature)).to.be.true;
     expect(verifyMultipleAggregateSignatures(sets.map((s) => ({...s, message})))).to.be.true;
     expectNotEqualHex(message, randomSet.message);
@@ -47,6 +51,35 @@ describe("Aggregate With Randomness", () => {
       expect(() => aggregateWithRandomness([{publicKey: sets[0].publicKey, signature: "bar" as any}])).to.throw(
         "BLST_ERROR: Invalid SignatureArg at index 0"
       );
+    });
+    it("should accept a boolean for validateSerialized", () => {
+      expect(() => aggregateWithRandomness(sets, true)).not.to.throw();
+      expect(() => aggregateWithRandomness(sets, false)).not.to.throw();
+      expect(() => aggregateWithRandomness(sets, "false" as any)).to.throw(
+        "Must pass a boolean for validateSerialized"
+      );
+    });
+    it("should throw for invalid serialized", () => {
+      expect(() =>
+        aggregateWithRandomness(
+          sets.concat({
+            publicKey: infinityPublicKey,
+            signature: sets[0].signature,
+          } as any),
+          true
+        )
+      ).to.throw("BLST_ERROR: Invalid key at index 10");
+    });
+    it("should not throw for invalid serialized if false passed", () => {
+      expect(() =>
+        aggregateWithRandomness(
+          sets.concat({
+            publicKey: infinityPublicKey,
+            signature: sets[0].signature,
+          } as any),
+          false
+        )
+      ).not.to.throw();
     });
     it("should return an object", () => {
       const agg = aggregateWithRandomness(sets);
