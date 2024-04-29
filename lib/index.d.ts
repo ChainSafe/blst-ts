@@ -159,9 +159,18 @@ export function aggregateSignatures(signatures: SignatureArg[]): Signature;
 /**
  * Aggregates an array of signatures and keys with added randomness for security.
  * Signatures must all be over the same message for the resulting publicKey and
- * signature to pass verification.
+ * signature to pass verification. Allows for the option to validate serialized
+ * objects that get passed to the aggregation prior to adding the randomness.
+ * `validateSerialized` defaults to `true` for security reasons.
+ *
+ * Note that `validateSerialized` only checks for serialized objects passed in
+ * the sets.  For deserialized you must manually run `key.keyValidate()` or
+ * `sig.sigValidate()` prior to passing them into the aggregation.
  */
-export function aggregateWithRandomness(set: {publicKey: PublicKeyArg; signature: SignatureArg}[]): {
+export function aggregateWithRandomness(
+  sets: {publicKey: PublicKeyArg; signature: SignatureArg}[],
+  validateSerialized?: boolean
+): {
   publicKey: PublicKey;
   signature: Signature;
 };

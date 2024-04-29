@@ -20,6 +20,18 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
         return env.Undefined();
     }
 
+    bool validate = true;
+    Napi::Value validate_value = info[1];
+    if (!validate_value.IsUndefined()) {
+        if (!validate_value.IsBoolean()) {
+            Napi::TypeError::New(
+                env, "Must pass a boolean for validateSerialized")
+                .ThrowAsJavaScriptException();
+            return env.Undefined();
+        }
+        validate = validate_value.As<Napi::Boolean>().Value();
+    }
+
     blst::P1 aggregate_key{};
     blst::P2 aggregate_sig{};
 
@@ -58,6 +70,14 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
                     return env.Undefined();
                 } else {
                     blst::P1 key{typed_array.Data(), typed_array.ByteLength()};
+                    if (validate && (key.is_inf() || !key.in_group())) {
+                        Napi::Error::New(
+                            env,
+                            "BLST_ERROR: Invalid key at index "s +
+                                std::to_string(i))
+                            .ThrowAsJavaScriptException();
+                        return env.Undefined();
+                    }
                     key.mult(randomness, BLST_TS_RANDOM_BYTES_LENGTH);
                     aggregate_key.add(key);
                 }
@@ -108,6 +128,14 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
                     return env.Undefined();
                 } else {
                     blst::P2 sig{typed_array.Data(), typed_array.ByteLength()};
+                    if (validate && !sig.in_group()) {
+                        Napi::Error::New(
+                            env,
+                            "BLST_ERROR: Invalid signature at index "s +
+                                std::to_string(i))
+                            .ThrowAsJavaScriptException();
+                        return env.Undefined();
+                    }
                     sig.mult(randomness, BLST_TS_RANDOM_BYTES_LENGTH);
                     aggregate_sig.add(sig);
                 }
