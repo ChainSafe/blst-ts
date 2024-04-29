@@ -1,6 +1,6 @@
 import {itBench} from "@dapplion/benchmark";
 import * as blst from "../../lib";
-import {arrayOfIndexes, getTestSet, getTestSetSameMessage} from "../utils";
+import {arrayOfIndexes, getTestSet, getTestSetSameMessage, getTestSetsSameMessage} from "../utils";
 
 describe("functions", () => {
   describe("aggregatePublicKeys", () => {
@@ -24,6 +24,44 @@ describe("functions", () => {
         },
       });
     }
+  });
+  describe.only("aggregateWithRandomness", () => {
+    itBench({
+      id: "JS version of aggregateWithRandomness",
+      beforeEach: () => {
+        const {sets} = getTestSetsSameMessage(128);
+        return sets.map((s) => ({
+          publicKey: s.publicKey,
+          signature: s.signature.serialize(),
+        }));
+      },
+      fn: (sets) => {
+        const signatures = sets.map((set) => {
+          const sig = blst.Signature.deserialize(set.signature, blst.CoordType.affine);
+          sig.sigValidate();
+          return sig;
+        });
+        const randomness: Uint8Array[] = [];
+        for (let i = 0; i < sets.length; i++) {
+          randomness.push(blst.randomBytesNonZero(8));
+        }
+        blst.aggregatePublicKeys(sets.map((set, i) => set.publicKey.multiplyBy(randomness[i])));
+        blst.aggregateSignatures(signatures.map((sig, i) => sig.multiplyBy(randomness[i])));
+      },
+    });
+    itBench({
+      id: "native version of aggregateWithRandomness",
+      beforeEach: () => {
+        const {sets} = getTestSetsSameMessage(128);
+        return sets.map((s) => ({
+          publicKey: s.publicKey,
+          signature: s.signature.serialize(),
+        }));
+      },
+      fn: (sets) => {
+        blst.aggregateWithRandomness(sets);
+      },
+    });
   });
   describe("aggregateVerify", () => {
     for (const count of [1, 8, 32, 128, 256]) {
