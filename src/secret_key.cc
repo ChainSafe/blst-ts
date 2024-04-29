@@ -1,7 +1,5 @@
 #include "secret_key.h"
 
-using namespace std::string_literals;
-
 namespace blst_ts {
 void SecretKey::Init(
     Napi::Env env, Napi::Object &exports, BlstTsAddon *module) {

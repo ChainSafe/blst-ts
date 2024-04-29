@@ -1,7 +1,5 @@
 #include "addon.h"
 
-using namespace std::string_literals;
-
 namespace {
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)

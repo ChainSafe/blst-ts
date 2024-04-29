@@ -1,10 +1,6 @@
 #pragma once
 
-#include <memory>
-
 #include "addon.h"
-#include "public_key.h"
-#include "signature.h"
 
 namespace blst_ts {
 static const size_t secret_key_length = 32;

@@ -1,7 +1,5 @@
 #include "public_key.h"
 
-using namespace std::string_literals;
-
 namespace blst_ts {
 
 void P1::Serialize(bool compress, blst::byte *out) const {

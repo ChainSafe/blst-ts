@@ -1,6 +1,5 @@
 #include "signature.h"
 
-using namespace std::string_literals;
 namespace blst_ts {
 void P2::Serialize(bool compress, blst::byte *out) const {
     compress ? _point.compress(out) : _point.serialize(out);
