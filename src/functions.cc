@@ -488,7 +488,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
 
         for (uint32_t i = 0; i < sets_array_length; i++) {
             blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
-            if (!module->GetRandomNonZeroBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
+            if (!module->GetRandomNonZeroBytes(
+                    rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
                 Napi::Error::New(
                     env, "BLST_ERROR: Failed to generate random bytes")
                     .ThrowAsJavaScriptException();
@@ -719,7 +720,8 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
     void Execute() {
         for (uint32_t i = 0; i < _sets.size(); i++) {
             blst::byte rand[BLST_TS_RANDOM_BYTES_LENGTH];
-            if (!_module->GetRandomNonZeroBytes(rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
+            if (!_module->GetRandomNonZeroBytes(
+                    rand, BLST_TS_RANDOM_BYTES_LENGTH)) {
                 SetError("BLST_ERROR: Failed to generate random bytes");
                 return;
             }
