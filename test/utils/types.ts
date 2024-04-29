@@ -8,6 +8,14 @@ export interface TestSet {
   publicKey: bindings.PublicKey;
   signature: bindings.Signature;
 }
+export interface SameMessageTestSets {
+  message: Uint8Array;
+  sets: {
+    secretKey: bindings.SecretKey;
+    publicKey: bindings.PublicKey;
+    signature: bindings.Signature;
+  }[];
+}
 
 export type SerializedSet = Record<keyof TestSet, Uint8Array>;
 

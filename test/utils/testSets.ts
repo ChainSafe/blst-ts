@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import {SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
-import {TestSet, SerializedSet} from "./types";
+import {TestSet, SerializedSet, SameMessageTestSets} from "./types";
 import {arrayOfIndexes} from "./helpers";
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
@@ -64,6 +64,14 @@ export function getTestSetSameMessage(i: number = 1): TestSet {
     secretKey: set.secretKey,
     publicKey: set.publicKey,
     signature,
+  };
+}
+
+export function getTestSetsSameMessage(count: number): SameMessageTestSets {
+  const sets = arrayOfIndexes(0, count - 1).map(getTestSetSameMessage);
+  return {
+    message: sets[0].message,
+    sets: sets.map(({secretKey, publicKey, signature}) => ({secretKey, publicKey, signature})),
   };
 }
 
