@@ -12,6 +12,8 @@
 #include "blst.hpp"
 #include "napi.h"
 
+using namespace std::string_literals;
+
 namespace blst_ts {
 #define BLST_TS_RANDOM_BYTES_LENGTH 8U
 

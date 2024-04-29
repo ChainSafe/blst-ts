@@ -76,33 +76,35 @@ async function buildBindings(binaryName: string): Promise<string> {
 
 async function install(): Promise<void> {
   const binaryName = getBinaryName();
-
-  // Check if bindings already bundled, downloaded or built
   let binaryPath: string | undefined = getPrebuiltBinaryPath(binaryName);
-  if (existsSync(binaryPath)) {
-    console.log(`Found prebuilt bindings at ${binaryPath}`);
-    try {
-      await testBindings(binaryPath);
-      return;
-    } catch {
-      console.log("Prebuilt and bundled bindings failed to load. Attempting to download.");
+
+  if (!(Boolean(process.env.CI) || Boolean(process.env.BLST_TS_FORCE_BUILD))) {
+    // Check if bindings already bundled, downloaded or built
+    if (existsSync(binaryPath)) {
+      console.log(`Found prebuilt bindings at ${binaryPath}`);
+      try {
+        await testBindings(binaryPath);
+        return;
+      } catch {
+        console.log("Prebuilt and bundled bindings failed to load. Attempting to download.");
+      }
     }
-  }
 
-  // Fetch pre-built bindings from remote repo
-  try {
-    binaryPath = await downloadBindings(binaryName);
-  } catch {
-    /* no-op */
-  }
-
-  if (existsSync(binaryPath)) {
-    console.log(`Downloaded github release bindings to ${binaryPath}`);
+    // Fetch pre-built bindings from remote repo
     try {
-      await testBindings(binaryPath);
-      return;
+      binaryPath = await downloadBindings(binaryName);
     } catch {
-      console.log("Downloaded bindings failed to load. Attempting to build.");
+      /* no-op */
+    }
+
+    if (existsSync(binaryPath)) {
+      console.log(`Downloaded github release bindings to ${binaryPath}`);
+      try {
+        await testBindings(binaryPath);
+        return;
+      } catch {
+        console.log("Downloaded bindings failed to load. Attempting to build.");
+      }
     }
   }
 

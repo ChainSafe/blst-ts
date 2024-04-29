@@ -6,14 +6,18 @@ import {exec} from "../utils";
 
 const DEBOUNCE_TIME = 500;
 const testCommand = "npm run test:unit && npm run test:spec";
-const buildCommand = "npm run build:debug";
+const buildCommand = "npm run build:gyp:debug";
 
 const ROOT_FOLDER = resolve(__dirname, "..");
 const SRC_FOLDER = resolve(ROOT_FOLDER, "src");
 const TESTS_FOLDER = resolve(ROOT_FOLDER, "test");
 
 // make sure code is using most recently built bindings
-fs.rmdirSync(resolve(ROOT_FOLDER, "prebuild"));
+try {
+  fs.rmdirSync(resolve(ROOT_FOLDER, "prebuild"));
+} catch {
+  /* no-op, doesn't exist */
+}
 
 /**
  * Builds addon and then starts watch.
