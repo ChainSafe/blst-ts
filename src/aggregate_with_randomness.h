@@ -25,7 +25,7 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
 
     for (uint32_t i = 0; i < array_length; i++) {
         blst::byte randomness[BLST_TS_RANDOM_BYTES_LENGTH];
-        module->GetRandomBytes(randomness, BLST_TS_RANDOM_BYTES_LENGTH);
+        module->GetRandomNonZeroBytes(randomness, BLST_TS_RANDOM_BYTES_LENGTH);
         Napi::Value set_value = array[i];
         if (!set_value.IsObject()) {
             Napi::TypeError::New(
