@@ -157,6 +157,16 @@ export function aggregatePublicKeys(keys: PublicKeyArg[]): PublicKey;
 export function aggregateSignatures(signatures: SignatureArg[]): Signature;
 
 /**
+ * Aggregates an array of signatures and keys with added randomness for security.
+ * Signatures must all be over the same message for the resulting publicKey and
+ * signature to pass verification.
+ */
+export function aggregateWithRandomness(set: {publicKey: PublicKeyArg; signature: SignatureArg}[]): {
+  publicKey: PublicKey;
+  signature: Signature;
+};
+
+/**
  * Bls verification of a message against a public key and signature.
  *
  * @param {BlstBuffer} msg - Message to verify

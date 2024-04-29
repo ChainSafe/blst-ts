@@ -1,4 +1,5 @@
 #include "addon.h"
+#include "aggregate_with_randomness.h"
 
 namespace blst_ts_functions {
 blst_ts::BLST_TS_ERROR unwrap_public_key(
@@ -72,6 +73,9 @@ void init(const Napi::Env &env, Napi::Object &exports) {
     exports.Set(
         Napi::String::New(env, "aggregateSignatures"),
         Napi::Function::New(env, AggregateSignatures));
+    exports.Set(
+        Napi::String::New(env, "aggregateWithRandomness"),
+        Napi::Function::New(env, AggregateWithRandomness));
     exports.Set(
         Napi::String::New(env, "aggregateVerify"),
         Napi::Function::New(env, AggregateVerify));
