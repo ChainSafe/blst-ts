@@ -17,7 +17,7 @@
     "postbuild:ts": "ts-node scripts/prepareDist",
     "build:fuzz": "tsc --project tsconfig.fuzz.json",
     "build:clean": "npm run clean && npm run install && npm run build:ts",
-    "dev": "ts-node tools/dev",
+    "dev": "ts-node scripts/dev",
     "lint": "npm run lint:c && npm run lint:ts",
     "lint:c": "clang-format -i ./src/*",
     "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts lib/ scripts/ test/ utils/",
