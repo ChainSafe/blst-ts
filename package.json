@@ -27,7 +27,7 @@
     "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
     "test:spec": "mocha test/spec/**/*.test.ts",
     "test:unit": "mocha test/unit/**/*.test.ts",
-    "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
+    "download-spec-tests": "node -r ts-node/register test/spec/downloadSpecTests.ts"
   },
   "dependencies": {
     "node-addon-api": "^6.1.0",
@@ -43,6 +43,7 @@
     "@types/tar": "^6.1.4",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
+    "axios": "^1.6.8",
     "chai": "^4.2.0",
     "eslint": "^8.55.0",
     "eslint-plugin-import": "^2.29.0",
