@@ -12,6 +12,7 @@ import {
   verifyMultipleAggregateSignatures,
 } from "../../lib";
 import {fromHex, toHex} from "../utils";
+import {G2_POINT_AT_INFINITY} from "./utils";
 
 export const testFnByName: Record<string, (data: any) => any> = {
   sign,
@@ -20,7 +21,7 @@ export const testFnByName: Record<string, (data: any) => any> = {
   verify,
   aggregate_verify,
   fast_aggregate_verify,
-  eth_fast_aggregate_verify: fast_aggregate_verify,
+  eth_fast_aggregate_verify,
   batch_verify,
   deserialization_G1,
   deserialization_G2,
@@ -168,16 +169,16 @@ function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures:
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-// function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
-//   const {pubkeys, message, signature} = input;
+function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
+  const {pubkeys, message, signature} = input;
 
-//   if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
-//     return true;
-//   }
+  /**
+   * This is a bit of a hack. The altair spec changed this from being invalid to being valid.  Cannot
+   * accommodate both conditions from the base layer...
+   */
+  if (pubkeys.length === 0 && signature === G2_POINT_AT_INFINITY) {
+    return true;
+  }
 
-//   return fastAggregateVerify(
-//     fromHex(message),
-//     pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-//     Signature.deserialize(fromHex(signature))
-//   );
-// }
+  return fastAggregateVerify(fromHex(message), pubkeys.map(fromHex), fromHex(signature));
+}
