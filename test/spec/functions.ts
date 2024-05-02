@@ -146,7 +146,7 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
 function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures: string[]}): boolean {
   const length = input.pubkeys.length;
   if (input.messages.length !== length && input.signatures.length !== length) {
-    throw new Error("Invalid SignatureSet");
+    throw new Error("Invalid spec test. Must have same number in each array. Check spec yaml file");
   }
   const sets: SignatureSet[] = [];
   for (let i = 0; i < length; i++) {
