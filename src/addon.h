@@ -74,6 +74,13 @@ namespace blst_ts {
 
 typedef enum { Affine, Jacobian } CoordType;
 
+enum BLST_TS_ERROR {
+    SUCCESS,
+    INVALID,
+    JS_ERROR_THROWN,
+    HAS_NATIVE_ERROR,
+};
+
 /**
  * Checks if a specified range of bytes within a byte array consists only of
  * zeros.
