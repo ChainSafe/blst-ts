@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@dapplion/benchmark": "^0.2.4",
+    "@lodestar/utils": "file:./lodestar-utils-v1.18.0.tgz",
     "@types/chai": "^4.2.13",
     "@types/js-yaml": "^4.0.5",
     "@types/mocha": "^8.0.3",

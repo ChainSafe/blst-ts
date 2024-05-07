@@ -1,4 +1,4 @@
-import {downloadTests} from "../../utils/downloadTests";
+import {downloadTests} from "./utils";
 import {ethereumConsensusSpecsTests, blsSpecTests} from "./specTestVersioning";
 
 /* eslint-disable no-console */

@@ -1,5 +1,5 @@
 import {join} from "path";
-import {DownloadTestsOptions} from "../../utils/downloadTests";
+import {DownloadTestsOptions} from "@lodestar/spec-test-util";
 
 // WARNING! Don't move or rename this file !!!
 //
