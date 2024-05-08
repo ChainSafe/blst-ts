@@ -1,5 +1,4 @@
 import {
-  CoordType,
   SecretKey,
   PublicKey,
   Signature,
@@ -9,9 +8,10 @@ import {
   aggregateVerify,
   fastAggregateVerify,
   verifyMultipleAggregateSignatures,
+  SignatureSet,
 } from "../../lib";
 import {fromHex, toHex} from "../utils";
-import {G1_POINT_AT_INFINITY, G2_POINT_AT_INFINITY} from "./utils";
+import {G2_POINT_AT_INFINITY} from "./utils";
 
 export const testFnByName: Record<string, (data: any) => any> = {
   sign,
@@ -33,7 +33,7 @@ export const testFnByName: Record<string, (data: any) => any> = {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  const agg = aggregateSignatures(input.map((hex) => Signature.deserialize(fromHex(hex))));
+  const agg = aggregateSignatures(input.map(fromHex));
   return toHex(agg.serialize());
 }
 
@@ -48,11 +48,7 @@ function aggregate(input: string[]): string | null {
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
   const {pubkeys, messages, signature} = input;
-  return aggregateVerify(
-    messages.map(fromHex),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
+  return aggregateVerify(messages.map(fromHex), pubkeys.map(fromHex), fromHex(signature));
 }
 
 /**
@@ -62,12 +58,7 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * ```
  */
 function eth_aggregate_pubkeys(input: string[]): string | null {
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of input) {
-    if (pk === G1_POINT_AT_INFINITY) return null;
-  }
-
-  const agg = aggregatePublicKeys(input.map((hex) => PublicKey.deserialize(fromHex(hex))));
+  const agg = aggregatePublicKeys(input.map(fromHex));
   return toHex(agg.serialize());
 }
 
@@ -87,16 +78,7 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     return true;
   }
 
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of pubkeys) {
-    if (pk === G1_POINT_AT_INFINITY) return false;
-  }
-
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
+  return fastAggregateVerify(fromHex(message), pubkeys.map(fromHex), fromHex(signature));
 }
 
 /**
@@ -111,16 +93,7 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
 function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
   const {pubkeys, message, signature} = input;
 
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of pubkeys) {
-    if (pk === G1_POINT_AT_INFINITY) return false;
-  }
-
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
+  return fastAggregateVerify(fromHex(message), pubkeys.map(fromHex), fromHex(signature));
 }
 
 /**
@@ -145,7 +118,7 @@ function sign(input: {privkey: string; message: string}): string | null {
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
   const {pubkey, message, signature} = input;
-  return VERIFY(fromHex(message), PublicKey.deserialize(fromHex(pubkey)), Signature.deserialize(fromHex(signature)));
+  return VERIFY(fromHex(message), fromHex(pubkey), fromHex(signature));
 }
 
 /**
@@ -159,24 +132,19 @@ function verify(input: {pubkey: string; message: string; signature: string}): bo
  * https://github.com/ethereum/bls12-381-tests/blob/master/formats/batch_verify.md
  */
 function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures: string[]}): boolean | null {
-  const {pubkeys, messages, signatures} = input;
-  try {
-    return verifyMultipleAggregateSignatures(
-      pubkeys.map((pubkey, i) => {
-        const publicKey = PublicKey.deserialize(fromHex(pubkey), CoordType.jacobian);
-        publicKey.keyValidate();
-        const signature = Signature.deserialize(fromHex(signatures[i]), undefined);
-        signature.sigValidate();
-        return {
-          publicKey,
-          message: fromHex(messages[i]),
-          signature,
-        };
-      })
-    );
-  } catch (e) {
-    return false;
+  const length = input.pubkeys.length;
+  if (input.messages.length !== length && input.signatures.length !== length) {
+    throw new Error("Invalid spec test. Must have same number in each array. Check spec yaml file");
   }
+  const sets: SignatureSet[] = [];
+  for (let i = 0; i < length; i++) {
+    sets.push({
+      message: fromHex(input.messages[i]),
+      publicKey: fromHex(input.pubkeys[i]),
+      signature: fromHex(input.signatures[i]),
+    });
+  }
+  return verifyMultipleAggregateSignatures(sets);
 }
 
 /**
@@ -188,10 +156,10 @@ function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures:
  */
 function deserialization_G1(input: {pubkey: string}): boolean {
   try {
-    const pk = PublicKey.deserialize(fromHex(input.pubkey), CoordType.jacobian);
+    const pk = PublicKey.deserialize(fromHex(input.pubkey));
     pk.keyValidate();
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -205,10 +173,10 @@ function deserialization_G1(input: {pubkey: string}): boolean {
  */
 function deserialization_G2(input: {signature: string}): boolean {
   try {
-    const sig = Signature.deserialize(fromHex(input.signature), undefined);
+    const sig = Signature.deserialize(fromHex(input.signature));
     sig.sigValidate();
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
