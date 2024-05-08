@@ -1,6 +1,6 @@
-#include "addon.h"
+#include "functions-inl.h"
 
-namespace {
+namespace blst_ts_functions {
 typedef struct {
     blst_ts::P1AffineGroup pk_point;
     uint8_t *msg;
@@ -17,23 +17,9 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
     std::vector<AggregateVerifySet> &sets,
     const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
-    Napi::Value sig_val = info[2];
-    if (sig_val.IsTypedArray()) {
-        Napi::Uint8Array typed_array = sig_val.As<Napi::Uint8Array>();
-        if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
-                typed_array.ByteLength(),
-                blst_ts::signature_length_compressed,
-                blst_ts::signature_length_uncompressed)) {
-            return blst_ts::BLST_TS_ERROR::INVALID;
-        } else {
-            sig_point.smart_pointer = std::make_unique<blst::P2_Affine>(
-                typed_array.Data(), typed_array.ByteLength());
-            sig_point.raw_point = sig_point.smart_pointer.get();
-        }
-    } else {
-        blst_ts::Signature *to_verify =
-            blst_ts::Signature::Unwrap(sig_val.As<Napi::Object>());
-        sig_point = to_verify->point->AsAffine();
+    blst_ts::BLST_TS_ERROR err = unwrap_signature(sig_point, env, info[2]);
+    if (err != blst_ts::BLST_TS_ERROR::SUCCESS) {
+        return err;
     }
 
     if (!info[0].IsArray()) {
@@ -82,34 +68,9 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
         sets[i].msg = msg.Data();
         sets[i].msg_len = msg.ByteLength();
 
-        Napi::Value pk_val = pk_array[i];
-        if (pk_val.IsTypedArray()) {
-            Napi::Uint8Array typed_array = pk_val.As<Napi::Uint8Array>();
-            if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
-                    typed_array.ByteLength(),
-                    blst_ts::public_key_length_compressed,
-                    blst_ts::public_key_length_uncompressed)) {
-                Napi::TypeError::New(
-                    env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
-                    .ThrowAsJavaScriptException();
-                return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-            } else if (blst_ts::is_zero_bytes(
-                           typed_array.Data(), 0, typed_array.ByteLength())) {
-                Napi::TypeError::New(
-                    env, "BLST_ERROR: PublicKeyArg must not be zero key")
-                    .ThrowAsJavaScriptException();
-                return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-            } else {
-                sets[i].pk_point.smart_pointer =
-                    std::make_unique<blst::P1_Affine>(
-                        typed_array.Data(), typed_array.ByteLength());
-                sets[i].pk_point.raw_point =
-                    sets[i].pk_point.smart_pointer.get();
-            }
-        } else {
-            blst_ts::PublicKey *to_verify =
-                blst_ts::PublicKey::Unwrap(pk_val.As<Napi::Object>());
-            sets[i].pk_point = to_verify->point->AsAffine();
+        err = unwrap_public_key(sets[i].pk_point, env, pk_array[i]);
+        if (err != blst_ts::BLST_TS_ERROR::SUCCESS) {
+            return err;
         }
     }
 
@@ -262,4 +223,4 @@ Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info) {
     worker->Queue();
     return worker->GetPromise();
 }
-}  // namespace
+}  // namespace blst_ts_functions

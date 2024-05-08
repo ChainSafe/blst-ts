@@ -9,6 +9,9 @@
         'src/public_key.cc',
         'src/signature.cc',
         'src/functions.cc',
+        'src/aggregate.cc',
+        'src/aggregate_verify.cc',
+        'src/verify_multiple_aggregate_signatures.cc',
       ],
       'include_dirs': [
         'blst/bindings',
