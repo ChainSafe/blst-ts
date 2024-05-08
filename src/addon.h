@@ -53,26 +53,31 @@ namespace blst_ts {
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
-#define BLST_TS_CLASS_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)       \
+#define BLST_TS_FUNCTION_UNWRAP_UINT_8_ARRAY(value_name, arr_name, js_name)    \
     if (!value_name.IsTypedArray()) {                                          \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        has_error = true;                                                      \
-        return;                                                                \
+        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;                        \
     }                                                                          \
     Napi::TypedArray arr_name##_array = value_name.As<Napi::TypedArray>();     \
     if (arr_name##_array.TypedArrayType() != napi_uint8_array) {               \
         Napi::TypeError::New(                                                  \
             env, "BLST_ERROR: " js_name " must be a BlstBuffer")               \
             .ThrowAsJavaScriptException();                                     \
-        has_error = true;                                                      \
-        return;                                                                \
+        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;                        \
     }                                                                          \
     Napi::Uint8Array arr_name =                                                \
         arr_name##_array.As<Napi::TypedArrayOf<uint8_t>>();
 
 typedef enum { Affine, Jacobian } CoordType;
+
+enum BLST_TS_ERROR {
+    SUCCESS,
+    INVALID,
+    JS_ERROR_THROWN,
+    HAS_NATIVE_ERROR,
+};
 
 /**
  * Checks if a specified range of bytes within a byte array consists only of
