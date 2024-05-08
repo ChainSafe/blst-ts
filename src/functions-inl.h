@@ -12,15 +12,7 @@ blst_ts::BLST_TS_ERROR unwrap_public_key(
                 typed_array.ByteLength(),
                 blst_ts::public_key_length_compressed,
                 blst_ts::public_key_length_uncompressed)) {
-            Napi::TypeError::New(env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
-                .ThrowAsJavaScriptException();
-            return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-        } else if (blst_ts::is_zero_bytes(
-                       typed_array.Data(), 0, typed_array.ByteLength())) {
-            Napi::TypeError::New(
-                env, "BLST_ERROR: PublicKeyArg must not be zero key")
-                .ThrowAsJavaScriptException();
-            return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
+            return blst_ts::BLST_TS_ERROR::INVALID;
         } else {
             pk_point.smart_pointer = std::make_unique<blst::P1_Affine>(
                 typed_array.Data(), typed_array.ByteLength());
@@ -31,6 +23,11 @@ blst_ts::BLST_TS_ERROR unwrap_public_key(
             blst_ts::PublicKey::Unwrap(pk_val.As<Napi::Object>());
         pk_point = to_verify->point->AsAffine();
     }
+
+    if (pk_point.raw_point->is_inf()) {
+        return blst_ts::BLST_TS_ERROR::INVALID;
+    }
+
     return blst_ts::BLST_TS_ERROR::SUCCESS;
 }
 
@@ -44,9 +41,7 @@ blst_ts::BLST_TS_ERROR unwrap_signature(
                 typed_array.ByteLength(),
                 blst_ts::signature_length_compressed,
                 blst_ts::signature_length_uncompressed)) {
-            Napi::TypeError::New(env, "BLST_ERROR: SignatureArg"s + *err_msg)
-                .ThrowAsJavaScriptException();
-            return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
+            return blst_ts::BLST_TS_ERROR::INVALID;
         } else {
             sig_point.smart_pointer = std::make_unique<blst::P2_Affine>(
                 typed_array.Data(), typed_array.ByteLength());

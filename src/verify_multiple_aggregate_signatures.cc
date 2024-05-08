@@ -94,10 +94,7 @@ blst_ts::BLST_TS_ERROR verify_multiple_aggregate_signatures(
             sets[i].msg,
             sets[i].msg_len);
         if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-            error_msg = module->GetBlstErrorString(err) +
-                        ": Invalid batch aggregation at index "s +
-                        std::to_string(i);
-            return blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR;
+            return blst_ts::BLST_TS_ERROR::INVALID;
         }
     }
     ctx->commit();

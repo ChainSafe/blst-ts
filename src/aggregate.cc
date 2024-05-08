@@ -34,21 +34,27 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
                         env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
                         .ThrowAsJavaScriptException();
                     has_error = true;
-                } else if (blst_ts::is_zero_bytes(
-                               typed_array.Data(),
-                               0,
-                               typed_array.ByteLength())) {
-                    Napi::TypeError::New(
-                        env, "BLST_ERROR: PublicKeyArg must not be zero key")
-                        .ThrowAsJavaScriptException();
-                    has_error = true;
                 } else {
-                    aggregate.add(
-                        blst::P1{typed_array.Data(), typed_array.ByteLength()});
+                    blst::P1 point{
+                        typed_array.Data(), typed_array.ByteLength()};
+                    if (point.is_inf()) {
+                        Napi::TypeError::New(
+                            env,
+                            "BLST_ERROR: PublicKeyArg must not be zero key")
+                            .ThrowAsJavaScriptException();
+                        has_error = true;
+                    }
+                    aggregate.add(point);
                 }
             } else {
                 blst_ts::PublicKey *to_aggregate =
                     blst_ts::PublicKey::Unwrap(val.As<Napi::Object>());
+                if (to_aggregate->point->IsInfinite()) {
+                    Napi::TypeError::New(
+                        env, "BLST_ERROR: PublicKeyArg must not be zero key")
+                        .ThrowAsJavaScriptException();
+                    has_error = true;
+                }
                 to_aggregate->point->AddTo(aggregate);
             }
             if (has_error) {
