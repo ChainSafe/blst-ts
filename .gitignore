@@ -11,6 +11,7 @@ yarn-error.log
 
 # Eth2.0 spec tests data
 spec-tests
+spec-tests-bls
 
 # Fuzz Test Meta
 fuzz-tests
