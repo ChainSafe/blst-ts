@@ -21,10 +21,11 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - 16
           - 18
+          - 19
           - 20
           - 21
+          - 22
         os:
           - ubuntu-22.04 # linux x64
           - macos-12 # osx x64
@@ -102,10 +103,10 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - 16
           - 18
           - 20
           - 21
+          - 22
     runs-on: ubuntu-22.04
     defaults:
       run:
