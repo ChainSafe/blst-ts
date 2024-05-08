@@ -12,6 +12,7 @@ describe("bindings", () => {
       "aggregatePublicKeys",
       "aggregateSignatures",
       "aggregateWithRandomness",
+      "asyncAggregateWithRandomness",
       "verify",
       "asyncVerify",
       "fastAggregateVerify",

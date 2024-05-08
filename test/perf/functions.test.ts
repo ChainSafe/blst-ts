@@ -29,7 +29,7 @@ describe("functions", () => {
     itBench({
       id: "JS version of aggregateWithRandomness",
       beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(128);
+        const {sets} = getTestSetsSameMessage(1024);
         return sets.map((s) => ({
           publicKey: s.publicKey,
           signature: s.signature.serialize(),
@@ -52,7 +52,7 @@ describe("functions", () => {
     itBench({
       id: "native version of aggregateWithRandomness",
       beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(128);
+        const {sets} = getTestSetsSameMessage(1024);
         return sets.map((s) => ({
           publicKey: s.publicKey,
           signature: s.signature.serialize(),
