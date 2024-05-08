@@ -176,6 +176,25 @@ export function aggregateWithRandomness(
 };
 
 /**
+ * Aggregates an array of signatures and keys with added randomness for security.
+ * Signatures must all be over the same message for the resulting publicKey and
+ * signature to pass verification. Allows for the option to validate serialized
+ * objects that get passed to the aggregation prior to adding the randomness.
+ * `validateSerialized` defaults to `true` for security reasons.
+ *
+ * Note that `validateSerialized` only checks for serialized objects passed in
+ * the sets.  For deserialized you must manually run `key.keyValidate()` or
+ * `sig.sigValidate()` prior to passing them into the aggregation.
+ */
+export function asyncAggregateWithRandomness(
+  sets: {publicKey: PublicKeyArg; signature: SignatureArg}[],
+  validateSerialized?: boolean
+): Promise<{
+  publicKey: PublicKey;
+  signature: Signature;
+}>;
+
+/**
  * Bls verification of a message against a public key and signature.
  *
  * @param {BlstBuffer} msg - Message to verify

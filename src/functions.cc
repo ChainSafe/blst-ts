@@ -77,6 +77,9 @@ void init(const Napi::Env &env, Napi::Object &exports) {
         Napi::String::New(env, "aggregateWithRandomness"),
         Napi::Function::New(env, AggregateWithRandomness));
     exports.Set(
+        Napi::String::New(env, "asyncAggregateWithRandomness"),
+        Napi::Function::New(env, AsyncAggregateWithRandomness));
+    exports.Set(
         Napi::String::New(env, "aggregateVerify"),
         Napi::Function::New(env, AggregateVerify));
     exports.Set(

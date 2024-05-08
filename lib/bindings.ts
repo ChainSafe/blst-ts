@@ -7,6 +7,8 @@ import type {
   Signature,
   aggregatePublicKeys,
   aggregateSignatures,
+  aggregateWithRandomness,
+  asyncAggregateWithRandomness,
   verify,
   asyncVerify,
   aggregateVerify,
@@ -25,6 +27,8 @@ export interface BlstTsAddon {
   Signature: typeof Signature;
   aggregatePublicKeys: typeof aggregatePublicKeys;
   aggregateSignatures: typeof aggregateSignatures;
+  aggregateWithRandomness: typeof aggregateWithRandomness;
+  asyncAggregateWithRandomness: typeof asyncAggregateWithRandomness;
   aggregateVerify: typeof aggregateVerify;
   asyncAggregateVerify: typeof asyncAggregateVerify;
   verifyMultipleAggregateSignatures: typeof verifyMultipleAggregateSignatures;
@@ -39,6 +43,8 @@ export interface BlstTs {
   Signature: typeof Signature;
   aggregatePublicKeys: typeof aggregatePublicKeys;
   aggregateSignatures: typeof aggregateSignatures;
+  aggregateWithRandomness: typeof aggregateWithRandomness;
+  asyncAggregateWithRandomness: typeof asyncAggregateWithRandomness;
   aggregateVerify: typeof aggregateVerify;
   asyncAggregateVerify: typeof asyncAggregateVerify;
   verifyMultipleAggregateSignatures: typeof verifyMultipleAggregateSignatures;
