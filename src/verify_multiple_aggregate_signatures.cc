@@ -1,13 +1,12 @@
-#include "addon.h"
+#include "functions-inl.h"
 
-namespace {
+namespace blst_ts_functions {
 typedef struct {
     blst_ts::P1AffineGroup pk_point;
     blst_ts::P2AffineGroup sig_point;
     uint8_t *msg;
     size_t msg_len;
 } SignatureSet;
-
 
 /**
  * @param[out]  {std::vector<SignatureSet>} - Sets to be added to pairing
@@ -45,58 +44,15 @@ blst_ts::BLST_TS_ERROR prepare_verify_multiple_aggregate_signatures(
              msg.Data(),
              msg.ByteLength()});
 
-        Napi::Value pk_val = set.Get("publicKey");
-        if (pk_val.IsTypedArray()) {
-            Napi::Uint8Array typed_array = pk_val.As<Napi::Uint8Array>();
-            if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
-                    typed_array.ByteLength(),
-                    blst_ts::public_key_length_compressed,
-                    blst_ts::public_key_length_uncompressed)) {
-                Napi::TypeError::New(
-                    env, "BLST_ERROR: PublicKeyArg"s + *err_msg)
-                    .ThrowAsJavaScriptException();
-                return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-            } else if (blst_ts::is_zero_bytes(
-                           typed_array.Data(), 0, typed_array.ByteLength())) {
-                Napi::TypeError::New(
-                    env, "BLST_ERROR: PublicKeyArg must not be zero key")
-                    .ThrowAsJavaScriptException();
-                return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-            } else {
-                sets[i].pk_point.smart_pointer =
-                    std::make_unique<blst::P1_Affine>(
-                        typed_array.Data(), typed_array.ByteLength());
-                sets[i].pk_point.raw_point =
-                    sets[i].pk_point.smart_pointer.get();
-            }
-        } else {
-            blst_ts::PublicKey *to_verify =
-                blst_ts::PublicKey::Unwrap(pk_val.As<Napi::Object>());
-            sets[i].pk_point = to_verify->point->AsAffine();
+        blst_ts::BLST_TS_ERROR err =
+            unwrap_public_key(sets[i].pk_point, env, set.Get("publicKey"));
+        if (err != blst_ts::BLST_TS_ERROR::SUCCESS) {
+            return err;
         }
 
-        Napi::Value sig_val = set.Get("signature");
-        if (sig_val.IsTypedArray()) {
-            Napi::Uint8Array typed_array = sig_val.As<Napi::Uint8Array>();
-            if (std::optional<std::string> err_msg = blst_ts::is_valid_length(
-                    typed_array.ByteLength(),
-                    blst_ts::signature_length_compressed,
-                    blst_ts::signature_length_uncompressed)) {
-                Napi::TypeError::New(
-                    env, "BLST_ERROR: SignatureArg"s + *err_msg)
-                    .ThrowAsJavaScriptException();
-                return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-            } else {
-                sets[i].sig_point.smart_pointer =
-                    std::make_unique<blst::P2_Affine>(
-                        typed_array.Data(), typed_array.ByteLength());
-                sets[i].sig_point.raw_point =
-                    sets[i].sig_point.smart_pointer.get();
-            }
-        } else {
-            blst_ts::Signature *to_verify =
-                blst_ts::Signature::Unwrap(sig_val.As<Napi::Object>());
-            sets[i].sig_point = to_verify->point->AsAffine();
+        err = unwrap_signature(sets[i].sig_point, env, set.Get("signature"));
+        if (err != blst_ts::BLST_TS_ERROR::SUCCESS) {
+            return err;
         }
     }
 
@@ -248,5 +204,4 @@ Napi::Value AsyncVerifyMultipleAggregateSignatures(
     worker->Queue();
     return worker->GetPromise();
 }
-
-}  // namespace
+}  // namespace blst_ts_functions
