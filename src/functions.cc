@@ -1,4 +1,6 @@
 #include "addon.h"
+#include "aggregate_verify.h"
+#include "verify_multiple_aggregate_signatures.h"
 
 namespace blst_ts_functions {
 blst_ts::BLST_TS_ERROR unwrap_public_key(
