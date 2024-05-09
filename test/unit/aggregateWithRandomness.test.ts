@@ -10,16 +10,23 @@ import {
   verifyMultipleAggregateSignatures,
 } from "../../lib";
 import {expectNotEqualHex, getTestSet, getTestSetsSameMessage} from "../utils";
-import {G1_POINT_AT_INFINITY} from "../__fixtures__";
+import {G1_POINT_AT_INFINITY, G2_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("Aggregate With Randomness", () => {
-  const {message, sets} = getTestSetsSameMessage(10);
+  const sameMessageSets = getTestSetsSameMessage(10);
+  const message = sameMessageSets.message;
+  const sets = sameMessageSets.sets.map((s) => ({
+    publicKey: s.publicKey,
+    signature: s.signature.serialize(),
+  }));
   const randomSet = getTestSet(20);
   const infinityPublicKey = Buffer.from(G1_POINT_AT_INFINITY, "hex");
+  const infinitySignature = G2_POINT_AT_INFINITY;
 
   before(() => {
     // make sure sets are valid before starting
     expect(() => PublicKey.deserialize(infinityPublicKey).keyValidate()).to.throw("BLST_ERROR::BLST_PK_IS_INFINITY");
+    expect(Signature.deserialize(infinitySignature).isInfinity()).to.be.true;
     expect(verify(message, sets[0].publicKey, sets[0].signature)).to.be.true;
     expect(verifyMultipleAggregateSignatures(sets.map((s) => ({...s, message})))).to.be.true;
     expectNotEqualHex(message, randomSet.message);
@@ -38,18 +45,18 @@ describe("Aggregate With Randomness", () => {
       // invalid publicKey property name
       expect(() =>
         aggregateWithRandomness([{pubkey: sets[0].publicKey, signature: sets[0].signature} as any])
-      ).to.throw("BLST_ERROR: Invalid PublicKeyArg at index 0");
-      // invalid signature property name
+      ).to.throw("BLST_ERROR: Invalid PublicKey at index 0");
+      // // invalid signature property name
       expect(() => aggregateWithRandomness([{publicKey: sets[0].publicKey, sig: sets[0].signature} as any])).to.throw(
-        "BLST_ERROR: Invalid SignatureArg at index 0"
+        "BLST_ERROR: Invalid Signature at index 0"
       );
-      // invalid publicKey property value
+      // // invalid publicKey property value
       expect(() => aggregateWithRandomness([{publicKey: 1 as any, signature: sets[0].signature}])).to.throw(
-        "BLST_ERROR: Invalid PublicKeyArg at index 0"
+        "BLST_ERROR: Invalid PublicKey at index 0"
       );
-      // invalid signature property value
+      // // invalid signature property value
       expect(() => aggregateWithRandomness([{publicKey: sets[0].publicKey, signature: "bar" as any}])).to.throw(
-        "BLST_ERROR: Invalid SignatureArg at index 0"
+        "BLST_ERROR: Invalid Signature at index 0"
       );
     });
     it("should accept a boolean for validateSerialized", () => {
@@ -63,19 +70,19 @@ describe("Aggregate With Randomness", () => {
       expect(() =>
         aggregateWithRandomness(
           sets.concat({
-            publicKey: infinityPublicKey,
-            signature: sets[0].signature,
+            publicKey: sets[0].publicKey,
+            signature: G2_POINT_AT_INFINITY,
           } as any),
           true
         )
-      ).to.throw("BLST_ERROR: Invalid key at index 10");
+      ).to.throw("BLST_ERROR: Invalid Signature at index 10");
     });
     it("should not throw for invalid serialized if false passed", () => {
       expect(() =>
         aggregateWithRandomness(
           sets.concat({
-            publicKey: infinityPublicKey,
-            signature: sets[0].signature,
+            publicKey: sets[0].publicKey,
+            signature: G2_POINT_AT_INFINITY,
           } as any),
           false
         )
@@ -118,117 +125,111 @@ describe("Aggregate With Randomness", () => {
     it("should not validate included key/sig for different message", async () => {
       const {publicKey, signature} = aggregateWithRandomness([
         ...sets,
-        {publicKey: randomSet.publicKey, signature: randomSet.signature},
+        {publicKey: randomSet.publicKey, signature: randomSet.signature.serialize()},
       ]);
       expect(verify(message, publicKey, signature)).to.be.false;
     });
   });
   describe("asyncAggregateWithRandomness()", () => {
-    const asyncSets = sets.map((s) => ({...s, signature: s.signature.serialize()}));
     it("should not accept an empty array argument", async () => {
       try {
         await asyncAggregateWithRandomness([]);
       } catch (e) {
-        expect((e as Error).message).to.equal("Empty array passed to asyncAggregateWithRandomness");
+        expect((e as Error).message).to.equal("Empty array passed to aggregateWithRandomness");
       }
     });
-    it.only("should accept an array of {publicKey: PublicKey, signature: Signature}", async () => {
-      try {
-        await asyncAggregateWithRandomness([{publicKey: asyncSets[0].publicKey, signature: asyncSets[0].signature}]);
-      } catch (e) {
-        console.log(e);
-        expect.fail("should not throw");
-      }
-      // try {
-      //   await asyncAggregateWithRandomness([
-      //     {pubkey: asyncSets[0].publicKey, signature: asyncSets[0].signature} as any,
-      //   ]);
-      // } catch (e) {
-      //   expect((e as Error).message).to.equal("BLST_ERROR: Invalid PublicKeyArg at index 0");
-      // }
-      // // invalid signature property name
-      // expect(
-      //   async () =>
-      //     await asyncAggregateWithRandomness([{publicKey: asyncSets[0].publicKey, sig: asyncSets[0].signature} as any])
-      // ).to.throw("BLST_ERROR: Invalid SignatureArg at index 0");
-      // // invalid publicKey property value
-      // expect(
-      //   async () => await asyncAggregateWithRandomness([{publicKey: 1 as any, signature: asyncSets[0].signature}])
-      // ).to.throw("BLST_ERROR: Invalid PublicKeyArg at index 0");
-      // // invalid signature property value
-      // expect(
-      //   async () => await asyncAggregateWithRandomness([{publicKey: asyncSets[0].publicKey, signature: "bar" as any}])
-      // ).to.throw("BLST_ERROR: Invalid SignatureArg at index 0");
+    it("should accept an array of {publicKey: PublicKey, signature: Signature}", async () => {
+      expect(() =>
+        asyncAggregateWithRandomness([{publicKey: sets[0].publicKey, signature: sets[0].signature}])
+      ).not.to.throw();
+      // invalid publicKey property name
+      expect(() =>
+        asyncAggregateWithRandomness([{pubkey: sets[0].publicKey, signature: sets[0].signature} as any])
+      ).to.throw("BLST_ERROR: Invalid PublicKey at index 0");
+      // invalid publicKey property value
+      expect(() => asyncAggregateWithRandomness([{publicKey: 1 as any, signature: sets[0].signature}])).to.throw(
+        "BLST_ERROR: Invalid PublicKey at index 0"
+      );
+      // invalid signature property name
+      expect(() =>
+        asyncAggregateWithRandomness([{publicKey: sets[0].publicKey, sig: sets[0].signature} as any])
+      ).to.throw("BLST_ERROR: Invalid Signature at index 0");
+      // invalid signature property value
+      expect(() => asyncAggregateWithRandomness([{publicKey: sets[0].publicKey, signature: "bar" as any}])).to.throw(
+        "BLST_ERROR: Invalid Signature at index 0"
+      );
     });
     it("should accept a boolean for validateSerialized", () => {
-      expect(async () => await asyncAggregateWithRandomness(asyncSets, true)).not.to.throw();
-      expect(async () => await asyncAggregateWithRandomness(asyncSets, false)).not.to.throw();
-      expect(async () => await asyncAggregateWithRandomness(asyncSets, "false" as any)).to.throw(
+      expect(() => asyncAggregateWithRandomness(sets, true)).not.to.throw();
+      expect(() => asyncAggregateWithRandomness(sets, false)).not.to.throw();
+      expect(() => asyncAggregateWithRandomness(sets, "false" as any)).to.throw(
         "Must pass a boolean for validateSerialized"
       );
     });
-    it("should throw for invalid serialized", () => {
-      expect(
-        async () =>
-          await asyncAggregateWithRandomness(
-            asyncSets.concat({
-              publicKey: infinityPublicKey,
-              signature: asyncSets[0].signature,
-            } as any),
-            true
-          )
-      ).to.throw("BLST_ERROR: Invalid key at index 10");
+    it("should throw for invalid serialized", async () => {
+      try {
+        await asyncAggregateWithRandomness(
+          sets.concat({
+            publicKey: sets[0].publicKey,
+            signature: G2_POINT_AT_INFINITY,
+          } as any),
+          true
+        );
+      } catch (e) {
+        expect((e as Error).message).to.equal("BLST_ERROR: Invalid Signature at index 10");
+      }
     });
-    it("should not throw for invalid serialized if false passed", () => {
-      expect(
-        async () =>
-          await asyncAggregateWithRandomness(
-            asyncSets.concat({
-              publicKey: infinityPublicKey,
-              signature: asyncSets[0].signature,
-            } as any),
-            false
-          )
-      ).not.to.throw();
+    it("should not throw for invalid serialized if false passed", async () => {
+      try {
+        await asyncAggregateWithRandomness(
+          sets.concat({
+            publicKey: sets[0].publicKey,
+            signature: G2_POINT_AT_INFINITY,
+          } as any),
+          false
+        );
+      } catch (e) {
+        expect.fail("Should not throw an error");
+      }
     });
     it("should return an object", async () => {
-      const agg = await asyncAggregateWithRandomness(asyncSets);
+      const agg = await asyncAggregateWithRandomness(sets);
       expect(agg).to.be.instanceOf(Object);
     });
     it("should return a {publicKey: PublicKey} property", async () => {
-      const agg = await asyncAggregateWithRandomness(asyncSets);
+      const agg = await asyncAggregateWithRandomness(sets);
       expect(agg).to.haveOwnProperty("publicKey");
       expect(agg.publicKey).to.be.instanceOf(PublicKey);
       expect(() => agg.publicKey.keyValidate()).not.to.throw();
     });
     it("should return a valid {signature: Signature} property", async () => {
-      const agg = await asyncAggregateWithRandomness(asyncSets);
+      const agg = await asyncAggregateWithRandomness(sets);
       expect(agg).to.haveOwnProperty("signature");
       expect(agg.signature).to.be.instanceOf(Signature);
       expect(() => agg.signature.sigValidate()).not.to.throw();
     });
     it("should add randomness to aggregated publicKey", async () => {
-      const withoutRandomness = aggregatePublicKeys(asyncSets.map(({publicKey}) => publicKey));
-      const {publicKey: withRandomness} = await asyncAggregateWithRandomness(asyncSets);
+      const withoutRandomness = aggregatePublicKeys(sets.map(({publicKey}) => publicKey));
+      const {publicKey: withRandomness} = await asyncAggregateWithRandomness(sets);
       expectNotEqualHex(withRandomness, withoutRandomness);
     });
     it("should add randomness to aggregated signature", async () => {
-      const withoutRandomness = aggregateSignatures(asyncSets.map(({signature}) => signature));
-      const {signature: withRandomness} = await asyncAggregateWithRandomness(asyncSets);
+      const withoutRandomness = aggregateSignatures(sets.map(({signature}) => signature));
+      const {signature: withRandomness} = await asyncAggregateWithRandomness(sets);
       expectNotEqualHex(withRandomness, withoutRandomness);
     });
     it("should produce verifiable set", async () => {
-      const {publicKey, signature} = await asyncAggregateWithRandomness(asyncSets);
+      const {publicKey, signature} = await asyncAggregateWithRandomness(sets);
       expect(verify(message, publicKey, signature));
     });
     it("should not validate for different message", async () => {
-      const {publicKey, signature} = await asyncAggregateWithRandomness(asyncSets);
+      const {publicKey, signature} = await asyncAggregateWithRandomness(sets);
       expect(verify(randomSet.message, publicKey, signature)).to.be.false;
     });
     it("should not validate included key/sig for different message", async () => {
       const {publicKey, signature} = await asyncAggregateWithRandomness([
-        ...asyncSets,
-        {publicKey: randomSet.publicKey, signature: randomSet.signature},
+        ...sets,
+        {publicKey: randomSet.publicKey, signature: randomSet.signature.serialize()},
       ]);
       expect(verify(message, publicKey, signature)).to.be.false;
     });

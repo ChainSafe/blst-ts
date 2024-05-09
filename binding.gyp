@@ -11,6 +11,7 @@
         'src/functions.cc',
         'src/aggregate.cc',
         'src/aggregate_verify.cc',
+        'src/aggregate_with_randomness.cc',
         'src/verify_multiple_aggregate_signatures.cc',
       ],
       'include_dirs': [
