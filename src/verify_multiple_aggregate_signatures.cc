@@ -9,8 +9,8 @@ typedef struct {
 } SignatureSet;
 
 /**
- * @param[out]  {std::vector<SignatureSet>} - Sets to be added to pairing
- * @param[in]   {Napi::CallbackInfo} - JS function context
+ * @param[out] sets - Sets to be added to pairing
+ * @param[in]  info - JS function context
  */
 blst_ts::BLST_TS_ERROR prepare_verify_multiple_aggregate_signatures(
     std::vector<SignatureSet> &sets, const Napi::CallbackInfo &info) {
@@ -60,11 +60,11 @@ blst_ts::BLST_TS_ERROR prepare_verify_multiple_aggregate_signatures(
 }
 
 /**
- * @param[out]  {boolean} - Result of the verification
- * @param[out]  {std::string} - Error message for invalid aggregate
- * @param[in]   {BlstTsAddon *} - Addon module
- * @param[in]   {blst::Paring *} - Pointer to paring for the verification
- * @param[in]   {std::vector<SignatureSet>} - Sets to be added to pairing
+ * @param[out] result    - Result of the verification
+ * @param[out] error_msg - Error message for invalid aggregate
+ * @param[in]  module    - Addon module
+ * @param[in]  ctx       - Pointer to paring for the verification
+ * @param[in]  sets      - Sets to be added to pairing
  */
 blst_ts::BLST_TS_ERROR verify_multiple_aggregate_signatures(
     bool &result,
@@ -107,10 +107,10 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
         blst_ts::BLST_TS_ERROR error =
             prepare_verify_multiple_aggregate_signatures(sets, info);
         if (error == blst_ts::BLST_TS_ERROR::SUCCESS) {
-            std::unique_ptr<blst::Pairing> ctx{
-                new blst::Pairing(true, module->dst)};
-            error = verify_multiple_aggregate_signatures(
-                result, error_msg, module, ctx, sets);
+            std::unique_ptr<blst::Pairing> ctx =
+                std::make_unique<blst::Pairing>(true, module->dst);
+                error = verify_multiple_aggregate_signatures(
+                    result, error_msg, module, ctx, sets);
         }
         switch (error) {
             case blst_ts::BLST_TS_ERROR::SUCCESS:
@@ -137,7 +137,7 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
           deferred{Env()},
           has_error{false},
           _module{Env().GetInstanceData<BlstTsAddon>()},
-          _ctx{new blst::Pairing(true, _module->dst)},
+          _ctx{std::make_unique<blst::Pairing>(true, _module->dst)},
           _sets{},
           _sets_ref{Napi::Persistent(info[0])},
           _is_invalid{false},

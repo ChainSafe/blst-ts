@@ -8,9 +8,9 @@ typedef struct {
 } AggregateVerifySet;
 
 /**
- * @param[out]  {blst_ts::P2AffineGroup} - P2 point for verification
- * @param[out]  {std::vector<AggregateVerifySet>} - Sets to be added to pairing
- * @param[in]   {Napi::CallbackInfo} - JS function context
+ * @param[out] sig_point - P2 point for verification
+ * @param[out] sets      - Sets to be added to pairing
+ * @param[in]  info      - JS function context
  */
 blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
     blst_ts::P2AffineGroup &sig_point,
@@ -78,12 +78,12 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
 }
 
 /**
- * @param[out]  {boolean} - Result of the verification
- * @param[out]  {std::string} - Error message for invalid aggregate
- * @param[in]   {BlstTsAddon *} - Addon module
- * @param[in]   {blst::Paring *} - Pointer to paring for the verification
- * @param[in]   {blst_ts::P2AffineGroup} - P2 point for verification
- * @param[in]   {std::vector<AggregateVerifySet>} - Sets to be added to pairing
+ * @param[out] result    - Result of the verification
+ * @param[out] error_msg - Error message for invalid aggregate
+ * @param[in]  module    - Addon module
+ * @param[in]  ctx       - Pointer to paring for the verification
+ * @param[in]  sig_point - P2 point for verification
+ * @param[in]  sets      - Sets to be added to pairing
  */
 blst_ts::BLST_TS_ERROR aggregate_verify(
     bool &result,
@@ -123,8 +123,8 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         blst_ts::BLST_TS_ERROR error =
             prepare_aggregate_verify(sig_point, sets, info);
         if (error == blst_ts::BLST_TS_ERROR::SUCCESS) {
-            std::unique_ptr<blst::Pairing> ctx{
-                new blst::Pairing(true, module->dst)};
+            std::unique_ptr<blst::Pairing> ctx =
+                std::make_unique<blst::Pairing>(true, module->dst);
             error = aggregate_verify(
                 result, error_msg, module, ctx, sig_point, sets);
         }
@@ -152,7 +152,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
           deferred{Env()},
           has_error{false},
           _module{Env().GetInstanceData<BlstTsAddon>()},
-          _ctx{new blst::Pairing(true, _module->dst)},
+          _ctx{std::make_unique<blst::Pairing>(true, _module->dst)},
           _sig_point{},
           _sets{},
           _msgs_ref{Napi::Persistent(info[0])},
