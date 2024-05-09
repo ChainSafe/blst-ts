@@ -72,7 +72,7 @@ namespace blst_ts {
 
 typedef enum { Affine, Jacobian } CoordType;
 
-enum BLST_TS_ERROR {
+enum class BLST_TS_ERROR {
     SUCCESS,
     INVALID,
     JS_ERROR_THROWN,
