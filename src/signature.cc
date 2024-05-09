@@ -138,20 +138,31 @@ Napi::Value Signature::Deserialize(const Napi::CallbackInfo &info) {
         }
     }
 
+    bool validate = false;
+    Napi::Value validate_value = info[2];
+    if (!validate_value.IsUndefined() && validate_value.IsBoolean()) {
+        validate = validate_value.As<Napi::Boolean>().Value();
+    }
+
     // try/catch here because using untrusted bytes for point creation and
     // blst library will throw for invalid points
     try {
-        if (is_affine) {
-            return scope.Escape(
-                module->signature_ctr.New({Napi::External<P2Wrapper>::New(
-                    env,
-                    new P2Affine{blst::P2_Affine{
-                        sig_bytes.Data(), sig_bytes.ByteLength()}})}));
+        Napi::Object wrapped_sig =
+            is_affine
+                ? module->signature_ctr.New({Napi::External<P2Wrapper>::New(
+                      env,
+                      new P2Affine{blst::P2_Affine{
+                          sig_bytes.Data(), sig_bytes.ByteLength()}})})
+                : module->signature_ctr.New({Napi::External<P2Wrapper>::New(
+                      env,
+                      new P2{blst::P2{
+                          sig_bytes.Data(), sig_bytes.ByteLength()}})});
+        if (validate) {
+            Signature *sig = Signature::Unwrap(wrapped_sig);
+            sig->point->Validate();
         }
-        return scope.Escape(
-            module->signature_ctr.New({Napi::External<P2Wrapper>::New(
-                env,
-                new P2{blst::P2{sig_bytes.Data(), sig_bytes.ByteLength()}})}));
+
+        return scope.Escape(wrapped_sig);
     } catch (const blst::BLST_ERROR &err) {
         Napi::RangeError::New(env, module->GetBlstErrorString(err))
             .ThrowAsJavaScriptException();
