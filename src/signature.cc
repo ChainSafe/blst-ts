@@ -13,11 +13,9 @@ P2AffineGroup P2::AsAffine() {
 
 blst::P2 P2::MultiplyBy(
     const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
-    blst::byte out[signature_length_uncompressed];
-    _point.serialize(out);
     // this should get std::move all the way into the P2 member value
-    blst::P2 point{out, signature_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    blst::P2 point = _point.dup();
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
@@ -41,11 +39,9 @@ P2AffineGroup P2Affine::AsAffine() {
 
 blst::P2 P2Affine::MultiplyBy(
     const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
-    blst::byte out[signature_length_uncompressed];
-    _point.serialize(out);
     // this should get std::move all the way into the P2 member value
-    blst::P2 point{out, signature_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    blst::P2 point = _point.dup();
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 

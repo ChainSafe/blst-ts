@@ -14,11 +14,9 @@ P1AffineGroup P1::AsAffine() {
 
 blst::P1 P1::MultiplyBy(
     const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
-    blst::byte out[public_key_length_uncompressed];
-    _point.serialize(out);
     // this should get std::move all the way into the P1 member value
-    blst::P1 point{out, public_key_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    blst::P1 point = _point.dup();
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
@@ -33,11 +31,9 @@ P1AffineGroup P1Affine::AsAffine() {
 
 blst::P1 P1Affine::MultiplyBy(
     const blst::byte *rand_bytes, const size_t rand_bytes_length) const {
-    blst::byte out[public_key_length_uncompressed];
-    _point.serialize(out);
     // this should get std::move all the way into the P1 member value
-    blst::P1 point{out, public_key_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    blst::P1 point = _point.dup();
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
