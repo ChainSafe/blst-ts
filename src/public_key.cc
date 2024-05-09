@@ -189,10 +189,9 @@ Napi::Value PublicKey::MultiplyBy(const Napi::CallbackInfo &info) {
     Napi::Object pk_obj = module->public_key_ctr.New(
         // Default to jacobian coordinates
         {Napi::External<P1Wrapper>::New(
-             env,
-             new P1{point->MultiplyBy(
-                 rand_bytes.Data(), rand_bytes.ByteLength())}),
-         Napi::Boolean::New(env, false)});
+            env,
+            new P1{point->MultiplyBy(
+                rand_bytes.Data(), rand_bytes.ByteLength())})});
 
     return scope.Escape(pk_obj);
 }

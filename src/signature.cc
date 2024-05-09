@@ -205,10 +205,9 @@ Napi::Value Signature::MultiplyBy(const Napi::CallbackInfo &info) {
     Napi::Object sig_obj = module->signature_ctr.New(
         // Default to jacobian coordinates
         {Napi::External<P2Wrapper>::New(
-             env,
-             new P2{point->MultiplyBy(
-                 rand_bytes.Data(), rand_bytes.ByteLength())}),
-         Napi::Boolean::New(env, false)});
+            env,
+            new P2{point->MultiplyBy(
+                rand_bytes.Data(), rand_bytes.ByteLength())})});
 
     return scope.Escape(sig_obj);
 }
