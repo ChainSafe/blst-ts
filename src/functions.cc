@@ -1,5 +1,4 @@
 #include "addon.h"
-#include "aggregate_with_randomness.h"
 
 namespace blst_ts_functions {
 blst_ts::BLST_TS_ERROR unwrap_public_key(
@@ -57,6 +56,8 @@ blst_ts::BLST_TS_ERROR unwrap_signature(
 
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info);
 Napi::Value AggregateSignatures(const Napi::CallbackInfo &info);
+Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info);
+Napi::Value AsyncAggregateWithRandomness(const Napi::CallbackInfo &info);
 Napi::Value AggregateVerify(const Napi::CallbackInfo &info);
 Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info);
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info);

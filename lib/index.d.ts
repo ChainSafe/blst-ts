@@ -168,8 +168,8 @@ export function aggregateSignatures(signatures: SignatureArg[]): Signature;
  * `sig.sigValidate()` prior to passing them into the aggregation.
  */
 export function aggregateWithRandomness(
-  sets: {publicKey: PublicKeyArg; signature: SignatureArg}[],
-  validateSerialized?: boolean
+  sets: {publicKey: PublicKey; signature: Uint8Array}[],
+  validateSignature?: boolean
 ): {
   publicKey: PublicKey;
   signature: Signature;
@@ -187,8 +187,8 @@ export function aggregateWithRandomness(
  * `sig.sigValidate()` prior to passing them into the aggregation.
  */
 export function asyncAggregateWithRandomness(
-  sets: {publicKey: PublicKeyArg; signature: SignatureArg}[],
-  validateSerialized?: boolean
+  sets: {publicKey: PublicKey; signature: Uint8Array}[],
+  validateSignature?: boolean
 ): Promise<{
   publicKey: PublicKey;
   signature: Signature;
