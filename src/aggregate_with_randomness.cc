@@ -167,21 +167,19 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
 
 class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
    public:
-    AggregateWithRandomnessWorker(const Napi::CallbackInfo &info)
+    AggregateWithRandomnessWorker(
+        const Napi::CallbackInfo &info,
+        BlstTsAddon *module,
+        std::vector<SignatureAndPublicKeySet> sets,
+        size_t sets_length,
+        bool validate)
         : Napi::AsyncWorker{info.Env(), "AggregateWithRandomnessWorker"},
           deferred{Env()},
-          has_error{false},
-          _module{Env().GetInstanceData<BlstTsAddon>()},
+          _module{std::move(module)},
           _sets_ref{Napi::Persistent(info[0])},
-          _sets{},
-          _sets_length{0},
-          _validate{true} {
-        blst_ts::BLST_TS_ERROR err = prepare_aggregate_with_randomness(
-            _sets, _sets_length, _validate, info);
-        if (err == blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN) {
-            has_error = true;
-        }
-    }
+          _sets{std::move(sets)},
+          _sets_length{std::move(sets_length)},
+          _validate{std::move(validate)} {}
 
     /**
      * GetPromise associated with deferred for return to JS
@@ -218,7 +216,6 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
 
    public:
     Napi::Promise::Deferred deferred;
-    bool has_error;
 
    private:
     BlstTsAddon *_module;
@@ -231,12 +228,19 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
 };
 
 Napi::Value AsyncAggregateWithRandomness(const Napi::CallbackInfo &info) {
-    AggregateWithRandomnessWorker *worker =
-        new AggregateWithRandomnessWorker(info);
-    if (worker->has_error) {
-        delete worker;
-        return info.Env().Undefined();
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
+    std::vector<SignatureAndPublicKeySet> sets{};
+    size_t sets_length{0};
+    bool validate{true};
+
+    blst_ts::BLST_TS_ERROR err =
+        prepare_aggregate_with_randomness(sets, sets_length, validate, info);
+    if (err == blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN) {
+        return env.Undefined();
     }
+
+    AggregateWithRandomnessWorker *worker = new AggregateWithRandomnessWorker(
+        info, module, sets, sets_length, validate);
     worker->Queue();
     return worker->GetPromise();
 }
