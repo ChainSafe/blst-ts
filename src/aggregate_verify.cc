@@ -1,4 +1,4 @@
-#include "functions-inl.h"
+#include "functions.h"
 
 namespace blst_ts_functions {
 typedef struct {
