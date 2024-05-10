@@ -67,6 +67,9 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info);
 Napi::Value AsyncVerifyMultipleAggregateSignatures(
     const Napi::CallbackInfo &info);
 
+/**
+ * Exported init function to set functions on exports
+ */
 void init(const Napi::Env &env, Napi::Object &exports) {
     exports.Set(
         Napi::String::New(env, "aggregatePublicKeys"),

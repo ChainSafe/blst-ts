@@ -9,6 +9,10 @@ typedef struct {
 } SignatureSet;
 
 /**
+ * Preparation phase for multiple aggregate verification. Handles incoming JS
+ * arguments and prepares them for use by the native layer. Must be run on JS
+ * thread!
+ * 
  * @param[out] sets - Sets to be added to pairing
  * @param[in]  info - JS function context
  */
@@ -60,6 +64,9 @@ blst_ts::BLST_TS_ERROR prepare_verify_multiple_aggregate_signatures(
 }
 
 /**
+ * Aggregate verify multiple signatures. Consumes SignatureSets created in
+ * preparation phase. Safe to use in libuv thread.
+ * 
  * @param[out] result    - Result of the verification
  * @param[out] error_msg - Error message for invalid aggregate
  * @param[in]  module    - Addon module
@@ -98,6 +105,11 @@ blst_ts::BLST_TS_ERROR verify_multiple_aggregate_signatures(
     return blst_ts::BLST_TS_ERROR::SUCCESS;
 }
 
+/**
+ * Synchronous multiple aggregate verification. Implementation is handled the
+ * functions above (prepare_verify_multiple_aggregate_signatures and 
+ * verify_multiple_aggregate_signatures)
+ */
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     try {
@@ -172,6 +184,11 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
     bool _result;
 };
 
+/**
+ * Asynchronous multiple aggregate verification. Implementation is handled the
+ * functions above (prepare_verify_multiple_aggregate_signatures and
+ * verify_multiple_aggregate_signatures)
+ */
 Napi::Value AsyncVerifyMultipleAggregateSignatures(
     const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)

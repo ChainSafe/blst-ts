@@ -8,6 +8,9 @@ typedef struct {
 } AggregateVerifySet;
 
 /**
+ * Preparation phase for aggregate_verify. Handles incoming JS arguments and
+ * prepares them for use by the native layer. Must be run on JS thread!
+ *
  * @param[out] sig_point - P2 point for verification
  * @param[out] sets      - Sets to be added to pairing
  * @param[in]  info      - JS function context
@@ -78,6 +81,9 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
 }
 
 /**
+ * Aggregate verify a signature. Consumes sig_point and AggregateVerifySets
+ * created in preparation phase. Safe to use in libuv thread.
+ *
  * @param[out] result    - Result of the verification
  * @param[out] error_msg - Error message for invalid aggregate
  * @param[in]  module    - Addon module
@@ -113,6 +119,10 @@ blst_ts::BLST_TS_ERROR aggregate_verify(
     return blst_ts::BLST_TS_ERROR::SUCCESS;
 }
 
+/**
+ * Synchronous aggregate verification. Implementation is handled the functions
+ * above (prepare_aggregate_verify and aggregate_verify)
+ */
 Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     try {
@@ -194,6 +204,10 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
     bool _result;
 };
 
+/**
+ * Asynchronous aggregate verification. Implementation is handled the functions
+ * above (prepare_aggregate_verify and aggregate_verify)
+ */
 Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     blst_ts::P2AffineGroup sig_point{};

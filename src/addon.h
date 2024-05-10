@@ -130,6 +130,11 @@ class BlstTsAddon;
 #include "public_key.h"
 #include "secret_key.h"
 #include "signature.h"
+
+/**
+ * Forward declaration of functions init. There is a circular dependency if
+ * #include "functions.h"
+ */
 namespace blst_ts_functions {
 void init(const Napi::Env &env, Napi::Object &exports);
 }
