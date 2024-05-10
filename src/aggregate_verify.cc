@@ -147,36 +147,21 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
 
 class AggregateVerifyWorker : public Napi::AsyncWorker {
    public:
-    AggregateVerifyWorker(const Napi::CallbackInfo &info)
+    AggregateVerifyWorker(
+        const Napi::CallbackInfo &info,
+        BlstTsAddon *module,
+        blst_ts::P2AffineGroup sig_point,
+        std::vector<AggregateVerifySet> sets)
         : Napi::AsyncWorker{info.Env(), "AggregateVerifyWorker"},
           deferred{Env()},
-          has_error{false},
-          _module{Env().GetInstanceData<BlstTsAddon>()},
+          _module{std::move(module)},
           _ctx{std::make_unique<blst::Pairing>(true, _module->dst)},
-          _sig_point{},
-          _sets{},
+          _sig_point{std::move(sig_point)},
+          _sets{std::move(sets)},
           _msgs_ref{Napi::Persistent(info[0])},
           _pks_ref{Napi::Persistent(info[1])},
           _sig_ref{Napi::Persistent(info[2])},
-          _is_invalid{false},
-          _result{false} {
-        try {
-            blst_ts::BLST_TS_ERROR error =
-                prepare_aggregate_verify(_sig_point, _sets, info);
-            switch (error) {
-                case blst_ts::BLST_TS_ERROR::SUCCESS:
-                    return;
-                case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
-                    has_error = true;
-                    return;
-                default:
-                case blst_ts::BLST_TS_ERROR::INVALID:
-                    _is_invalid = true;
-            }
-        } catch (...) {
-            _is_invalid = true;
-        }
-    }
+          _result{false} {}
 
     /**
      * GetPromise associated with deferred for return to JS
@@ -185,9 +170,6 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
 
    protected:
     void Execute() {
-        if (_is_invalid) {
-            return;
-        }
         std::string error_msg{};
         blst_ts::BLST_TS_ERROR err = aggregate_verify(
             _result, error_msg, _module, _ctx, _sig_point, _sets);
@@ -200,7 +182,6 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
 
    public:
     Napi::Promise::Deferred deferred;
-    bool has_error;
 
    private:
     BlstTsAddon *_module;
@@ -210,16 +191,34 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
     Napi::Reference<Napi::Value> _msgs_ref;
     Napi::Reference<Napi::Value> _pks_ref;
     Napi::Reference<Napi::Value> _sig_ref;
-    bool _is_invalid;
     bool _result;
 };
 
 Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info) {
-    AggregateVerifyWorker *worker = new AggregateVerifyWorker(info);
-    if (worker->has_error) {
-        delete worker;
-        return info.Env().Undefined();
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
+    blst_ts::P2AffineGroup sig_point{};
+    std::vector<AggregateVerifySet> sets{};
+    blst_ts::BLST_TS_ERROR error;
+    try {
+        error = prepare_aggregate_verify(sig_point, sets, info);
+    } catch (...) {
+        error = blst_ts::BLST_TS_ERROR::INVALID;
     }
+    switch (error) {
+        case blst_ts::BLST_TS_ERROR::SUCCESS:
+            break;
+        case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
+            return info.Env().Undefined();
+        default:
+        case blst_ts::BLST_TS_ERROR::INVALID:
+            Napi::Promise::Deferred deferred{env};
+            deferred.Resolve(Napi::Boolean::New(env, false));
+            return deferred.Promise();
+    }
+
+    // gets deleted by Node after async work completes
+    AggregateVerifyWorker *worker = new AggregateVerifyWorker(
+        info, module, std::move(sig_point), std::move(sets));
     worker->Queue();
     return worker->GetPromise();
 }

@@ -109,8 +109,8 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
         if (error == blst_ts::BLST_TS_ERROR::SUCCESS) {
             std::unique_ptr<blst::Pairing> ctx =
                 std::make_unique<blst::Pairing>(true, module->dst);
-                error = verify_multiple_aggregate_signatures(
-                    result, error_msg, module, ctx, sets);
+            error = verify_multiple_aggregate_signatures(
+                result, error_msg, module, ctx, sets);
         }
         switch (error) {
             case blst_ts::BLST_TS_ERROR::SUCCESS:
@@ -131,34 +131,18 @@ Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info) {
 
 class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
    public:
-    VerifyMultipleAggregateSignaturesWorker(const Napi::CallbackInfo &info)
+    VerifyMultipleAggregateSignaturesWorker(
+        const Napi::CallbackInfo &info,
+        BlstTsAddon *module,
+        std::vector<SignatureSet> sets)
         : Napi::
               AsyncWorker{info.Env(), "VerifyMultipleAggregateSignaturesWorker"},
           deferred{Env()},
-          has_error{false},
-          _module{Env().GetInstanceData<BlstTsAddon>()},
+          _module{std::move(module)},
           _ctx{std::make_unique<blst::Pairing>(true, _module->dst)},
-          _sets{},
+          _sets{std::move(sets)},
           _sets_ref{Napi::Persistent(info[0])},
-          _is_invalid{false},
-          _result{false} {
-        try {
-            blst_ts::BLST_TS_ERROR error =
-                prepare_verify_multiple_aggregate_signatures(_sets, info);
-            switch (error) {
-                case blst_ts::BLST_TS_ERROR::SUCCESS:
-                    return;
-                case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
-                    has_error = true;
-                    return;
-                default:
-                case blst_ts::BLST_TS_ERROR::INVALID:
-                    _is_invalid = true;
-            }
-        } catch (...) {
-            _is_invalid = true;
-        }
-    }
+          _result{false} {}
 
     /**
      * GetPromise associated with deferred for return to JS
@@ -167,9 +151,6 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
 
    protected:
     void Execute() {
-        if (_is_invalid) {
-            return;
-        }
         std::string error_msg{};
         blst_ts::BLST_TS_ERROR error = verify_multiple_aggregate_signatures(
             _result, error_msg, _module, _ctx, _sets);
@@ -182,25 +163,41 @@ class VerifyMultipleAggregateSignaturesWorker : public Napi::AsyncWorker {
 
    public:
     Napi::Promise::Deferred deferred;
-    bool has_error;
 
    private:
     BlstTsAddon *_module;
     std::unique_ptr<blst::Pairing> _ctx;
     std::vector<SignatureSet> _sets;
     Napi::Reference<Napi::Value> _sets_ref;
-    bool _is_invalid;
     bool _result;
 };
 
 Napi::Value AsyncVerifyMultipleAggregateSignatures(
     const Napi::CallbackInfo &info) {
-    VerifyMultipleAggregateSignaturesWorker *worker =
-        new VerifyMultipleAggregateSignaturesWorker(info);
-    if (worker->has_error) {
-        delete worker;
-        return info.Env().Undefined();
+    BLST_TS_FUNCTION_PREAMBLE(info, env, module)
+    std::vector<SignatureSet> sets{};
+    blst_ts::BLST_TS_ERROR error;
+    try {
+        error = prepare_verify_multiple_aggregate_signatures(sets, info);
+    } catch (...) {
+        error = blst_ts::BLST_TS_ERROR::INVALID;
     }
+    switch (error) {
+        case blst_ts::BLST_TS_ERROR::SUCCESS:
+            break;
+        case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
+            return info.Env().Undefined();
+        default:
+        case blst_ts::BLST_TS_ERROR::INVALID:
+            Napi::Promise::Deferred deferred{env};
+            deferred.Resolve(Napi::Boolean::New(env, false));
+            return deferred.Promise();
+    }
+
+    // gets deleted by Node after async work completes
+    VerifyMultipleAggregateSignaturesWorker *worker =
+        new VerifyMultipleAggregateSignaturesWorker(
+            info, module, std::move(sets));
     worker->Queue();
     return worker->GetPromise();
 }
