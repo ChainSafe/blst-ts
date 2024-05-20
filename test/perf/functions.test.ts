@@ -25,11 +25,12 @@ describe("functions", () => {
       });
     }
   });
-  describe.only("aggregateWithRandomness", () => {
+  describe("aggregateWithRandomness", () => {
+    const SAME_MESSAGE_SET_COUNT = 1024;
     itBench({
       id: "JS version of aggregateWithRandomness",
       beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(1024);
+        const {sets} = getTestSetsSameMessage(SAME_MESSAGE_SET_COUNT);
         return sets.map((s) => ({
           publicKey: s.publicKey,
           signature: s.signature.serialize(),
@@ -37,7 +38,7 @@ describe("functions", () => {
       },
       fn: (sets) => {
         const signatures = sets.map((set) => {
-          const sig = blst.Signature.deserialize(set.signature, blst.CoordType.affine);
+          const sig = blst.Signature.deserialize(set.signature, blst.CoordType.jacobian);
           sig.sigValidate();
           return sig;
         });
@@ -52,14 +53,14 @@ describe("functions", () => {
     itBench({
       id: "native version of aggregateWithRandomness",
       beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(1024);
+        const {sets} = getTestSetsSameMessage(SAME_MESSAGE_SET_COUNT);
         return sets.map((s) => ({
           publicKey: s.publicKey,
           signature: s.signature.serialize(),
         }));
       },
       fn: (sets) => {
-        blst.aggregateWithRandomness(sets);
+        blst.aggregateWithRandomness(sets, true);
       },
     });
   });
