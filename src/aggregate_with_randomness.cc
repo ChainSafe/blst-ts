@@ -10,7 +10,6 @@ typedef struct {
 
 blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
     std::vector<SignatureAndPublicKeySet> &sets,
-    size_t &sets_length,
     bool &validate,
     const Napi::CallbackInfo &info) {
     Napi::Env env = info.Env();
@@ -22,7 +21,7 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
         return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
     }
     Napi::Array array = array_value.As<Napi::Array>();
-    sets_length = array.Length();
+    size_t sets_length = array.Length();
     if (sets_length == 0) {
         Napi::TypeError::New(
             env, "Empty array passed to aggregateWithRandomness")
@@ -43,7 +42,7 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
     }
 
     for (uint32_t i = 0; i < sets_length; i++) {
-        sets.push_back({nullptr, nullptr, 0});
+        sets[i] = {nullptr, nullptr, 0};
         Napi::Value set_value = array[i];
         if (!set_value.IsObject()) {
             Napi::TypeError::New(
@@ -90,9 +89,8 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
     std::string &error_msg,
     BlstTsAddon *module,
     const std::vector<SignatureAndPublicKeySet> &sets,
-    const size_t &sets_length,
     const bool &validate) {
-    for (uint32_t i = 0; i < sets_length; i++) {
+    for (uint32_t i = 0; i < sets.size(); i++) {
         blst::byte randomness[BLST_TS_RANDOM_BYTES_LENGTH];
         if (!module->GetRandomNonZeroBytes(
                 randomness, BLST_TS_RANDOM_BYTES_LENGTH)) {
@@ -128,11 +126,10 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
 Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     std::vector<SignatureAndPublicKeySet> sets{};
-    size_t sets_length{0};
     bool validate{true};
 
     blst_ts::BLST_TS_ERROR err =
-        prepare_aggregate_with_randomness(sets, sets_length, validate, info);
+        prepare_aggregate_with_randomness(sets, validate, info);
     if (err == blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN) {
         return scope.Escape(env.Undefined());
     }
@@ -141,13 +138,7 @@ Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info) {
     blst::P2 aggregate_sig{};
     std::string error_msg{};
     err = aggregate_with_randomness(
-        aggregate_key,
-        aggregate_sig,
-        error_msg,
-        module,
-        sets,
-        sets_length,
-        validate);
+        aggregate_key, aggregate_sig, error_msg, module, sets, validate);
     if (err == blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR) {
         Napi::Error::New(env, error_msg).ThrowAsJavaScriptException();
         return scope.Escape(env.Undefined());
@@ -171,14 +162,12 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
         const Napi::CallbackInfo &info,
         BlstTsAddon *module,
         std::vector<SignatureAndPublicKeySet> sets,
-        size_t sets_length,
         bool validate)
         : Napi::AsyncWorker{info.Env(), "AggregateWithRandomnessWorker"},
           deferred{Env()},
           _module{std::move(module)},
           _sets_ref{Napi::Persistent(info[0])},
           _sets{std::move(sets)},
-          _sets_length{std::move(sets_length)},
           _validate{std::move(validate)} {}
 
     /**
@@ -195,7 +184,6 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
             error_msg,
             _module,
             _sets,
-            _sets_length,
             _validate);
         if (err == blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR) {
             SetError(error_msg);
@@ -221,7 +209,6 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
     BlstTsAddon *_module;
     Napi::Reference<Napi::Value> _sets_ref;
     std::vector<SignatureAndPublicKeySet> _sets;
-    size_t _sets_length;
     bool _validate;
     blst::P1 _aggregate_key;
     blst::P2 _aggregate_sig;
@@ -230,17 +217,16 @@ class AggregateWithRandomnessWorker : public Napi::AsyncWorker {
 Napi::Value AsyncAggregateWithRandomness(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     std::vector<SignatureAndPublicKeySet> sets{};
-    size_t sets_length{0};
     bool validate{true};
 
     blst_ts::BLST_TS_ERROR err =
-        prepare_aggregate_with_randomness(sets, sets_length, validate, info);
+        prepare_aggregate_with_randomness(sets, validate, info);
     if (err == blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN) {
         return env.Undefined();
     }
 
-    AggregateWithRandomnessWorker *worker = new AggregateWithRandomnessWorker(
-        info, module, sets, sets_length, validate);
+    AggregateWithRandomnessWorker *worker =
+        new AggregateWithRandomnessWorker(info, module, sets, validate);
     worker->Queue();
     return worker->GetPromise();
 }
