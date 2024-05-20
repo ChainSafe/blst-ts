@@ -17,7 +17,7 @@ blst::P2 P2::MultiplyBy(
     _point.serialize(out);
     // this should get std::move all the way into the P2 member value
     blst::P2 point{out, signature_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
@@ -45,7 +45,7 @@ blst::P2 P2Affine::MultiplyBy(
     _point.serialize(out);
     // this should get std::move all the way into the P2 member value
     blst::P2 point{out, signature_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
