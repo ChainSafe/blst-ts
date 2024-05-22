@@ -85,7 +85,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
  * created in preparation phase. Safe to use in libuv thread.
  *
  * @param[out] result    - Result of the verification
- * @param[out] error_msg - Error message for invalid aggregate
  * @param[in]  module    - Addon module
  * @param[in]  ctx       - Pointer to paring for the verification
  * @param[in]  sig_point - P2 point for verification
@@ -93,7 +92,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
  */
 blst_ts::BLST_TS_ERROR aggregate_verify(
     bool &result,
-    // std::string &error_msg,
     BlstTsAddon *module,
     std::unique_ptr<blst::Pairing> &ctx,
     blst_ts::P2AffineGroup &sig_point,
@@ -126,23 +124,16 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         bool result{false};
         blst_ts::P2AffineGroup sig_point{};
         std::vector<AggregateVerifySet> sets{};
-        // std::string error_msg{};
         blst_ts::BLST_TS_ERROR error =
             prepare_aggregate_verify(sig_point, sets, info);
         if (error == blst_ts::BLST_TS_ERROR::SUCCESS) {
             std::unique_ptr<blst::Pairing> ctx =
                 std::make_unique<blst::Pairing>(true, module->dst);
-            // error = aggregate_verify(
-            //     result, error_msg, module, ctx, sig_point, sets);
             error = aggregate_verify(result, module, ctx, sig_point, sets);
         }
         switch (error) {
             case blst_ts::BLST_TS_ERROR::SUCCESS:
                 return scope.Escape(Napi::Boolean::New(env, result));
-            // case blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR:
-            //     Napi::Error::New(env,
-            //     error_msg).ThrowAsJavaScriptException(); return
-            //     scope.Escape(env.Undefined());
             case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
                 return scope.Escape(env.Undefined());
             default:
@@ -179,14 +170,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
 
    protected:
     void Execute() {
-        std::string error_msg{};
-        // blst_ts::BLST_TS_ERROR err = aggregate_verify(
-        //     _result, error_msg, _module, _ctx, _sig_point, _sets);
-        blst_ts::BLST_TS_ERROR err =
-            aggregate_verify(_result, _module, _ctx, _sig_point, _sets);
-        if (err == blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR) {
-            SetError(error_msg);
-        }
+        aggregate_verify(_result, _module, _ctx, _sig_point, _sets);
     }
     void OnOK() { deferred.Resolve(Napi::Boolean::New(Env(), _result)); }
     void OnError(const Napi::Error &err) { deferred.Reject(err.Value()); }
