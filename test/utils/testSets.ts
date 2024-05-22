@@ -7,11 +7,25 @@ const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
 export function buildTestSetFromMessage(message: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
   const secretKey = SecretKey.fromKeygen(crypto.randomBytes(BLST_CONSTANTS.SECRET_KEY_LENGTH));
+  const publicKey = secretKey.toPublicKey();
+  const signature = secretKey.sign(message);
+  try {
+    publicKey.keyValidate();
+  } catch {
+    console.log(">>>\n>>>\n>>> Invalid Key Found in a TestSet\n>>>\n>>>");
+    return buildTestSetFromMessage(message);
+  }
+  try {
+    signature.sigValidate();
+  } catch {
+    console.log(">>>\n>>>\n>>> Invalid Signature Found in a TestSet\n>>>\n>>>");
+    return buildTestSetFromMessage(message);
+  }
   return {
     message,
     secretKey,
-    publicKey: secretKey.toPublicKey(),
-    signature: secretKey.sign(message),
+    publicKey,
+    signature,
   };
 }
 
