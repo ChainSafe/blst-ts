@@ -68,7 +68,7 @@ async function buildBindings(binaryName: string): Promise<string> {
   if (Boolean(process.env.CI) && binaryName.startsWith("linux-arm64-108")) {
     // arm build on CI is very very slow on node 18, so wait a bit before
     // trying to locate binary
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    await new Promise((resolve) => setTimeout(resolve, 180000));
   }
   const bindingPath = getBindingsPath(ROOT_DIR);
 
