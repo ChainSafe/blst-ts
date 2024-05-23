@@ -37,6 +37,8 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
                 } else {
                     blst::P1 point{
                         typed_array.Data(), typed_array.ByteLength()};
+                    // must not aggregate zero key or will potentially cause
+                    // invalid verifications
                     if (point.is_inf()) {
                         Napi::TypeError::New(
                             env,
@@ -49,6 +51,8 @@ Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info) {
             } else {
                 blst_ts::PublicKey *to_aggregate =
                     blst_ts::PublicKey::Unwrap(val.As<Napi::Object>());
+                // must not aggregate zero key or will potentially cause invalid
+                // verifications
                 if (to_aggregate->point->IsInfinite()) {
                     Napi::TypeError::New(
                         env, "BLST_ERROR: PublicKeyArg must not be zero key")
