@@ -119,10 +119,6 @@ export function getTestBatch({directory, innerBlsFolder, namedYamlFiles}: TestBa
   return testBatch;
 }
 
-export function isBlstError(e: unknown): boolean {
-  return (e as Error).message.includes("BLST_ERROR");
-}
-
 const logEmpty = (): void => {};
 
 export type DownloadTestsOptions = {

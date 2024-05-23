@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import {expect} from "chai";
-import {TestBatchMeta, getTestBatch, isBlstError} from "./utils";
+import {TestBatchMeta, getTestBatch} from "./utils";
 import {testFnByName} from "./functions";
 
 const testLocations: TestBatchMeta[] = [
@@ -37,13 +37,11 @@ const skippedTestCaseNames: string[] = [
               console.log(testCaseData);
             }
             it(testCaseName, () => {
-              try {
+              if (testCaseData.output === null) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                expect(() => testFn(testCaseData.input)).to.throw();
+              } else {
                 expect(testFn(testCaseData.input)).to.deep.equal(testCaseData.output);
-              } catch (e) {
-                // spec test expect a boolean even for invalid inputs
-                if (!isBlstError(e)) throw e;
-
-                expect(false).to.deep.equal(Boolean(testCaseData.output));
               }
             });
           }

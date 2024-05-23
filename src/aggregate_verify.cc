@@ -25,20 +25,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
         return err;
     }
 
-    if (!info[0].IsArray()) {
-        Napi::TypeError::New(
-            env, "BLST_ERROR: msgs must be of type BlstBuffer[]")
-            .ThrowAsJavaScriptException();
-        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-    }
-    Napi::Array msgs_array = info[0].As<Napi::Array>();
-    uint32_t msgs_array_length = msgs_array.Length();
-    if (msgs_array_length == 0) {
-        Napi::TypeError::New(env, "BLST_ERROR: msgs must have length > 0")
-            .ThrowAsJavaScriptException();
-        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
-    }
-
     if (!info[1].IsArray()) {
         Napi::TypeError::New(env, "publicKeys must be of type PublicKeyArg[]")
             .ThrowAsJavaScriptException();
@@ -51,6 +37,20 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
             return blst_ts::BLST_TS_ERROR::INVALID;
         }
         Napi::TypeError::New(env, "BLST_ERROR: publicKeys must have length > 0")
+            .ThrowAsJavaScriptException();
+        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
+    }
+
+    if (!info[0].IsArray()) {
+        Napi::TypeError::New(
+            env, "BLST_ERROR: msgs must be of type BlstBuffer[]")
+            .ThrowAsJavaScriptException();
+        return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
+    }
+    Napi::Array msgs_array = info[0].As<Napi::Array>();
+    uint32_t msgs_array_length = msgs_array.Length();
+    if (msgs_array_length == 0) {
+        Napi::TypeError::New(env, "BLST_ERROR: msgs must have length > 0")
             .ThrowAsJavaScriptException();
         return blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN;
     }
@@ -85,7 +85,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
  * created in preparation phase. Safe to use in libuv thread.
  *
  * @param[out] result    - Result of the verification
- * @param[out] error_msg - Error message for invalid aggregate
  * @param[in]  module    - Addon module
  * @param[in]  ctx       - Pointer to paring for the verification
  * @param[in]  sig_point - P2 point for verification
@@ -93,7 +92,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_verify(
  */
 blst_ts::BLST_TS_ERROR aggregate_verify(
     bool &result,
-    std::string &error_msg,
     BlstTsAddon *module,
     std::unique_ptr<blst::Pairing> &ctx,
     blst_ts::P2AffineGroup &sig_point,
@@ -105,10 +103,7 @@ blst_ts::BLST_TS_ERROR aggregate_verify(
             sets[i].msg,
             sets[i].msg_len);
         if (err != blst::BLST_ERROR::BLST_SUCCESS) {
-            error_msg = "BLST_ERROR::"s + module->GetBlstErrorString(err) +
-                        ": Invalid verification aggregate at index "s +
-                        std::to_string(i);
-            return blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR;
+            return blst_ts::BLST_TS_ERROR::INVALID;
         }
     }
 
@@ -127,7 +122,6 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
     BLST_TS_FUNCTION_PREAMBLE(info, env, module)
     try {
         bool result{false};
-        std::string error_msg{};
         blst_ts::P2AffineGroup sig_point{};
         std::vector<AggregateVerifySet> sets{};
         blst_ts::BLST_TS_ERROR error =
@@ -135,16 +129,12 @@ Napi::Value AggregateVerify(const Napi::CallbackInfo &info) {
         if (error == blst_ts::BLST_TS_ERROR::SUCCESS) {
             std::unique_ptr<blst::Pairing> ctx =
                 std::make_unique<blst::Pairing>(true, module->dst);
-            error = aggregate_verify(
-                result, error_msg, module, ctx, sig_point, sets);
+            error = aggregate_verify(result, module, ctx, sig_point, sets);
         }
         switch (error) {
             case blst_ts::BLST_TS_ERROR::SUCCESS:
                 return scope.Escape(Napi::Boolean::New(env, result));
             case blst_ts::BLST_TS_ERROR::JS_ERROR_THROWN:
-                return scope.Escape(env.Undefined());
-            case blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR:
-                Napi::Error::New(env, error_msg).ThrowAsJavaScriptException();
                 return scope.Escape(env.Undefined());
             default:
             case blst_ts::BLST_TS_ERROR::INVALID:
@@ -180,12 +170,7 @@ class AggregateVerifyWorker : public Napi::AsyncWorker {
 
    protected:
     void Execute() {
-        std::string error_msg{};
-        blst_ts::BLST_TS_ERROR err = aggregate_verify(
-            _result, error_msg, _module, _ctx, _sig_point, _sets);
-        if (err == blst_ts::BLST_TS_ERROR::HAS_NATIVE_ERROR) {
-            SetError(error_msg);
-        }
+        aggregate_verify(_result, _module, _ctx, _sig_point, _sets);
     }
     void OnOK() { deferred.Resolve(Napi::Boolean::New(Env(), _result)); }
     void OnError(const Napi::Error &err) { deferred.Reject(err.Value()); }
