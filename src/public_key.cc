@@ -18,7 +18,7 @@ blst::P1 P1::MultiplyBy(
     _point.serialize(out);
     // this should get std::move all the way into the P1 member value
     blst::P1 point{out, public_key_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
@@ -37,7 +37,7 @@ blst::P1 P1Affine::MultiplyBy(
     _point.serialize(out);
     // this should get std::move all the way into the P1 member value
     blst::P1 point{out, public_key_length_uncompressed};
-    point.mult(rand_bytes, rand_bytes_length);
+    point.mult(rand_bytes, rand_bytes_length * 8);
     return point;
 }
 
