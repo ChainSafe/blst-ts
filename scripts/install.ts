@@ -64,10 +64,11 @@ async function downloadBindings(binaryName: string): Promise<string> {
 async function buildBindings(binaryName: string): Promise<string> {
   await exec("npm run clean:gyp", true, {cwd: ROOT_DIR});
   await exec("npm run build:gyp", true, {cwd: ROOT_DIR});
+  // this is a hack because exec returns early on node 18
   if (Boolean(process.env.CI) && binaryName.startsWith("linux-arm64-108")) {
     // arm build on CI is very very slow on node 18, so wait a bit before
     // trying to locate binary
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 20000));
   }
   const bindingPath = getBindingsPath(ROOT_DIR);
 
