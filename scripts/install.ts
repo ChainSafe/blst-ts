@@ -64,14 +64,6 @@ async function downloadBindings(binaryName: string): Promise<string> {
 async function buildBindings(binaryName: string): Promise<string> {
   execSync("npm run clean:gyp", {cwd: ROOT_DIR});
   execSync("npm run build:gyp", {cwd: ROOT_DIR});
-  // this is a hack because exec returns early on node 18
-  console.log(">>>\n>>>\n>>> after build script\n>>>\n>>>");
-  if (Boolean(process.env.CI) && binaryName.includes("linux-arm64-108")) {
-    console.log(">>>\n>>>\n>>> inside conditional\n>>>\n>>>");
-    // arm build on CI is very very slow on node 18, so wait a bit before
-    // trying to locate binary
-    await new Promise((resolve) => setTimeout(resolve, 20000));
-  }
   const bindingPath = getBindingsPath(ROOT_DIR);
 
   if (!existsSync(PREBUILD_DIR)) {
