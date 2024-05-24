@@ -10,6 +10,7 @@ ARG NODE_VERSION
 FROM matthewkeil/blst-ts-armbuild:${NODE_VERSION}
 
 ENV BLST_TS_FORCE_BUILD=true
+ENV CI=true
 
 # NOTE: the artifacts of the build will be placed in /usr/src/blst-ts/prebuild
 #       and that folder should be mounted as a volume when running the container
