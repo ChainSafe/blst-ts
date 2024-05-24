@@ -2,11 +2,11 @@
 
 namespace blst_ts_functions {
 
-typedef struct {
-    blst_ts::P1Wrapper *pk;
-    uint8_t *sig_data;
-    size_t sig_length;
-} SignatureAndPublicKeySet;
+struct SignatureAndPublicKeySet {
+    blst_ts::P1Wrapper *pk = nullptr;
+    uint8_t *sig_data = nullptr;
+    size_t sig_length = 0;
+};
 
 blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
     std::vector<SignatureAndPublicKeySet> &sets,
@@ -44,7 +44,6 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
     auto sets_begin = std::begin(sets);
     auto sets_end = std::end(sets);
     for (auto it = sets_begin; it != sets_end; ++it) {
-        *it = {nullptr, nullptr, 0};
         size_t i = std::distance(sets_begin, it);
         Napi::Value set_value = array[i];
         if (!set_value.IsObject()) {
