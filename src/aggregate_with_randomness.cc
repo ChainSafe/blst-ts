@@ -41,8 +41,11 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
         validate = validate_value.As<Napi::Boolean>().Value();
     }
 
-    for (size_t i = 0; i < sets_length; i++) {
-        sets[i] = {nullptr, nullptr, 0};
+    auto sets_begin = std::begin(sets);
+    auto sets_end = std::end(sets);
+    for (auto it = sets_begin; it != sets_end; ++it) {
+        *it = {nullptr, nullptr, 0};
+        size_t i = std::distance(sets_begin, it);
         Napi::Value set_value = array[i];
         if (!set_value.IsObject()) {
             Napi::TypeError::New(
@@ -57,7 +60,7 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
         try {
             blst_ts::PublicKey *to_aggregate = blst_ts::PublicKey::Unwrap(
                 set.Get("publicKey").As<Napi::Object>());
-            sets[i].pk = to_aggregate->point.get();
+            it->pk = to_aggregate->point.get();
         } catch (...) {
             Napi::Error::New(
                 env,
@@ -69,8 +72,8 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
         try {
             Napi::Value val = set.Get("signature");
             Napi::Uint8Array typed_array = val.As<Napi::Uint8Array>();
-            sets[i].sig_data = typed_array.Data();
-            sets[i].sig_length = typed_array.ByteLength();
+            it->sig_data = typed_array.Data();
+            it->sig_length = typed_array.ByteLength();
         } catch (...) {
             Napi::Error::New(
                 env,
@@ -90,7 +93,11 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
     BlstTsAddon *module,
     const std::vector<SignatureAndPublicKeySet> &sets,
     bool validate) {
-    for (size_t i = 0; i < sets.size(); i++) {
+    auto sets_begin = std::begin(sets);
+    auto sets_end = std::end(sets);
+    for (auto it = sets_begin; it != sets_end; ++it) {
+        size_t i = std::distance(sets_begin, it);
+        // for (size_t i = 0; i < sets.size(); i++) {
         blst::byte randomness[BLST_TS_RANDOM_BYTES_LENGTH];
         if (!module->GetRandomNonZeroBytes(
                 randomness, BLST_TS_RANDOM_BYTES_LENGTH)) {
@@ -99,11 +106,11 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
         }
 
         aggregate_key.add(
-            sets[i].pk->MultiplyBy(randomness, BLST_TS_RANDOM_BYTES_LENGTH));
+            it->pk->MultiplyBy(randomness, BLST_TS_RANDOM_BYTES_LENGTH));
 
         blst::P2 sig;
         try {
-            sig = blst::P2{sets[i].sig_data, sets[i].sig_length};
+            sig = blst::P2{it->sig_data, it->sig_length};
         } catch (...) {
             error_msg =
                 "BLST_ERROR: Invalid Signature at index "s + std::to_string(i);
