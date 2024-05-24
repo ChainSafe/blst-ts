@@ -89,7 +89,7 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
     std::string &error_msg,
     BlstTsAddon *module,
     const std::vector<SignatureAndPublicKeySet> &sets,
-    const bool &validate) {
+    bool validate) {
     for (size_t i = 0; i < sets.size(); i++) {
         blst::byte randomness[BLST_TS_RANDOM_BYTES_LENGTH];
         if (!module->GetRandomNonZeroBytes(
