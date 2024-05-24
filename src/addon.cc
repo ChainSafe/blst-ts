@@ -81,7 +81,8 @@ std::string BlstTsAddon::GetBlstErrorString(const blst::BLST_ERROR &err) {
     return _blst_error_strings[err];
 }
 
-bool BlstTsAddon::GetRandomNonZeroBytes(blst::byte *bytes, size_t length) {
+[[nodiscard]] bool BlstTsAddon::GetRandomNonZeroBytes(
+    blst::byte *bytes, size_t length) {
     // [randomBytes](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L98)
     // [RandomBytesJob](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/lib/internal/crypto/random.js#L139)
     // [RandomBytesTraits::DeriveBits](https://github.com/nodejs/node/blob/4166d40d0873b6d8a0c7291872c8d20dc680b1d7/src/crypto/crypto_random.cc#L65)

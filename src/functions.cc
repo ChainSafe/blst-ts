@@ -56,6 +56,8 @@ blst_ts::BLST_TS_ERROR unwrap_signature(
 
 Napi::Value AggregatePublicKeys(const Napi::CallbackInfo &info);
 Napi::Value AggregateSignatures(const Napi::CallbackInfo &info);
+Napi::Value AggregateWithRandomness(const Napi::CallbackInfo &info);
+Napi::Value AsyncAggregateWithRandomness(const Napi::CallbackInfo &info);
 Napi::Value AggregateVerify(const Napi::CallbackInfo &info);
 Napi::Value AsyncAggregateVerify(const Napi::CallbackInfo &info);
 Napi::Value VerifyMultipleAggregateSignatures(const Napi::CallbackInfo &info);
@@ -72,6 +74,12 @@ void init(const Napi::Env &env, Napi::Object &exports) {
     exports.Set(
         Napi::String::New(env, "aggregateSignatures"),
         Napi::Function::New(env, AggregateSignatures));
+    exports.Set(
+        Napi::String::New(env, "aggregateWithRandomness"),
+        Napi::Function::New(env, AggregateWithRandomness));
+    exports.Set(
+        Napi::String::New(env, "asyncAggregateWithRandomness"),
+        Napi::Function::New(env, AsyncAggregateWithRandomness));
     exports.Set(
         Napi::String::New(env, "aggregateVerify"),
         Napi::Function::New(env, AggregateVerify));
