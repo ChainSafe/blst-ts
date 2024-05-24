@@ -41,7 +41,7 @@ blst_ts::BLST_TS_ERROR prepare_aggregate_with_randomness(
         validate = validate_value.As<Napi::Boolean>().Value();
     }
 
-    for (uint32_t i = 0; i < sets_length; i++) {
+    for (size_t i = 0; i < sets_length; i++) {
         sets[i] = {nullptr, nullptr, 0};
         Napi::Value set_value = array[i];
         if (!set_value.IsObject()) {
@@ -90,7 +90,7 @@ blst_ts::BLST_TS_ERROR aggregate_with_randomness(
     BlstTsAddon *module,
     const std::vector<SignatureAndPublicKeySet> &sets,
     const bool &validate) {
-    for (uint32_t i = 0; i < sets.size(); i++) {
+    for (size_t i = 0; i < sets.size(); i++) {
         blst::byte randomness[BLST_TS_RANDOM_BYTES_LENGTH];
         if (!module->GetRandomNonZeroBytes(
                 randomness, BLST_TS_RANDOM_BYTES_LENGTH)) {
