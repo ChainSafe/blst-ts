@@ -6,7 +6,7 @@ import {finished} from "stream/promises";
 import {ReadableStream} from "stream/web";
 import {execSync} from "child_process";
 import {copyFileSync, createWriteStream, existsSync, mkdirSync} from "fs";
-import {exec, getBinaryName, getBindingsPath} from "../utils";
+import {getBinaryName, getBindingsPath} from "../utils";
 
 const ROOT_DIR = resolve(__dirname, "..");
 const PREBUILD_DIR = resolve(ROOT_DIR, "prebuild");
@@ -62,8 +62,8 @@ async function downloadBindings(binaryName: string): Promise<string> {
 }
 
 async function buildBindings(binaryName: string): Promise<string> {
-  await exec("npm run clean:gyp", true, {cwd: ROOT_DIR});
-  await exec("npm run build:gyp", true, {cwd: ROOT_DIR});
+  execSync("npm run clean:gyp", {cwd: ROOT_DIR});
+  execSync("npm run build:gyp", {cwd: ROOT_DIR});
   // this is a hack because exec returns early on node 18
   console.log(">>>\n>>>\n>>> after build script\n>>>\n>>>");
   if (Boolean(process.env.CI) && binaryName.includes("linux-arm64-108")) {
