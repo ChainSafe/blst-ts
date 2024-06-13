@@ -81,15 +81,7 @@ import {BenchmarkRunner} from "./utils/runner";
         return Array.from({length: i}, (_, i) => ({msg, pk, sig}));
       },
       run: (sets) => {
-        const msgs: Uint8Array[] = []
-        const pks: next.PublicKey[] = []
-        const sigs: next.Signature[] = []
-        for (const set of sets) {
-          msgs.push(set.msg)
-          pks.push(set.pk)
-          sigs.push(set.sig)
-        }
-        next.verifyMultipleAggregateSignatures(msgs, pks, sigs);
+        next.verifyMultipleAggregateSignatures(sets);
       },
     });
 

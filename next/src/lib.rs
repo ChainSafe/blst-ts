@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, BLST_ERROR};
-use napi::{bindgen_prelude::Uint8Array, Error};
+use napi::{bindgen_prelude::{Object, Uint8Array}, Error};
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
@@ -155,17 +155,38 @@ pub fn fast_aggregate_verify_pre_aggregated(msg: Uint8Array, pk: &PublicKey, sig
 }
 
 #[napi]
-pub fn verify_multiple_aggregate_signatures(msgs: Vec<Uint8Array>, pks: Vec<&PublicKey>, sigs: Vec<&Signature>, pks_validate: Option<bool>, sigs_groupcheck: Option<bool>) -> bool {
-  if sigs.len() != pks.len() || sigs.len() != msgs.len() {
-    return false;
+pub fn verify_multiple_aggregate_signatures(
+  #[napi(ts_arg_type = "{msg: Uint8Array, pk: PublicKey, sig: Signature}[]")] sets: Vec<Object>,
+  pks_validate: Option<bool>, sigs_groupcheck: Option<bool>
+) -> Result<bool, Error> {
+  let len = sets.len();
+  let mut msgs = Vec::with_capacity(len);
+  let mut pks = Vec::with_capacity(len);
+  let mut sigs = Vec::with_capacity(len);
+
+  for obj in sets {
+    match obj.get::<&str, Uint8Array>("msg")? {
+      Some(msg) => msgs.push(msg),
+      None => return Err(Error::from_reason("missing msg")),
+    }
+
+    match obj.get::<&str, &PublicKey>("pk")? {
+      Some(pk) => pks.push(&pk.pk),
+      None => return Err(Error::from_reason("missing pk")),
+    }
+
+    match obj.get::<&str, &Signature>("sig")? {
+      Some(sig) => sigs.push(&sig.sig),
+      None => return Err(Error::from_reason("missing sig")),
+    }
   }
-  let sigs = sigs.iter().map(|s| &s.sig).collect::<Vec<_>>();
-  let pks = pks.iter().map(|pk| &pk.pk).collect::<Vec<_>>();
+
   let msgs = msgs.iter().map(|msg| msg.as_ref()).collect::<Vec<_>>();
+
   let rands = create_rand_scalars(msgs.len());
   match min_pk::Signature::verify_multiple_aggregate_signatures(&msgs, &DST, &pks, pks_validate.unwrap_or(false), &sigs, sigs_groupcheck.unwrap_or(false), &rands, 64) {
-    BLST_ERROR::BLST_SUCCESS => true,
-    _ => false,
+    BLST_ERROR::BLST_SUCCESS => Ok(true),
+    _ => Ok(false),
   }
 }
 

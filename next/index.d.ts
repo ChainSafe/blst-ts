@@ -9,7 +9,7 @@ export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidat
 export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerifyPreAggregated(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
-export function verifyMultipleAggregateSignatures(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sigs: Array<Signature>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
+export function verifyMultipleAggregateSignatures(sets: {msg: Uint8Array, pk: PublicKey, sig: Signature}[], pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export class SecretKey {
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
   static fromBytes(bytes: Uint8Array): SecretKey
