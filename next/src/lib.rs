@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, BLST_ERROR};
-use napi::{bindgen_prelude::{Object, Uint8Array}, Error};
+use napi::{bindgen_prelude::{Reference, Uint8Array}, Error};
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
@@ -22,6 +22,13 @@ pub struct PublicKey {
 #[derive(Clone)]
 pub struct Signature {
   sig: min_pk::Signature,
+}
+
+#[napi(object)]
+pub struct SignatureSet {
+  pub msg: Uint8Array,
+  pub pk: Reference<PublicKey>,
+  pub sig: Reference<Signature>,
 }
 
 #[napi]
@@ -155,43 +162,57 @@ pub fn fast_aggregate_verify_pre_aggregated(msg: Uint8Array, pk: &PublicKey, sig
 }
 
 #[napi]
-pub fn verify_multiple_aggregate_signatures(
-  #[napi(ts_arg_type = "{msg: Uint8Array, pk: PublicKey, sig: Signature}[]")] sets: Vec<Object>,
-  pks_validate: Option<bool>, sigs_groupcheck: Option<bool>
-) -> Result<bool, Error> {
-  let len = sets.len();
-  let mut msgs = Vec::with_capacity(len);
-  let mut pks = Vec::with_capacity(len);
-  let mut sigs = Vec::with_capacity(len);
-
-  for obj in sets {
-    match obj.get::<&str, Uint8Array>("msg")? {
-      Some(msg) => msgs.push(msg),
-      None => return Err(Error::from_reason("missing msg")),
-    }
-
-    match obj.get::<&str, &PublicKey>("pk")? {
-      Some(pk) => pks.push(&pk.pk),
-      None => return Err(Error::from_reason("missing pk")),
-    }
-
-    match obj.get::<&str, &Signature>("sig")? {
-      Some(sig) => sigs.push(&sig.sig),
-      None => return Err(Error::from_reason("missing sig")),
-    }
-  }
-
-  let msgs = msgs.iter().map(|msg| msg.as_ref()).collect::<Vec<_>>();
-
-  let rands = create_rand_scalars(msgs.len());
+pub fn verify_multiple_aggregate_signatures(sets: Vec<SignatureSet>, pks_validate: Option<bool>, sigs_groupcheck: Option<bool>) -> Result<bool, Error> {
+  let (msgs, pks, sigs) = convert_sets(&sets);
+  let rands = create_rand_scalars(sets.len());
   match min_pk::Signature::verify_multiple_aggregate_signatures(&msgs, &DST, &pks, pks_validate.unwrap_or(false), &sigs, sigs_groupcheck.unwrap_or(false), &rands, 64) {
     BLST_ERROR::BLST_SUCCESS => Ok(true),
     _ => Ok(false),
   }
 }
 
+#[napi]
+pub async fn verify_async(msg: Uint8Array, pk: &PublicKey, sig: &Signature, pk_validate: Option<bool>, sig_groupcheck: Option<bool>) -> bool {
+  verify(msg, pk, sig, pk_validate, sig_groupcheck)
+}
+
+#[napi]
+pub async fn aggregate_verify_async(msgs: Vec<Uint8Array>, pks: Vec<&PublicKey>, sig: &Signature, pk_validate: Option<bool>, sigs_groupcheck: Option<bool>) -> bool {
+  aggregate_verify(msgs, pks, sig, pk_validate, sigs_groupcheck)
+}
+
+#[napi]
+pub async fn fast_aggregate_verify_async(msg: Uint8Array, pks: Vec<&PublicKey>, sig: &Signature, sigs_groupcheck: Option<bool>) -> bool {
+  fast_aggregate_verify(msg, pks, sig, sigs_groupcheck)
+}
+
+#[napi]
+pub async fn fast_aggregate_verify_pre_aggregated_async(msg: Uint8Array, pk: &PublicKey, sig: &Signature, sigs_groupcheck: Option<bool>) -> bool {
+  fast_aggregate_verify_pre_aggregated(msg, pk, sig, sigs_groupcheck)
+}
+
+#[napi]
+pub async fn verify_multiple_aggregate_signatures_async(sets: Vec<SignatureSet>, pks_validate: Option<bool>, sigs_groupcheck: Option<bool>) -> Result<bool, Error> {
+  verify_multiple_aggregate_signatures(sets, pks_validate, sigs_groupcheck)
+}
+
 fn to_err(e: BLST_ERROR) -> Error {
   Error::from_reason(format!("{:?}", e))
+}
+
+pub fn convert_sets<'a>(sets: &'a [SignatureSet]) -> (Vec<&'a [u8]>, Vec<&'a min_pk::PublicKey>, Vec<&'a min_pk::Signature>) {
+  let len = sets.len();
+  let mut msgs = Vec::with_capacity(len);
+  let mut pks = Vec::with_capacity(len);
+  let mut sigs = Vec::with_capacity(len);
+
+  for set in sets {
+    msgs.push(set.msg.as_ref());
+    pks.push(&set.pk.pk);
+    sigs.push(&set.sig.sig);
+  }
+
+  (msgs, pks, sigs)
 }
 
 fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
