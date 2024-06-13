@@ -2,6 +2,7 @@ import crypto from "crypto";
 import {blst, BLST_ERROR, P1_Affine, P2_Affine, Pairing} from "../src/bindings";
 import {aggregateSignatures, fastAggregateVerify, PublicKey, SecretKey, Signature, verify} from "../src/lib";
 import {BenchmarkRunner} from "./utils/runner";
+import * as next from "../next/index.js";
 
 const dst = "BLS_SIG_BLS12381G2-SHA256-SSWU-RO_POP_";
 const hashOrEncode = true;
@@ -275,6 +276,50 @@ const msg = Buffer.from("Mr F was here");
       },
       run: ({pks, sig}) => {
         fastAggregateVerify(msg, pks, sig);
+      },
+    });
+  }
+
+  await runner.run({
+    id: "BLS signature - next",
+    before: () => {},
+    beforeEach: () => next.SecretKey.fromKeygen(crypto.randomBytes(32)),
+    run: (sk) => {
+      sk.sign(msg);
+    },
+  });
+
+  await runner.run<{pk: next.PublicKey; sig: next.Signature}>({
+    id: "BLS verification - next",
+    before: () => {
+      const sk = next.SecretKey.fromKeygen(crypto.randomBytes(32));
+      const pk = sk.toPublicKey();
+      const sig = sk.sign(msg);
+      return {pk, sig};
+    },
+    run: ({pk, sig}) => {
+      next.verify(msg, pk, sig);
+    },
+  });
+
+  for (const n of [32, 128]) {
+    await runner.run<{pks: next.PublicKey[]; sig: next.Signature}>({
+      id: `BLS agg verif of 1 msg by ${n} pubkeys - next`,
+      before: () => {
+        const pks: next.PublicKey[] = [];
+        const sigs: next.Signature[] = [];
+
+        for (let i = 0; i < n; i++) {
+          const sk = next.SecretKey.fromKeygen(Buffer.alloc(32, i));
+          pks.push(sk.toPublicKey());
+          sigs.push(sk.sign(msg));
+        }
+
+        const sig = next.aggregateSignatures(sigs);
+        return {pks, sig};
+      },
+      run: ({pks, sig}) => {
+        next.fastAggregateVerify(msg, pks, sig);
       },
     });
   }
