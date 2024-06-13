@@ -45,16 +45,8 @@ import {BenchmarkRunner} from "./utils/runner";
       batch: batch / i,
       ratio: batch / serie,
     });
-  }
 
-  csv.logToConsole();
-})();
-
-(async function () {
-  const runner = new BenchmarkRunner("Batch verify benchmark");
-  const csv = new Csv<"n" | "serie" | "batch" | "ratio">();
-
-  for (let i = 1; i <= 128; i = i * 2) {
+    {
     const serie = await runner.run({
       id: `${i} - BLS verification - next`,
       before: () => {
@@ -91,6 +83,7 @@ import {BenchmarkRunner} from "./utils/runner";
       batch: batch / i,
       ratio: batch / serie,
     });
+    }
   }
 
   csv.logToConsole();
