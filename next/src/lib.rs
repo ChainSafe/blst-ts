@@ -7,6 +7,20 @@ use rand::{rngs::ThreadRng, Rng};
 
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
+pub struct BlstError(BLST_ERROR);
+
+impl From<BLST_ERROR> for BlstError {
+  fn from(e: BLST_ERROR) -> Self {
+    BlstError(e)
+  }
+}
+
+impl Into<Error> for BlstError {
+  fn into(self) -> Error {
+    Error::from_reason(format!("{:?}", self.0))
+  }
+}
+
 #[napi]
 pub struct SecretKey {
   sk: min_pk::SecretKey,
@@ -44,11 +58,12 @@ impl SecretKey {
 
   #[napi(factory)]
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
-    let sk = min_pk::SecretKey::from_bytes(&bytes.as_ref());
-    match sk {
-      Ok(sk) => Ok(Self { sk }),
-      Err(e) => Err(to_err(e)),
-    }
+    let sk = min_pk::SecretKey::from_bytes(&bytes.as_ref())?;
+    Ok(Self { sk })
+    // match sk {
+    //   Ok(sk) => Ok(Self { sk }),
+    //   Err(e) => Err(to_err(e)),
+    // }
   }
 
   #[napi]
