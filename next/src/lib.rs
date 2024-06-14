@@ -10,28 +10,6 @@ use rand::{rngs::ThreadRng, Rng};
 
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
-// pub struct BlstError(BLST_ERROR);
-
-#[derive(thiserror::Error, Debug)]
-pub enum BlstError {
-  #[error("deserialization error")]
-  Deserialize,
-  #[error("invalid signature")]
-  InvalidSignature,
-  #[error("pubkey aggregation failed")]
-  AggregatePublicKey,
-  #[error("signature aggregation failed")]
-  AggregateSignature,
-  #[error("secret key gen failed")]
-  KeyGen,
-}
-
-impl BlstError {
-  fn into_err(self) -> Error {
-    Error::from_reason(format!("{:?}", self))
-  }
-}
-
 #[napi]
 pub struct SecretKey(min_pk::SecretKey);
 
@@ -57,14 +35,14 @@ impl SecretKey {
     let key_info = key_info.as_deref().unwrap_or(&[]);
     min_pk::SecretKey::key_gen(&ikm.as_ref(), key_info)
       .map(Self)
-      .map_err(|_| BlstError::KeyGen.into_err())
+      .map_err(to_err)
   }
 
   #[napi(factory)]
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
     min_pk::SecretKey::from_bytes(&bytes.as_ref())
       .map(Self)
-      .map_err(|_| BlstError::Deserialize.into_err())
+      .map_err(to_err)
   }
 
   #[napi]
@@ -89,7 +67,7 @@ impl PublicKey {
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
     min_pk::PublicKey::from_bytes(&bytes.as_ref())
       .map(Self)
-      .map_err(|_| BlstError::Deserialize.into_err())
+      .map_err(to_err)
   }
 
   #[napi]
@@ -105,7 +83,7 @@ impl Signature {
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
     min_pk::Signature::from_bytes(&bytes.as_ref())
       .map(Self)
-      .map_err(|_| BlstError::Deserialize.into_err())
+      .map_err(to_err)
   }
 
   #[napi]
@@ -120,10 +98,9 @@ pub fn aggregate_public_keys(
   pks_validate: Option<bool>,
 ) -> Result<PublicKey, Error> {
   let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
-  match min_pk::AggregatePublicKey::aggregate(&pks, pks_validate.unwrap_or(false)) {
-    Ok(pk) => Ok(PublicKey(pk.to_public_key())),
-    Err(e) => Err(to_err(e)),
-  }
+  min_pk::AggregatePublicKey::aggregate(&pks, pks_validate.unwrap_or(false))
+    .map(|pk| PublicKey(pk.to_public_key()))
+    .map_err(to_err)
 }
 
 #[napi]
@@ -132,10 +109,9 @@ pub fn aggregate_signatures(
   sigs_groupcheck: Option<bool>,
 ) -> Result<Signature, Error> {
   let sigs = sigs.iter().map(|s| &s.0).collect::<Vec<_>>();
-  match min_pk::AggregateSignature::aggregate(&sigs, sigs_groupcheck.unwrap_or(false)) {
-    Ok(sig) => Ok(Signature(sig.to_signature())),
-    Err(e) => Err(to_err(e)),
-  }
+  min_pk::AggregateSignature::aggregate(&sigs, sigs_groupcheck.unwrap_or(false))
+    .map(|sig| Signature(sig.to_signature()))
+    .map_err(to_err)
 }
 
 #[napi]
@@ -146,17 +122,14 @@ pub fn verify(
   pk_validate: Option<bool>,
   sig_groupcheck: Option<bool>,
 ) -> bool {
-  match sig.0.verify(
+  sig.0.verify(
     sig_groupcheck.unwrap_or(false),
     &msg.as_ref(),
     &DST,
     &[],
     &pk.0,
     pk_validate.unwrap_or(false),
-  ) {
-    BLST_ERROR::BLST_SUCCESS => true,
-    _ => false,
-  }
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
@@ -169,17 +142,14 @@ pub fn aggregate_verify(
 ) -> bool {
   let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
   let msgs = msgs.iter().map(|msg| msg.as_ref()).collect::<Vec<_>>();
-  match min_pk::Signature::aggregate_verify(
+  min_pk::Signature::aggregate_verify(
     &sig.0,
     sigs_groupcheck.unwrap_or(false),
     &msgs,
     &DST,
     &pks,
     pk_validate.unwrap_or(false),
-  ) {
-    BLST_ERROR::BLST_SUCCESS => true,
-    _ => false,
-  }
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
@@ -190,16 +160,13 @@ pub fn fast_aggregate_verify(
   sigs_groupcheck: Option<bool>,
 ) -> bool {
   let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
-  match min_pk::Signature::fast_aggregate_verify(
+  min_pk::Signature::fast_aggregate_verify(
     &sig.0,
     sigs_groupcheck.unwrap_or(false),
     &msg.as_ref(),
     &DST,
     &pks,
-  ) {
-    BLST_ERROR::BLST_SUCCESS => true,
-    _ => false,
-  }
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
@@ -209,16 +176,13 @@ pub fn fast_aggregate_verify_pre_aggregated(
   sig: &Signature,
   sigs_groupcheck: Option<bool>,
 ) -> bool {
-  match min_pk::Signature::fast_aggregate_verify_pre_aggregated(
+  min_pk::Signature::fast_aggregate_verify_pre_aggregated(
     &sig.0,
     sigs_groupcheck.unwrap_or(false),
     &msg.as_ref(),
     &DST,
     &pk.0,
-  ) {
-    BLST_ERROR::BLST_SUCCESS => true,
-    _ => false,
-  }
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
@@ -226,10 +190,10 @@ pub fn verify_multiple_aggregate_signatures(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
-) -> Result<bool, Error> {
+) -> bool {
   let (msgs, pks, sigs) = convert_sets(&sets);
   let rands = create_rand_scalars(sets.len());
-  match min_pk::Signature::verify_multiple_aggregate_signatures(
+  min_pk::Signature::verify_multiple_aggregate_signatures(
     &msgs,
     &DST,
     &pks,
@@ -238,10 +202,7 @@ pub fn verify_multiple_aggregate_signatures(
     sigs_groupcheck.unwrap_or(false),
     &rands,
     64,
-  ) {
-    BLST_ERROR::BLST_SUCCESS => Ok(true),
-    _ => Ok(false),
-  }
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
@@ -291,7 +252,7 @@ pub async fn verify_multiple_aggregate_signatures_async(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
-) -> Result<bool, Error> {
+) -> bool {
   verify_multiple_aggregate_signatures(sets, pks_validate, sigs_groupcheck)
 }
 
