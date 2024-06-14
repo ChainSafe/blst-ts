@@ -12,6 +12,7 @@ blst = { version = "0.3.12", features = ["no-threads"] }
 napi = { version = "2.12.2", default-features = false, features = ["full"] }
 napi-derive = "2.12.2"
 rand = "0.8.5"
+thiserror = "1.0.61"
 
 [build-dependencies]
 napi-build = "2.0.1"
