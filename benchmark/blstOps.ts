@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import crypto from "crypto";
 import {blst, BLST_ERROR, P1_Affine, P2_Affine, Pairing} from "../src/bindings";
 import {aggregateSignatures, fastAggregateVerify, PublicKey, SecretKey, Signature, verify} from "../src/lib";
@@ -299,6 +300,19 @@ const msg = Buffer.from("Mr F was here");
     },
     run: ({pk, sig}) => {
       next.verify(msg, pk, sig);
+    },
+  });
+
+  await runner.run<{pk: next.PublicKey; sig: next.Signature}>({
+    id: "BLS verification - next",
+    before: () => {
+      const sk = next.SecretKey.fromKeygen(crypto.randomBytes(32));
+      const sig = sk.sign(msg).toBytes();
+      return {sig};
+    },
+    run: ({sig}) => {
+      const sig = next.Signature.fromBytes(sig);
+      sig.sigVerify();
     },
   });
 

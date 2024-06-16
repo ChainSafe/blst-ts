@@ -34,4 +34,5 @@ export class PublicKey {
 export class Signature {
   static fromBytes(bytes: Uint8Array): Signature
   toBytes(): Uint8Array
+  sigVerify(): void
 }

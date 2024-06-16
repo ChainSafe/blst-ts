@@ -2,13 +2,29 @@
 
 use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, BLST_ERROR};
 use napi::{
-  bindgen_prelude::{Reference, Uint8Array},
-  Error,
+  bindgen_prelude::{Reference, Uint8Array, Undefined},
+  Error, Status,
 };
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+
+pub enum BlstTsError {
+  NapiError(Error<Status>),
+  InvalidPoint,
+  Panic,
+}
+
+impl AsRef<str> for BlstTsError {
+  fn as_ref(&self) -> &str {
+    match self {
+      BlstTsError::Panic => "Panic",
+      BlstTsError::InvalidPoint => "Invalid Point",
+      BlstTsError::NapiError(e) => e.status.as_ref(),
+    }
+  }
+}
 
 #[napi]
 pub struct SecretKey(min_pk::SecretKey);
@@ -89,6 +105,14 @@ impl Signature {
   #[napi]
   pub fn to_bytes(&self) -> Uint8Array {
     Uint8Array::from(self.0.to_bytes())
+  }
+
+  #[napi]
+  pub fn sig_verify(&self) -> napi::Result<Undefined, BlstTsError> {
+    match min_pk::Signature::validate(&self.0, true) {
+      Err(_) => Err(napi::Error::new(BlstTsError::InvalidPoint, "Invalid Point")),
+      Ok(()) => Ok(()),
+    }
   }
 }
 
