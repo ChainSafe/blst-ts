@@ -47,16 +47,18 @@ impl SecretKey {
 
   #[napi(factory)]
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self> {
-    min_pk::SecretKey::from_bytes(&bytes.as_ref())
-      .map(Self)
-      .map_err(to_err)
+    Self::from_slice(&bytes)
   }
 
   #[napi(factory)]
   pub fn from_hex(hex: String) -> Result<Self> {
     let bytes =
       hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
-    min_pk::SecretKey::from_bytes(&bytes.as_ref())
+    Self::from_slice(&bytes)
+  }
+
+  fn from_slice(bytes: &[u8]) -> Result<Self> {
+    min_pk::SecretKey::from_bytes(&bytes)
       .map(Self)
       .map_err(to_err)
   }
@@ -86,22 +88,21 @@ impl SecretKey {
 impl PublicKey {
   #[napi(factory)]
   pub fn from_bytes(bytes: Uint8Array, pk_validate: Option<bool>) -> Result<Self> {
-    let pk = if pk_validate == Some(true) {
-      min_pk::PublicKey::from_bytes(&bytes.as_ref())
-    } else {
-      min_pk::PublicKey::key_validate(&bytes.as_ref())
-    };
-    pk.map(Self).map_err(to_err)
+    Self::from_slice(&bytes, pk_validate)
   }
 
   #[napi(factory)]
   pub fn from_hex(hex: String, pk_validate: Option<bool>) -> Result<Self> {
     let bytes =
       hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+    Self::from_slice(&bytes, pk_validate)
+  }
+
+  fn from_slice(bytes: &[u8], pk_validate: Option<bool>) -> Result<Self> {
     let pk = if pk_validate == Some(true) {
-      min_pk::PublicKey::from_bytes(&bytes.as_ref())
-    } else {
       min_pk::PublicKey::key_validate(&bytes.as_ref())
+    } else {
+      min_pk::PublicKey::from_bytes(&bytes.as_ref())
     };
     pk.map(Self).map_err(to_err)
   }
@@ -131,12 +132,7 @@ impl Signature {
     sig_validate: Option<bool>,
     sig_infcheck: Option<bool>,
   ) -> Result<Self> {
-    let sig = if sig_validate == Some(true) {
-      min_pk::Signature::from_bytes(&bytes.as_ref())
-    } else {
-      min_pk::Signature::sig_validate(&bytes.as_ref(), sig_infcheck.unwrap_or(false))
-    };
-    sig.map(Self).map_err(to_err)
+    Self::from_slice(&bytes, sig_validate, sig_infcheck)
   }
 
   #[napi(factory)]
@@ -147,10 +143,14 @@ impl Signature {
   ) -> Result<Self> {
     let bytes =
       hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+    Self::from_slice(&bytes, sig_validate, sig_infcheck)
+  }
+
+  fn from_slice(bytes: &[u8], sig_validate: Option<bool>, sig_infcheck: Option<bool>) -> Result<Self> {
     let sig = if sig_validate == Some(true) {
-      min_pk::Signature::from_bytes(&bytes.as_ref())
-    } else {
       min_pk::Signature::sig_validate(&bytes.as_ref(), sig_infcheck.unwrap_or(false))
+    } else {
+      min_pk::Signature::from_bytes(&bytes.as_ref())
     };
     sig.map(Self).map_err(to_err)
   }
