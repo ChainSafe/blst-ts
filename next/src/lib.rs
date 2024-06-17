@@ -52,9 +52,23 @@ impl SecretKey {
       .map_err(to_err)
   }
 
+  #[napi(factory)]
+  pub fn from_hex(hex: String) -> Result<Self> {
+    let bytes =
+      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+    min_pk::SecretKey::from_bytes(&bytes.as_ref())
+      .map(Self)
+      .map_err(to_err)
+  }
+
   #[napi]
   pub fn to_bytes(&self) -> Uint8Array {
     Uint8Array::from(self.0.to_bytes())
+  }
+
+  #[napi]
+  pub fn to_hex(&self) -> String {
+    format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]
@@ -80,10 +94,27 @@ impl PublicKey {
     pk.map(Self).map_err(to_err)
   }
 
+  #[napi(factory)]
+  pub fn from_hex(hex: String, pk_validate: Option<bool>) -> Result<Self> {
+    let bytes =
+      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+    let pk = if pk_validate == Some(true) {
+      min_pk::PublicKey::from_bytes(&bytes.as_ref())
+    } else {
+      min_pk::PublicKey::key_validate(&bytes.as_ref())
+    };
+    pk.map(Self).map_err(to_err)
+  }
+
   #[napi]
   pub fn to_bytes(&self) -> Uint8Array {
     let bytes = self.0.to_bytes();
     Uint8Array::from(bytes)
+  }
+
+  #[napi]
+  pub fn to_hex(&self) -> String {
+    format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]
@@ -108,9 +139,30 @@ impl Signature {
     sig.map(Self).map_err(to_err)
   }
 
+  #[napi(factory)]
+  pub fn from_hex(
+    hex: String,
+    sig_validate: Option<bool>,
+    sig_infcheck: Option<bool>,
+  ) -> Result<Self> {
+    let bytes =
+      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+    let sig = if sig_validate == Some(true) {
+      min_pk::Signature::from_bytes(&bytes.as_ref())
+    } else {
+      min_pk::Signature::sig_validate(&bytes.as_ref(), sig_infcheck.unwrap_or(false))
+    };
+    sig.map(Self).map_err(to_err)
+  }
+
   #[napi]
   pub fn to_bytes(&self) -> Uint8Array {
     Uint8Array::from(self.0.to_bytes())
+  }
+
+  #[napi]
+  pub fn to_hex(&self) -> String {
+    format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]

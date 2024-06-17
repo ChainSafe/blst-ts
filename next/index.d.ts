@@ -27,17 +27,23 @@ export class SecretKey {
   static deriveMasterEip2333(ikm: Uint8Array): SecretKey
   deriveChildEip2333(index: number): SecretKey
   static fromBytes(bytes: Uint8Array): SecretKey
+  static fromHex(hex: string): SecretKey
   toBytes(): Uint8Array
+  toHex(): string
   toPublicKey(): PublicKey
   sign(msg: Uint8Array): Signature
 }
 export class PublicKey {
   static fromBytes(bytes: Uint8Array, pkValidate?: boolean | undefined | null): PublicKey
+  static fromHex(hex: string, pkValidate?: boolean | undefined | null): PublicKey
   toBytes(): Uint8Array
+  toHex(): string
   keyValidate(): void
 }
 export class Signature {
   static fromBytes(bytes: Uint8Array, sigValidate?: boolean | undefined | null, sigInfcheck?: boolean | undefined | null): Signature
+  static fromHex(hex: string, sigValidate?: boolean | undefined | null, sigInfcheck?: boolean | undefined | null): Signature
   toBytes(): Uint8Array
+  toHex(): string
   sigValidate(sigInfcheck?: boolean | undefined | null): void
 }
