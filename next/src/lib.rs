@@ -39,6 +39,18 @@ impl SecretKey {
   }
 
   #[napi(factory)]
+  pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self, Error> {
+    min_pk::SecretKey::derive_master_eip2333(&ikm.as_ref())
+      .map(Self)
+      .map_err(to_err)
+  }
+
+  #[napi]
+  pub fn derive_child_eip2333(&self, index: u32) -> Self {
+    Self(self.0.derive_child_eip2333(index))
+  }
+
+  #[napi(factory)]
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
     min_pk::SecretKey::from_bytes(&bytes.as_ref())
       .map(Self)
