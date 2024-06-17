@@ -30,9 +30,10 @@ export class SecretKey {
 export class PublicKey {
   static fromBytes(bytes: Uint8Array): PublicKey
   toBytes(): Uint8Array
+  keyValidate(): void
 }
 export class Signature {
   static fromBytes(bytes: Uint8Array): Signature
   toBytes(): Uint8Array
-  sigVerify(): void
+  sigValidate(sigInfcheck?: boolean | undefined | null): void
 }
