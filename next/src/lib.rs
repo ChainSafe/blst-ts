@@ -75,6 +75,11 @@ impl PublicKey {
     let bytes = self.0.to_bytes();
     Uint8Array::from(bytes)
   }
+
+  #[napi]
+  pub fn key_validate(&self) -> Result<Undefined, Error> {
+    self.0.validate().map_err(to_err)
+  }
 }
 
 #[napi]
