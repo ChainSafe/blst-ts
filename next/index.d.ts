@@ -10,6 +10,8 @@ export interface SignatureSet {
 }
 export function aggregatePublicKeys(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): PublicKey
 export function aggregateSignatures(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Signature
+export function aggregateSerializedPublicKeys(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): PublicKey
+export function aggregateSerializedSignatures(sigs: Array<Uint8Array>, sigsGroupcheck?: boolean | undefined | null): Signature
 export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidate?: boolean | undefined | null, sigGroupcheck?: boolean | undefined | null): boolean
 export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
@@ -22,18 +24,20 @@ export function fastAggregateVerifyPreAggregatedAsync(msg: Uint8Array, pk: Publi
 export function verifyMultipleAggregateSignaturesAsync(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export class SecretKey {
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
+  static deriveMasterEip2333(ikm: Uint8Array): SecretKey
+  deriveChildEip2333(index: number): SecretKey
   static fromBytes(bytes: Uint8Array): SecretKey
   toBytes(): Uint8Array
   toPublicKey(): PublicKey
   sign(msg: Uint8Array): Signature
 }
 export class PublicKey {
-  static fromBytes(bytes: Uint8Array): PublicKey
+  static fromBytes(bytes: Uint8Array, pkValidate?: boolean | undefined | null): PublicKey
   toBytes(): Uint8Array
   keyValidate(): void
 }
 export class Signature {
-  static fromBytes(bytes: Uint8Array): Signature
+  static fromBytes(bytes: Uint8Array, sigValidate?: boolean | undefined | null, sigInfcheck?: boolean | undefined | null): Signature
   toBytes(): Uint8Array
   sigValidate(sigInfcheck?: boolean | undefined | null): void
 }
