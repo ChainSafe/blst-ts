@@ -303,19 +303,6 @@ const msg = Buffer.from("Mr F was here");
     },
   });
 
-  await runner.run<{pk: next.PublicKey; sig: next.Signature}>({
-    id: "BLS verification - next",
-    before: () => {
-      const sk = next.SecretKey.fromKeygen(crypto.randomBytes(32));
-      const sig = sk.sign(msg).toBytes();
-      return {sig};
-    },
-    run: ({sig}) => {
-      const sig = next.Signature.fromBytes(sig);
-      sig.sigVerify();
-    },
-  });
-
   for (const n of [32, 128]) {
     await runner.run<{pks: next.PublicKey[]; sig: next.Signature}>({
       id: `BLS agg verif of 1 msg by ${n} pubkeys - next`,
