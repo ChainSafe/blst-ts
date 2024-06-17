@@ -1,10 +1,7 @@
 #![deny(clippy::all)]
 
 use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, BLST_ERROR};
-use napi::{
-  bindgen_prelude::{Reference, Uint8Array, Undefined},
-  Error,
-};
+use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
@@ -31,7 +28,7 @@ pub struct SignatureSet {
 #[napi]
 impl SecretKey {
   #[napi(factory)]
-  pub fn from_keygen(ikm: Uint8Array, key_info: Option<Uint8Array>) -> Result<Self, Error> {
+  pub fn from_keygen(ikm: Uint8Array, key_info: Option<Uint8Array>) -> Result<Self> {
     let key_info = key_info.as_deref().unwrap_or(&[]);
     min_pk::SecretKey::key_gen(&ikm.as_ref(), key_info)
       .map(Self)
@@ -39,7 +36,7 @@ impl SecretKey {
   }
 
   #[napi(factory)]
-  pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self, Error> {
+  pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self> {
     min_pk::SecretKey::derive_master_eip2333(&ikm.as_ref())
       .map(Self)
       .map_err(to_err)
@@ -51,7 +48,7 @@ impl SecretKey {
   }
 
   #[napi(factory)]
-  pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
+  pub fn from_bytes(bytes: Uint8Array) -> Result<Self> {
     min_pk::SecretKey::from_bytes(&bytes.as_ref())
       .map(Self)
       .map_err(to_err)
@@ -76,7 +73,7 @@ impl SecretKey {
 #[napi]
 impl PublicKey {
   #[napi(factory)]
-  pub fn from_bytes(bytes: Uint8Array, pk_validate: Option<bool>) -> Result<Self, Error> {
+  pub fn from_bytes(bytes: Uint8Array, pk_validate: Option<bool>) -> Result<Self> {
     let pk = if pk_validate == Some(true) {
       min_pk::PublicKey::from_bytes(&bytes.as_ref())
     } else {
@@ -92,7 +89,7 @@ impl PublicKey {
   }
 
   #[napi]
-  pub fn key_validate(&self) -> Result<Undefined, Error> {
+  pub fn key_validate(&self) -> Result<Undefined> {
     self.0.validate().map_err(to_err)
   }
 }
@@ -104,7 +101,7 @@ impl Signature {
     bytes: Uint8Array,
     sig_validate: Option<bool>,
     sig_infcheck: Option<bool>,
-  ) -> Result<Self, Error> {
+  ) -> Result<Self> {
     let sig = if sig_validate == Some(true) {
       min_pk::Signature::from_bytes(&bytes.as_ref())
     } else {
@@ -119,7 +116,7 @@ impl Signature {
   }
 
   #[napi]
-  pub fn sig_validate(&self, sig_infcheck: Option<bool>) -> Result<Undefined, Error> {
+  pub fn sig_validate(&self, sig_infcheck: Option<bool>) -> Result<Undefined> {
     min_pk::Signature::validate(&self.0, sig_infcheck.unwrap_or(false)).map_err(to_err)
   }
 }
@@ -128,7 +125,7 @@ impl Signature {
 pub fn aggregate_public_keys(
   pks: Vec<&PublicKey>,
   pks_validate: Option<bool>,
-) -> Result<PublicKey, Error> {
+) -> Result<PublicKey> {
   let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
   min_pk::AggregatePublicKey::aggregate(&pks, pks_validate.unwrap_or(false))
     .map(|pk| PublicKey(pk.to_public_key()))
@@ -139,7 +136,7 @@ pub fn aggregate_public_keys(
 pub fn aggregate_signatures(
   sigs: Vec<&Signature>,
   sigs_groupcheck: Option<bool>,
-) -> Result<Signature, Error> {
+) -> Result<Signature> {
   let sigs = sigs.iter().map(|s| &s.0).collect::<Vec<_>>();
   min_pk::AggregateSignature::aggregate(&sigs, sigs_groupcheck.unwrap_or(false))
     .map(|sig| Signature(sig.to_signature()))
@@ -150,7 +147,7 @@ pub fn aggregate_signatures(
 pub fn aggregate_serialized_public_keys(
   pks: Vec<Uint8Array>,
   pks_validate: Option<bool>,
-) -> Result<PublicKey, Error> {
+) -> Result<PublicKey> {
   let pks = pks.iter().map(|pk| pk.as_ref()).collect::<Vec<_>>();
   min_pk::AggregatePublicKey::aggregate_serialized(&pks, pks_validate.unwrap_or(false))
     .map(|pk| PublicKey(pk.to_public_key()))
@@ -161,7 +158,7 @@ pub fn aggregate_serialized_public_keys(
 pub fn aggregate_serialized_signatures(
   sigs: Vec<Uint8Array>,
   sigs_groupcheck: Option<bool>,
-) -> Result<Signature, Error> {
+) -> Result<Signature> {
   let sigs = sigs.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
   min_pk::AggregateSignature::aggregate_serialized(&sigs, sigs_groupcheck.unwrap_or(false))
     .map(|sig| Signature(sig.to_signature()))
