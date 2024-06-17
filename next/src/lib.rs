@@ -361,8 +361,26 @@ pub async fn verify_multiple_aggregate_signatures_async(
   verify_multiple_aggregate_signatures(sets, pks_validate, sigs_groupcheck)
 }
 
-fn to_err(e: BLST_ERROR) -> Error {
-  Error::from_reason(format!("{:?}", e))
+fn blst_error_to_string(error: BLST_ERROR) -> String {
+  match error {
+    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS".to_string(),
+    BLST_ERROR::BLST_BAD_ENCODING => "Invalid encoding".to_string(),
+    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "Point not on curve".to_string(),
+    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "Point not in group".to_string(),
+    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "Aggregation type mismatch".to_string(),
+    BLST_ERROR::BLST_VERIFY_FAIL => "Verification failed".to_string(),
+    BLST_ERROR::BLST_PK_IS_INFINITY => "Public key is infinity".to_string(),
+    BLST_ERROR::BLST_BAD_SCALAR => "Invalid scalar".to_string(),
+  }
+}
+
+/**
+ *
+ * Error: Invalid encoding - This is the context
+ */
+
+fn to_err(blst_error: BLST_ERROR) -> napi::Error {
+  napi::Error::from_reason(blst_error_to_string(blst_error))
 }
 
 pub fn convert_sets<'a>(
