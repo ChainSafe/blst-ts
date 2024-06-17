@@ -76,10 +76,13 @@ impl SecretKey {
 #[napi]
 impl PublicKey {
   #[napi(factory)]
-  pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
-    min_pk::PublicKey::from_bytes(&bytes.as_ref())
-      .map(Self)
-      .map_err(to_err)
+  pub fn from_bytes(bytes: Uint8Array, pk_validate: Option<bool>) -> Result<Self, Error> {
+    let pk = if pk_validate == Some(true) {
+      min_pk::PublicKey::from_bytes(&bytes.as_ref())
+    } else {
+      min_pk::PublicKey::key_validate(&bytes.as_ref())
+    };
+    pk.map(Self).map_err(to_err)
   }
 
   #[napi]
@@ -97,10 +100,17 @@ impl PublicKey {
 #[napi]
 impl Signature {
   #[napi(factory)]
-  pub fn from_bytes(bytes: Uint8Array) -> Result<Self, Error> {
-    min_pk::Signature::from_bytes(&bytes.as_ref())
-      .map(Self)
-      .map_err(to_err)
+  pub fn from_bytes(
+    bytes: Uint8Array,
+    sig_validate: Option<bool>,
+    sig_infcheck: Option<bool>,
+  ) -> Result<Self, Error> {
+    let sig = if sig_validate == Some(true) {
+      min_pk::Signature::from_bytes(&bytes.as_ref())
+    } else {
+      min_pk::Signature::sig_validate(&bytes.as_ref(), sig_infcheck.unwrap_or(false))
+    };
+    sig.map(Self).map_err(to_err)
   }
 
   #[napi]
