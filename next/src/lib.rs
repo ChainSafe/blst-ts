@@ -28,14 +28,14 @@ impl SecretKey {
   #[napi(factory)]
   pub fn from_keygen(ikm: Uint8Array, key_info: Option<Uint8Array>) -> Result<Self> {
     let key_info = key_info.as_deref().unwrap_or(&[]);
-    min_pk::SecretKey::key_gen(&ikm.as_ref(), key_info)
+    min_pk::SecretKey::key_gen(&ikm, key_info)
       .map(Self)
       .map_err(to_err)
   }
 
   #[napi(factory)]
   pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self> {
-    min_pk::SecretKey::derive_master_eip2333(&ikm.as_ref())
+    min_pk::SecretKey::derive_master_eip2333(&ikm)
       .map(Self)
       .map_err(to_err)
   }
@@ -80,7 +80,7 @@ impl SecretKey {
 
   #[napi]
   pub fn sign(&self, msg: Uint8Array) -> Signature {
-    Signature(self.0.sign(&msg.as_ref(), &DST, &[]))
+    Signature(self.0.sign(&msg, &DST, &[]))
   }
 }
 
@@ -100,9 +100,9 @@ impl PublicKey {
 
   fn from_slice(bytes: &[u8], pk_validate: Option<bool>) -> Result<Self> {
     let pk = if pk_validate == Some(true) {
-      min_pk::PublicKey::key_validate(&bytes.as_ref())
+      min_pk::PublicKey::key_validate(&bytes)
     } else {
-      min_pk::PublicKey::from_bytes(&bytes.as_ref())
+      min_pk::PublicKey::from_bytes(&bytes)
     };
     pk.map(Self).map_err(to_err)
   }
@@ -146,11 +146,15 @@ impl Signature {
     Self::from_slice(&bytes, sig_validate, sig_infcheck)
   }
 
-  fn from_slice(bytes: &[u8], sig_validate: Option<bool>, sig_infcheck: Option<bool>) -> Result<Self> {
+  fn from_slice(
+    bytes: &[u8],
+    sig_validate: Option<bool>,
+    sig_infcheck: Option<bool>,
+  ) -> Result<Self> {
     let sig = if sig_validate == Some(true) {
-      min_pk::Signature::sig_validate(&bytes.as_ref(), sig_infcheck.unwrap_or(true))
+      min_pk::Signature::sig_validate(&bytes, sig_infcheck.unwrap_or(true))
     } else {
-      min_pk::Signature::from_bytes(&bytes.as_ref())
+      min_pk::Signature::from_bytes(&bytes)
     };
     sig.map(Self).map_err(to_err)
   }
@@ -225,7 +229,7 @@ pub fn verify(
 ) -> bool {
   sig.0.verify(
     sig_groupcheck.unwrap_or(false),
-    &msg.as_ref(),
+    &msg,
     &DST,
     &[],
     &pk.0,
@@ -264,7 +268,7 @@ pub fn fast_aggregate_verify(
   min_pk::Signature::fast_aggregate_verify(
     &sig.0,
     sigs_groupcheck.unwrap_or(false),
-    &msg.as_ref(),
+    &msg,
     &DST,
     &pks,
   ) == BLST_ERROR::BLST_SUCCESS
@@ -280,7 +284,7 @@ pub fn fast_aggregate_verify_pre_aggregated(
   min_pk::Signature::fast_aggregate_verify_pre_aggregated(
     &sig.0,
     sigs_groupcheck.unwrap_or(false),
-    &msg.as_ref(),
+    &msg,
     &DST,
     &pk.0,
   ) == BLST_ERROR::BLST_SUCCESS
