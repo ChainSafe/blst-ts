@@ -137,6 +137,28 @@ pub fn aggregate_signatures(
 }
 
 #[napi]
+pub fn aggregate_serialized_public_keys(
+  pks: Vec<Uint8Array>,
+  pks_validate: Option<bool>,
+) -> Result<PublicKey, Error> {
+  let pks = pks.iter().map(|pk| pk.as_ref()).collect::<Vec<_>>();
+  min_pk::AggregatePublicKey::aggregate_serialized(&pks, pks_validate.unwrap_or(false))
+    .map(|pk| PublicKey(pk.to_public_key()))
+    .map_err(to_err)
+}
+
+#[napi]
+pub fn aggregate_serialized_signatures(
+  sigs: Vec<Uint8Array>,
+  sigs_groupcheck: Option<bool>,
+) -> Result<Signature, Error> {
+  let sigs = sigs.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+  min_pk::AggregateSignature::aggregate_serialized(&sigs, sigs_groupcheck.unwrap_or(false))
+    .map(|sig| Signature(sig.to_signature()))
+    .map_err(to_err)
+}
+
+#[napi]
 pub fn verify(
   msg: Uint8Array,
   pk: &PublicKey,
