@@ -11,11 +11,9 @@ const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 pub struct SecretKey(min_pk::SecretKey);
 
 #[napi]
-#[derive(Clone)]
 pub struct PublicKey(min_pk::PublicKey);
 
 #[napi]
-#[derive(Clone)]
 pub struct Signature(min_pk::Signature);
 
 #[napi(object)]
