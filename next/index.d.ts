@@ -17,6 +17,10 @@ export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, 
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerifyPreAggregated(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function verifyMultipleAggregateSignatures(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
+export function aggregatePublicKeysAsync(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
+export function aggregateSignaturesAsync(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Promise<Signature>
+export function aggregateSerializedPublicKeysAsync(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
+export function aggregateSerializedSignaturesAsync(sigs: Array<Uint8Array>, sigsGroupcheck?: boolean | undefined | null): Promise<Signature>
 export function verifyAsync(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidate?: boolean | undefined | null, sigGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function aggregateVerifyAsync(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function fastAggregateVerifyAsync(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>

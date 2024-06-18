@@ -311,6 +311,38 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
+pub async fn aggregate_public_keys_async(
+  pks: Vec<&PublicKey>,
+  pks_validate: Option<bool>,
+) -> Result<PublicKey> {
+  aggregate_public_keys(pks, pks_validate)
+}
+
+#[napi]
+pub async fn aggregate_signatures_async(
+  sigs: Vec<&Signature>,
+  sigs_groupcheck: Option<bool>,
+) -> Result<Signature> {
+  aggregate_signatures(sigs, sigs_groupcheck)
+}
+
+#[napi]
+pub async fn aggregate_serialized_public_keys_async(
+  pks: Vec<Uint8Array>,
+  pks_validate: Option<bool>,
+) -> Result<PublicKey> {
+  aggregate_serialized_public_keys(pks, pks_validate)
+}
+
+#[napi]
+pub async fn aggregate_serialized_signatures_async(
+  sigs: Vec<Uint8Array>,
+  sigs_groupcheck: Option<bool>,
+) -> Result<Signature> {
+  aggregate_serialized_signatures(sigs, sigs_groupcheck)
+}
+
+#[napi]
 pub async fn verify_async(
   msg: Uint8Array,
   pk: &PublicKey,
