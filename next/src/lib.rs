@@ -406,11 +406,6 @@ fn blst_error_to_string(error: BLST_ERROR) -> String {
   }
 }
 
-/**
- *
- * Error: Invalid encoding - This is the context
- */
-
 fn to_err(blst_error: BLST_ERROR) -> napi::Error {
   napi::Error::from_reason(blst_error_to_string(blst_error))
 }
