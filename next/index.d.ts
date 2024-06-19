@@ -12,6 +12,15 @@ export function aggregatePublicKeys(pks: Array<PublicKey>, pksValidate?: boolean
 export function aggregateSignatures(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Signature
 export function aggregateSerializedPublicKeys(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): PublicKey
 export function aggregateSerializedSignatures(sigs: Array<Uint8Array>, sigsGroupcheck?: boolean | undefined | null): Signature
+export interface AggregationSet {
+  pk: PublicKey
+  sig: Uint8Array
+}
+export interface AggregatedSet {
+  pk: PublicKey
+  sig: Signature
+}
+export function aggregateWithRandomness(sets: Array<AggregationSet>): AggregatedSet
 export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidate?: boolean | undefined | null, sigGroupcheck?: boolean | undefined | null): boolean
 export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean

@@ -219,6 +219,48 @@ pub fn aggregate_serialized_signatures(
     .map_err(to_err)
 }
 
+#[napi(object)]
+pub struct AggregationSet {
+  pub pk: Reference<PublicKey>,
+  pub sig: Uint8Array,
+}
+
+#[napi(object)]
+pub struct AggregatedSet {
+  pub pk: Reference<PublicKey>,
+  pub sig: Reference<Signature>,
+}
+
+#[napi]
+pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
+  let mut rng = rand::thread_rng();
+  let rand0 = create_scalar(rand_non_zero(&mut rng));
+  let mut public_key =
+    min_pk::AggregatePublicKey::from_public_key(&sets[0].pk.0.multiply_by(&rand0.b, 64));
+  let mut signature = min_pk::AggregateSignature::from_signature(
+    &min_pk::Signature::from_bytes(&sets[0].sig)
+      .map_err(to_err)?
+      .multiply_by(&rand0.b, 64),
+  );
+  for set in sets.iter().skip(1) {
+    let rand_val = create_scalar(rand_non_zero(&mut rng));
+    public_key
+      .add_public_key(&set.pk.0.multiply_by(&rand_val.b, 64), false)
+      .map_err(to_err)?;
+    signature
+      .add_signature(
+        &(min_pk::Signature::from_bytes(&set.sig).map_err(to_err)?).multiply_by(&rand_val.b, 64),
+        false,
+      )
+      .map_err(to_err)?;
+  }
+
+  Ok(AggregatedSet {
+    pk: PublicKey::into_reference(PublicKey(public_key.to_public_key()), env)?,
+    sig: Signature::into_reference(Signature(signature.to_signature()), env)?,
+  })
+}
+
 #[napi]
 pub fn verify(
   msg: Uint8Array,
