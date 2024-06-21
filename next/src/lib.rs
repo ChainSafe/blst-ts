@@ -233,27 +233,29 @@ pub struct AggregatedSet {
 
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let mut rng = rand::thread_rng();
-  let rand0 = create_scalar(rand_non_zero(&mut rng));
-  let mut public_key =
-    min_pk::AggregatePublicKey::from_public_key(&sets[0].pk.0.multiply_by(&rand0.b, 64));
-  let mut signature = min_pk::AggregateSignature::from_signature(
-    &min_pk::Signature::from_bytes(&sets[0].sig)
-      .map_err(to_err)?
-      .multiply_by(&rand0.b, 64),
-  );
-  for set in sets.iter().skip(1) {
-    let rand_val = create_scalar(rand_non_zero(&mut rng));
-    public_key
-      .add_public_key(&set.pk.0.multiply_by(&rand_val.b, 64), false)
-      .map_err(to_err)?;
-    signature
-      .add_signature(
-        &(min_pk::Signature::from_bytes(&set.sig).map_err(to_err)?).multiply_by(&rand_val.b, 64),
-        false,
-      )
-      .map_err(to_err)?;
+  let scalars = create_rand_scalars(sets.len());
+  let rands = scalars
+    .iter()
+    .map(|rand| rand.b.as_slice())
+    .collect::<Vec<_>>();
+  let pks = sets.iter().map(|set| &set.pk.0).collect::<Vec<_>>();
+  let mut sigs = Vec::new();
+  sigs.reserve(sets.len());
+
+  for (i, set) in sets.iter().enumerate() {
+    sigs[i] = min_pk::Signature::sig_validate(&set.sig, true).map_err(to_err)?;
   }
+
+  let public_key =
+    min_pk::AggregatePublicKey::aggregate_with_randomness(&pks, false, rands.as_slice(), 64)
+      .map_err(to_err)?;
+  let signature = min_pk::AggregateSignature::aggregate_with_randomness(
+    sigs.iter().collect::<Vec<_>>().as_slice(),
+    false,
+    rands.as_slice(),
+    64,
+  )
+  .map_err(to_err)?;
 
   Ok(AggregatedSet {
     pk: PublicKey::into_reference(PublicKey(public_key.to_public_key()), env)?,
