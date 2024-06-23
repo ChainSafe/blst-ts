@@ -1,6 +1,9 @@
 #![deny(clippy::all)]
 
-use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint, BLST_ERROR};
+use blst::{
+  blst_p1_to_affine, blst_p2_to_affine, blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint,
+  BLST_ERROR,
+};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
@@ -234,49 +237,71 @@ pub struct AggregatedSet {
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
   let rands = create_rand_slice(sets.len());
-  let pks = sets
+  let pk = sets
     .iter()
-    .map(|set| public_key_to_affine(set.pk.0))
-    .collect::<Vec<_>>();
-  let sigs = sets
+    .map(|set| set.pk.0.to_affine())
+    .collect::<Vec<_>>()
+    .as_slice()
+    .mult(rands.as_slice(), 64);
+  let mut pk_affine = blst::blst_p1_affine::default();
+  unsafe {
+    blst_p1_to_affine(&mut pk_affine, &pk);
+  }
+
+  let sig = sets
     .iter()
     .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
-      sigs.push(signature_to_affine(
-        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
-      ));
+      sigs.push(
+        min_pk::Signature::sig_validate(set.sig.as_ref(), true)
+          .map_err(to_err)?
+          .to_affine(),
+      );
       Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?;
-
-  let pk = pks.as_slice().mult(rands.as_slice(), 64);
-  let sig = sigs.as_slice().mult(rands.as_slice(), 64);
+    })?
+    .as_slice()
+    .mult(rands.as_slice(), 64);
+  let mut sig_affine = blst::blst_p2_affine::default();
+  unsafe {
+    blst_p2_to_affine(&mut sig_affine, &sig);
+  }
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
-    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
+    pk: PublicKey::into_reference(PublicKey(min_pk::PublicKey::from_affine(pk_affine)), env)?,
+    sig: Signature::into_reference(Signature(min_pk::Signature::from_affine(sig_affine)), env)?,
   })
 }
 
 #[napi]
 pub fn aggregate_with_msm(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let pks = sets
+  let pk = sets
     .iter()
     .map(|set| public_key_to_affine(set.pk.0))
-    .collect::<Vec<_>>();
-  let sigs = sets
+    .collect::<Vec<_>>()
+    .as_slice()
+    .add();
+  let mut pk_affine = blst::blst_p1_affine::default();
+  unsafe {
+    blst_p1_to_affine(&mut pk_affine, &pk);
+  }
+
+  let sig = sets
     .iter()
     .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
       sigs.push(signature_to_affine(
         min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
       ));
       Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?;
-
-  let pk = pks.as_slice().add();
-  let sig = sigs.as_slice().add();
+    })?
+    .as_slice()
+    .add();
+  let mut sig_affine = blst::blst_p2_affine::default();
+  unsafe {
+    blst_p2_to_affine(&mut sig_affine, &sig);
+  }
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
-    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
+    pk: PublicKey::into_reference(PublicKey(min_pk::PublicKey::from_affine(pk_affine)), env)?,
+    sig: Signature::into_reference(Signature(min_pk::Signature::from_affine(sig_affine)), env)?,
   })
 }
 
@@ -539,44 +564,12 @@ fn public_key_to_affine(pk: min_pk::PublicKey) -> blst::blst_p1_affine {
   point
 }
 
-fn public_key_from_affine(pk: blst::blst_p1_affine) -> min_pk::PublicKey {
-  let mut bytes = [0u8; 96];
-  unsafe {
-    blst::blst_p1_affine_serialize(bytes.as_mut_ptr(), &pk);
-  }
-  min_pk::PublicKey::deserialize(&bytes).unwrap()
-}
-
-fn public_key_from_projective(pk: blst::blst_p1) -> min_pk::PublicKey {
-  let mut bytes = [0u8; 96];
-  unsafe {
-    blst::blst_p1_serialize(bytes.as_mut_ptr(), &pk);
-  }
-  min_pk::PublicKey::deserialize(&bytes).unwrap()
-}
-
 fn signature_to_affine(sig: min_pk::Signature) -> blst::blst_p2_affine {
   let mut point = blst::blst_p2_affine::default();
   unsafe {
     blst::blst_p2_deserialize(&mut point, sig.serialize().as_ptr());
   }
   point
-}
-
-fn signature_from_affine(sig: blst::blst_p2_affine) -> min_pk::Signature {
-  let mut bytes = [0u8; 192];
-  unsafe {
-    blst::blst_p2_affine_serialize(bytes.as_mut_ptr(), &sig);
-  }
-  min_pk::Signature::deserialize(&bytes).unwrap()
-}
-
-fn signature_from_projective(sig: blst::blst_p2) -> min_pk::Signature {
-  let mut bytes = [0u8; 192];
-  unsafe {
-    blst::blst_p2_serialize(bytes.as_mut_ptr(), &sig);
-  }
-  min_pk::Signature::deserialize(&bytes).unwrap()
 }
 
 #[napi]
