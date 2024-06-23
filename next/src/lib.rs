@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 
-use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, BLST_ERROR};
+use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint, BLST_ERROR};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
@@ -233,33 +233,26 @@ pub struct AggregatedSet {
 
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let scalars = create_rand_scalars(sets.len());
-  let rands = scalars
+  let rands = create_rand_slice(sets.len());
+  let pks = sets
     .iter()
-    .map(|rand| rand.b.as_slice())
+    .map(|set| public_key_to_affine(set.pk.0))
     .collect::<Vec<_>>();
-  let pks = sets.iter().map(|set| &set.pk.0).collect::<Vec<_>>();
-  let mut sigs = Vec::new();
-  sigs.reserve(sets.len());
+  let sigs = sets
+    .iter()
+    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
+      sigs.push(signature_to_affine(
+        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
+      ));
+      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
+    })?;
 
-  for (i, set) in sets.iter().enumerate() {
-    sigs[i] = min_pk::Signature::sig_validate(&set.sig, true).map_err(to_err)?;
-  }
-
-  let public_key =
-    min_pk::AggregatePublicKey::aggregate_with_randomness(&pks, false, rands.as_slice(), 64)
-      .map_err(to_err)?;
-  let signature = min_pk::AggregateSignature::aggregate_with_randomness(
-    sigs.iter().collect::<Vec<_>>().as_slice(),
-    false,
-    rands.as_slice(),
-    64,
-  )
-  .map_err(to_err)?;
+  let pk = pks.as_slice().mult(rands.as_slice(), 64);
+  let sig = sigs.as_slice().mult(rands.as_slice(), 64);
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(public_key.to_public_key()), env)?,
-    sig: Signature::into_reference(Signature(signature.to_signature()), env)?,
+    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
+    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
   })
 }
 
@@ -503,4 +496,85 @@ fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
   (0..len)
     .map(|_| create_scalar(rand_non_zero(&mut rng)))
     .collect()
+}
+
+/// Creates a vector of random bytes from a vector of random scalars
+fn create_rand_slice(len: usize) -> Vec<u8> {
+  create_rand_scalars(len)
+    .iter()
+    .map(|s| s.b)
+    .flatten()
+    .collect()
+}
+
+fn public_key_to_affine(pk: min_pk::PublicKey) -> blst::blst_p1_affine {
+  let mut point = blst::blst_p1_affine::default();
+  unsafe {
+    blst::blst_p1_deserialize(&mut point, pk.serialize().as_ptr());
+  }
+  point
+}
+
+fn public_key_from_affine(pk: blst::blst_p1_affine) -> min_pk::PublicKey {
+  let mut bytes = [0u8; 96];
+  unsafe {
+    blst::blst_p1_affine_serialize(bytes.as_mut_ptr(), &pk);
+  }
+  min_pk::PublicKey::deserialize(&bytes).unwrap()
+}
+
+fn public_key_from_projective(pk: blst::blst_p1) -> min_pk::PublicKey {
+  let mut bytes = [0u8; 96];
+  unsafe {
+    blst::blst_p1_serialize(bytes.as_mut_ptr(), &pk);
+  }
+  min_pk::PublicKey::deserialize(&bytes).unwrap()
+}
+
+fn signature_to_affine(sig: min_pk::Signature) -> blst::blst_p2_affine {
+  let mut point = blst::blst_p2_affine::default();
+  unsafe {
+    blst::blst_p2_deserialize(&mut point, sig.serialize().as_ptr());
+  }
+  point
+}
+
+fn signature_from_affine(sig: blst::blst_p2_affine) -> min_pk::Signature {
+  let mut bytes = [0u8; 192];
+  unsafe {
+    blst::blst_p2_affine_serialize(bytes.as_mut_ptr(), &sig);
+  }
+  min_pk::Signature::deserialize(&bytes).unwrap()
+}
+
+fn signature_from_projective(sig: blst::blst_p2) -> min_pk::Signature {
+  let mut bytes = [0u8; 192];
+  unsafe {
+    blst::blst_p2_serialize(bytes.as_mut_ptr(), &sig);
+  }
+  min_pk::Signature::deserialize(&bytes).unwrap()
+}
+
+#[napi]
+pub fn bench_pk_to_affine() -> u128 {
+  let sk = min_pk::SecretKey::key_gen(&[0; 32], &[]).unwrap();
+  let pk = sk.sk_to_pk();
+  let t0 = std::time::SystemTime::now();
+  for _ in 0..1000000 {
+    public_key_to_affine(pk);
+  }
+  let t1 = std::time::SystemTime::now();
+  t1.duration_since(t0).unwrap().as_nanos()
+}
+
+#[napi]
+pub fn bench_sig_to_affine() -> u128 {
+  let sk = min_pk::SecretKey::key_gen(&[0; 32], &[]).unwrap();
+  let sig = sk.sign(&[], &DST, &[]);
+  let t0 = std::time::SystemTime::now();
+  for _ in 0..1000000 {
+    signature_to_affine(sig);
+  }
+  let t1 = std::time::SystemTime::now();
+  t1.duration_since(t0).unwrap().as_nanos()
 }

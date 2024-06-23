@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync } = nativeBinding
+const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync, benchPkToAffine, benchSigToAffine } = nativeBinding
 
 module.exports.SecretKey = SecretKey
 module.exports.PublicKey = PublicKey
@@ -334,3 +334,5 @@ module.exports.aggregateVerifyAsync = aggregateVerifyAsync
 module.exports.fastAggregateVerifyAsync = fastAggregateVerifyAsync
 module.exports.fastAggregateVerifyPreAggregatedAsync = fastAggregateVerifyPreAggregatedAsync
 module.exports.verifyMultipleAggregateSignaturesAsync = verifyMultipleAggregateSignaturesAsync
+module.exports.benchPkToAffine = benchPkToAffine
+module.exports.benchSigToAffine = benchSigToAffine

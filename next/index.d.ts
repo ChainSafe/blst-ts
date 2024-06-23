@@ -35,6 +35,8 @@ export function aggregateVerifyAsync(msgs: Array<Uint8Array>, pks: Array<PublicK
 export function fastAggregateVerifyAsync(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function fastAggregateVerifyPreAggregatedAsync(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function verifyMultipleAggregateSignaturesAsync(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
+export function benchPkToAffine(): bigint
+export function benchSigToAffine(): bigint
 export class SecretKey {
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
   static deriveMasterEip2333(ikm: Uint8Array): SecretKey
