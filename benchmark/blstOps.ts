@@ -325,6 +325,47 @@ const msg = Buffer.from("Mr F was here");
     });
   }
 
+  for (const n of [32, 128, 256]) {
+    await runner.run<{pks: next.PublicKey[]; sigs: Uint8Array[]}>({
+      id: `BLS aggregation of ${n} pubkeys and signatures`,
+      before: () => {
+        const pks: next.PublicKey[] = [];
+        const sigs: Uint8Array[] = [];
+
+        for (let i = 0; i < n; i++) {
+          const sk = next.SecretKey.fromKeygen(Buffer.alloc(32, i));
+          pks.push(sk.toPublicKey());
+          sigs.push(sk.sign(msg).toBytes());
+        }
+
+        return {pks, sigs};
+      },
+      run: ({pks, sigs}) => {
+        next.aggregatePublicKeys(pks);
+        next.aggregateSerializedSignatures(sigs, true);
+      },
+    });
+    await runner.run<{pk: next.PublicKey; sig: Uint8Array}[]>({
+      id: `BLS aggregation of ${n} pubkeys and signatures - aggregateWithRandomness`,
+      before: () => {
+        const sets: {pk: next.PublicKey, sig: Uint8Array}[] = [];
+
+        for (let i = 0; i < n; i++) {
+          const sk = next.SecretKey.fromKeygen(Buffer.alloc(32, i));
+          sets.push({
+            pk: sk.toPublicKey(),
+            sig: sk.sign(msg).toBytes(),
+          });
+        }
+
+        return sets;
+      },
+      run: (sets) => {
+        next.aggregateWithRandomness(sets);
+      },
+    });
+  }
+
   // BLS verif of 6 msgs by 6 pubkeys
   // Serial batch verify 6 msgs by 6 pubkeys (with blinding)
   // Parallel batch verify of 6 msgs by 6 pubkeys (with blinding)
