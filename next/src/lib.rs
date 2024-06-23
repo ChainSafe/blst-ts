@@ -257,6 +257,30 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<
 }
 
 #[napi]
+pub fn aggregate_with_msm(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
+  let pks = sets
+    .iter()
+    .map(|set| public_key_to_affine(set.pk.0))
+    .collect::<Vec<_>>();
+  let sigs = sets
+    .iter()
+    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
+      sigs.push(signature_to_affine(
+        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
+      ));
+      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
+    })?;
+
+  let pk = pks.as_slice().add();
+  let sig = sigs.as_slice().add();
+
+  Ok(AggregatedSet {
+    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
+    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
+  })
+}
+
+#[napi]
 pub fn verify(
   msg: Uint8Array,
   pk: &PublicKey,

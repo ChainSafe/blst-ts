@@ -21,6 +21,7 @@ export interface AggregatedSet {
   sig: Signature
 }
 export function aggregateWithRandomness(sets: Array<AggregationSet>): AggregatedSet
+export function aggregateWithMsm(sets: Array<AggregationSet>): AggregatedSet
 export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidate?: boolean | undefined | null, sigGroupcheck?: boolean | undefined | null): boolean
 export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean

@@ -361,7 +361,7 @@ const msg = Buffer.from("Mr F was here");
         return sets;
       },
       run: (sets) => {
-        next.aggregateWithRandomness(sets);
+        next.aggregateWithMsm(sets);
       },
     });
   }

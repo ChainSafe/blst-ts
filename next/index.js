@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync, benchPkToAffine, benchSigToAffine } = nativeBinding
+const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, aggregateWithMsm, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync, benchPkToAffine, benchSigToAffine } = nativeBinding
 
 module.exports.SecretKey = SecretKey
 module.exports.PublicKey = PublicKey
@@ -320,6 +320,7 @@ module.exports.aggregateSignatures = aggregateSignatures
 module.exports.aggregateSerializedPublicKeys = aggregateSerializedPublicKeys
 module.exports.aggregateSerializedSignatures = aggregateSerializedSignatures
 module.exports.aggregateWithRandomness = aggregateWithRandomness
+module.exports.aggregateWithMsm = aggregateWithMsm
 module.exports.verify = verify
 module.exports.aggregateVerify = aggregateVerify
 module.exports.fastAggregateVerify = fastAggregateVerify
