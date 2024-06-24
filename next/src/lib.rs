@@ -1,9 +1,6 @@
 #![deny(clippy::all)]
 
-use blst::{
-  blst_p1_to_affine, blst_p2_to_affine, blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint,
-  BLST_ERROR,
-};
+use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint, BLST_ERROR};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
@@ -24,6 +21,13 @@ pub struct SignatureSet {
   pub msg: Uint8Array,
   pub pk: Reference<PublicKey>,
   pub sig: Reference<Signature>,
+}
+
+#[napi(object)]
+pub struct SameMessageSignatureSet {
+  pub msg: Uint8Array,
+  pub pks: Reference<Vec<PublicKey>>,
+  pub sigs: Vec<Uint8Array>,
 }
 
 #[napi]
@@ -237,71 +241,49 @@ pub struct AggregatedSet {
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
   let rands = create_rand_slice(sets.len());
-  let pk = sets
-    .iter()
-    .map(|set| set.pk.0.to_affine())
-    .collect::<Vec<_>>()
-    .as_slice()
-    .mult(rands.as_slice(), 64);
-  let mut pk_affine = blst::blst_p1_affine::default();
-  unsafe {
-    blst_p1_to_affine(&mut pk_affine, &pk);
-  }
-
-  let sig = sets
-    .iter()
-    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
-      sigs.push(
-        min_pk::Signature::sig_validate(set.sig.as_ref(), true)
-          .map_err(to_err)?
-          .to_affine(),
-      );
-      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?
-    .as_slice()
-    .mult(rands.as_slice(), 64);
-  let mut sig_affine = blst::blst_p2_affine::default();
-  unsafe {
-    blst_p2_to_affine(&mut sig_affine, &sig);
-  }
-
-  Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(min_pk::PublicKey::from_affine(pk_affine)), env)?,
-    sig: Signature::into_reference(Signature(min_pk::Signature::from_affine(sig_affine)), env)?,
-  })
-}
-
-#[napi]
-pub fn aggregate_with_msm(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let pk = sets
+  let pks = sets
     .iter()
     .map(|set| public_key_to_affine(set.pk.0))
-    .collect::<Vec<_>>()
-    .as_slice()
-    .add();
-  let mut pk_affine = blst::blst_p1_affine::default();
-  unsafe {
-    blst_p1_to_affine(&mut pk_affine, &pk);
-  }
-
-  let sig = sets
+    .collect::<Vec<_>>();
+  let sigs = sets
     .iter()
     .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
       sigs.push(signature_to_affine(
         min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
       ));
       Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?
-    .as_slice()
-    .add();
-  let mut sig_affine = blst::blst_p2_affine::default();
-  unsafe {
-    blst_p2_to_affine(&mut sig_affine, &sig);
-  }
+    })?;
+
+  let pk = pks.as_slice().mult(rands.as_slice(), 64);
+  let sig = sigs.as_slice().mult(rands.as_slice(), 64);
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(min_pk::PublicKey::from_affine(pk_affine)), env)?,
-    sig: Signature::into_reference(Signature(min_pk::Signature::from_affine(sig_affine)), env)?,
+    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
+    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
+  })
+}
+
+#[napi]
+pub fn aggregate_with_msm(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
+  let pks = sets
+    .iter()
+    .map(|set| public_key_to_affine(set.pk.0))
+    .collect::<Vec<_>>();
+  let sigs = sets
+    .iter()
+    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
+      sigs.push(signature_to_affine(
+        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
+      ));
+      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
+    })?;
+
+  let pk = pks.as_slice().add();
+  let sig = sigs.as_slice().add();
+
+  Ok(AggregatedSet {
+    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
+    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
   })
 }
 
@@ -394,6 +376,33 @@ pub fn verify_multiple_aggregate_signatures(
     &rands,
     64,
   ) == BLST_ERROR::BLST_SUCCESS
+}
+
+#[napi]
+pub fn verify_multiple_aggregate_signatures_same_message(
+  sets: Vec<SameMessageSignatureSet>,
+  pks_validate: Option<bool>,
+  sigs_groupcheck: Option<bool>,
+) -> Result<bool> {
+  let (msgs, pks, sigs) = convert_same_message_sets(&sets);
+  let (sigs, rands) = create_aggregated_signatures(sigs)?;
+  let pks = pks
+    .iter()
+    .try_fold(Vec::with_capacity(pks.len()), |mut acc, pks| {
+      let agg_pk = min_pk::AggregatePublicKey::aggregate(pks, pks_validate.unwrap_or(false)).map_err(to_err)?;
+      acc.push(agg_pk.to_public_key());
+      Ok::<Vec<min_pk::PublicKey>, Error>(acc)
+    })?;
+  Ok(min_pk::Signature::verify_multiple_aggregate_signatures(
+    &msgs,
+    &DST,
+    &pks.iter().map(|pk| pk).collect::<Vec<_>>(),
+    pks_validate.unwrap_or(false),
+    &sigs.iter().map(|sig| sig).collect::<Vec<_>>(),
+    sigs_groupcheck.unwrap_or(false),
+    &rands,
+    64,
+  ) == BLST_ERROR::BLST_SUCCESS)
 }
 
 #[napi]
@@ -517,6 +526,27 @@ pub fn convert_sets<'a>(
   (msgs, pks, sigs)
 }
 
+pub fn convert_same_message_sets<'a>(
+  sets: &'a [SameMessageSignatureSet],
+) -> (
+  Vec<&'a [u8]>,
+  Vec<Vec<&'a min_pk::PublicKey>>,
+  Vec<Vec<&'a [u8]>>,
+) {
+  let len = sets.len();
+  let mut msgs = Vec::with_capacity(len);
+  let mut pks = Vec::with_capacity(len);
+  let mut sigs = Vec::with_capacity(len);
+
+  for set in sets {
+    msgs.push(set.msg.as_ref());
+    pks.push(set.pks.iter().map(|pk| &pk.0).collect::<Vec<_>>());
+    sigs.push(set.sigs.iter().map(|sig| sig.as_ref()).collect::<Vec<_>>());
+  }
+
+  (msgs, pks, sigs)
+}
+
 fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
   loop {
     let r = rng.gen();
@@ -539,12 +569,74 @@ fn create_scalar(i: u64) -> blst_scalar {
   }
 }
 
+fn create_fr(i: u64) -> blst::blst_fr {
+  let mut vals = [0u64; 4];
+  vals[0] = i;
+  let mut scalar = std::mem::MaybeUninit::<blst::blst_fr>::uninit();
+  // TODO: remove this `unsafe` code-block once we get a safe option from `blst`.
+  //
+  // https://github.com/sigp/lighthouse/issues/1720
+  unsafe {
+    blst::blst_fr_from_uint64(scalar.as_mut_ptr(), vals.as_ptr());
+    scalar.assume_init()
+  }
+}
+
+fn fr_addi(out: &mut blst::blst_fr, a: &blst::blst_fr) -> () {
+  unsafe {
+    blst::blst_fr_add(out, a, out);
+  }
+  ()
+}
+
+fn u64_array_to_u8_array(input: [u64; 4]) -> [u8; 32] {
+    let mut output = [0u8; 32];
+    for (i, &value) in input.iter().enumerate() {
+        let bytes = value.to_le_bytes();
+        output[i*8..(i+1)*8].copy_from_slice(&bytes);
+    }
+    output
+}
+
+fn fr_to_bytes(a: &blst::blst_fr) -> [u8; 32] {
+  u64_array_to_u8_array(a.l)
+}
+
 /// Creates a vector of random scalars, each 64 bits
 fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
   let mut rng = rand::thread_rng();
   (0..len)
     .map(|_| create_scalar(rand_non_zero(&mut rng)))
     .collect()
+}
+
+fn create_aggregated_signatures(
+  sigs: Vec<Vec<&[u8]>>,
+) -> Result<(Vec<min_pk::Signature>, Vec<blst_scalar>)> {
+  let mut rng = rand::thread_rng();
+  let mut agg_sigs = Vec::with_capacity(sigs.len());
+  let mut rands = Vec::with_capacity(sigs.len());
+
+  for sigs in sigs {
+    let mut rand_agg = Vec::with_capacity(32 * sigs.len());
+    let mut rand = blst::blst_fr::default();
+    for _ in 0..sigs.len() {
+      let r_i = create_fr(rand_non_zero(&mut rng));
+      fr_addi(&mut rand, &r_i);
+      rand_agg.extend_from_slice(fr_to_bytes(&r_i).as_ref())
+    }
+    let sigs = sigs
+      .iter()
+      .try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
+        sigs.push(signature_to_affine(min_pk::Signature::sig_validate(sig, true).map_err(to_err)?));
+        Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
+      })?;
+    let sig = signature_from_projective(sigs.as_slice().mult(&rand_agg, 64));
+    agg_sigs.push(sig);
+    rands.push(blst_scalar { b: fr_to_bytes(&rand) });
+  }
+
+  Ok((agg_sigs, rands))
 }
 
 /// Creates a vector of random bytes from a vector of random scalars
@@ -557,19 +649,53 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
 }
 
 fn public_key_to_affine(pk: min_pk::PublicKey) -> blst::blst_p1_affine {
-  let mut point = blst::blst_p1_affine::default();
-  unsafe {
-    blst::blst_p1_deserialize(&mut point, pk.serialize().as_ptr());
-  }
+  // TODO big bad NOTE NOTE NOTE NOTE Can be undefined behavior.
+  let point = unsafe { *(&pk as *const min_pk::PublicKey as *const blst::blst_p1_affine) };
   point
 }
 
-fn signature_to_affine(sig: min_pk::Signature) -> blst::blst_p2_affine {
-  let mut point = blst::blst_p2_affine::default();
+fn public_key_from_affine(pk: blst::blst_p1_affine) -> min_pk::PublicKey {
+  let mut bytes = [0u8; 96];
   unsafe {
-    blst::blst_p2_deserialize(&mut point, sig.serialize().as_ptr());
+    blst::blst_p1_affine_serialize(bytes.as_mut_ptr(), &pk);
   }
+  min_pk::PublicKey::deserialize(&bytes).unwrap()
+}
+
+fn public_key_from_projective(pk: blst::blst_p1) -> min_pk::PublicKey {
+  let mut aff = blst::blst_p1_affine::default();
+  unsafe {
+    blst::blst_p1_to_affine(&mut aff, &pk);
+  }
+  // Unsafe case blst_p1_affine to PublicKey
+  // TODO NOTE NOTE NOTE NOTE Can be undefined behavior.
+  let pk = unsafe { *(&aff as *const blst::blst_p1_affine as *const min_pk::PublicKey) };
+  pk
+}
+
+fn signature_to_affine(sig: min_pk::Signature) -> blst::blst_p2_affine {
+  // TODO big bad NOTE NOTE NOTE NOTE Can be undefined behavior.
+  let point = unsafe { *(&sig as *const min_pk::Signature as *const blst::blst_p2_affine) };
   point
+}
+
+fn signature_from_affine(sig: blst::blst_p2_affine) -> min_pk::Signature {
+  let mut bytes = [0u8; 192];
+  unsafe {
+    blst::blst_p2_affine_serialize(bytes.as_mut_ptr(), &sig);
+  }
+  min_pk::Signature::deserialize(&bytes).unwrap()
+}
+
+fn signature_from_projective(sig: blst::blst_p2) -> min_pk::Signature {
+  let mut aff = blst::blst_p2_affine::default();
+  unsafe {
+    blst::blst_p2_to_affine(&mut aff, &sig);
+  }
+  // Unsafe case blst_p2_affine to Signature
+  // TODO NOTE NOTE NOTE NOTE Can be undefined behavior.
+  let sig = unsafe { *(&aff as *const blst::blst_p2_affine as *const min_pk::Signature) };
+  sig
 }
 
 #[napi]
