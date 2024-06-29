@@ -20,7 +20,7 @@ pub struct Signature(min_pk::Signature);
 pub struct SignatureSet {
   pub msg: Uint8Array,
   pub pk: Reference<PublicKey>,
-  pub sig: Reference<Signature>,
+  pub sig: Uint8Array,
 }
 
 #[napi(object)]
@@ -41,7 +41,6 @@ pub struct AggregatedSet {
   pub pk: Reference<PublicKey>,
   pub sig: Reference<Signature>,
 }
-
 
 #[napi]
 impl SecretKey {
@@ -326,19 +325,21 @@ pub fn verify_multiple_aggregate_signatures(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
-) -> bool {
-  let (msgs, pks, sigs) = convert_signature_sets(&sets);
+) -> Result<bool> {
+  let (msgs, pks, sigs) = convert_signature_sets(&sets)?;
   let rands = create_rand_scalars(sets.len());
-  min_pk::Signature::verify_multiple_aggregate_signatures(
-    &msgs,
-    &DST,
-    &pks,
-    pks_validate.unwrap_or(false),
-    &sigs,
-    sigs_groupcheck.unwrap_or(false),
-    &rands,
-    64,
-  ) == BLST_ERROR::BLST_SUCCESS
+  Ok(
+    min_pk::Signature::verify_multiple_aggregate_signatures(
+      &msgs,
+      &DST,
+      &pks,
+      pks_validate.unwrap_or(false),
+      &sigs.iter().map(|sig| sig).collect::<Vec<_>>(),
+      sigs_groupcheck.unwrap_or(false),
+      &rands,
+      64,
+    ) == BLST_ERROR::BLST_SUCCESS,
+  )
 }
 
 #[napi]
@@ -450,7 +451,7 @@ pub async fn verify_multiple_aggregate_signatures_async(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
-) -> bool {
+) -> Result<bool> {
   verify_multiple_aggregate_signatures(sets, pks_validate, sigs_groupcheck)
 }
 
@@ -460,11 +461,7 @@ pub async fn verify_multiple_aggregate_signatures_same_message_async(
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
 ) -> Result<bool> {
-  verify_multiple_aggregate_signatures_same_message(
-    sets,
-    pks_validate,
-    sigs_groupcheck,
-  )
+  verify_multiple_aggregate_signatures_same_message(sets, pks_validate, sigs_groupcheck)
 }
 
 fn blst_error_to_string(error: BLST_ERROR) -> String {
@@ -486,11 +483,11 @@ fn to_err(blst_error: BLST_ERROR) -> napi::Error {
 
 fn convert_signature_sets<'a>(
   sets: &'a [SignatureSet],
-) -> (
+) -> Result<(
   Vec<&'a [u8]>,
   Vec<&'a min_pk::PublicKey>,
-  Vec<&'a min_pk::Signature>,
-) {
+  Vec<min_pk::Signature>,
+)> {
   let len = sets.len();
   let mut msgs = Vec::with_capacity(len);
   let mut pks = Vec::with_capacity(len);
@@ -499,10 +496,10 @@ fn convert_signature_sets<'a>(
   for set in sets {
     msgs.push(set.msg.as_ref());
     pks.push(&set.pk.0);
-    sigs.push(&set.sig.0);
+    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?);
   }
 
-  (msgs, pks, sigs)
+  Ok((msgs, pks, sigs))
 }
 
 fn convert_aggregation_sets(
