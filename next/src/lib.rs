@@ -30,6 +30,19 @@ pub struct SameMessageSignatureSet {
   pub sigs: Vec<Uint8Array>,
 }
 
+#[napi(object)]
+pub struct AggregationSet {
+  pub pk: Reference<PublicKey>,
+  pub sig: Uint8Array,
+}
+
+#[napi(object)]
+pub struct AggregatedSet {
+  pub pk: Reference<PublicKey>,
+  pub sig: Reference<Signature>,
+}
+
+
 #[napi]
 impl SecretKey {
   #[napi(factory)]
@@ -226,64 +239,14 @@ pub fn aggregate_serialized_signatures(
     .map_err(to_err)
 }
 
-#[napi(object)]
-pub struct AggregationSet {
-  pub pk: Reference<PublicKey>,
-  pub sig: Uint8Array,
-}
-
-#[napi(object)]
-pub struct AggregatedSet {
-  pub pk: Reference<PublicKey>,
-  pub sig: Reference<Signature>,
-}
-
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let rands = create_rand_slice(sets.len());
-  let pks = sets
-    .iter()
-    .map(|set| public_key_to_affine(set.pk.0))
-    .collect::<Vec<_>>();
-  let sigs = sets
-    .iter()
-    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
-      sigs.push(signature_to_affine(
-        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
-      ));
-      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?;
-
-  let pk = pks.as_slice().mult(rands.as_slice(), 64);
-  let sig = sigs.as_slice().mult(rands.as_slice(), 64);
+  let (pks, sigs) = convert_aggregation_sets(&sets)?;
+  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs)?;
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
-    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
-  })
-}
-
-#[napi]
-pub fn aggregate_with_msm(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
-  let pks = sets
-    .iter()
-    .map(|set| public_key_to_affine(set.pk.0))
-    .collect::<Vec<_>>();
-  let sigs = sets
-    .iter()
-    .try_fold(Vec::with_capacity(sets.len()), |mut sigs, set| {
-      sigs.push(signature_to_affine(
-        min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?,
-      ));
-      Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-    })?;
-
-  let pk = pks.as_slice().add();
-  let sig = sigs.as_slice().add();
-
-  Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(public_key_from_projective(pk)), env)?,
-    sig: Signature::into_reference(Signature(signature_from_projective(sig)), env)?,
+    pk: PublicKey::into_reference(PublicKey(pk), env)?,
+    sig: Signature::into_reference(Signature(sig), env)?,
   })
 }
 
@@ -364,7 +327,7 @@ pub fn verify_multiple_aggregate_signatures(
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
 ) -> bool {
-  let (msgs, pks, sigs) = convert_sets(&sets);
+  let (msgs, pks, sigs) = convert_signature_sets(&sets);
   let rands = create_rand_scalars(sets.len());
   min_pk::Signature::verify_multiple_aggregate_signatures(
     &msgs,
@@ -384,25 +347,28 @@ pub fn verify_multiple_aggregate_signatures_same_message(
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
 ) -> Result<bool> {
-  let (msgs, pks, sigs) = convert_same_message_sets(&sets);
-  let (sigs, rands) = create_aggregated_signatures(sigs)?;
-  let pks = pks
-    .iter()
-    .try_fold(Vec::with_capacity(pks.len()), |mut acc, pks| {
-      let agg_pk = min_pk::AggregatePublicKey::aggregate(pks, pks_validate.unwrap_or(false)).map_err(to_err)?;
-      acc.push(agg_pk.to_public_key());
-      Ok::<Vec<min_pk::PublicKey>, Error>(acc)
-    })?;
-  Ok(min_pk::Signature::verify_multiple_aggregate_signatures(
-    &msgs,
-    &DST,
-    &pks.iter().map(|pk| pk).collect::<Vec<_>>(),
-    pks_validate.unwrap_or(false),
-    &sigs.iter().map(|sig| sig).collect::<Vec<_>>(),
-    sigs_groupcheck.unwrap_or(false),
-    &rands,
-    64,
-  ) == BLST_ERROR::BLST_SUCCESS)
+  let (msgs, pks, sigs) = convert_same_message_signature_sets(&sets)?;
+  let len = msgs.len();
+  let mut pks_rand = Vec::with_capacity(len);
+  let mut sigs_rand = Vec::with_capacity(len);
+  for i in 0..len {
+    let (pk, sig) = aggregate_with_randomness_native(&pks[i], &sigs[i])?;
+    pks_rand.push(pk);
+    sigs_rand.push(sig);
+  }
+  let rands = create_rand_scalars(len);
+  Ok(
+    min_pk::Signature::verify_multiple_aggregate_signatures(
+      &msgs,
+      &DST,
+      &pks_rand.iter().map(|pk| pk).collect::<Vec<_>>(),
+      pks_validate.unwrap_or(false),
+      &sigs_rand.iter().map(|sig| sig).collect::<Vec<_>>(),
+      sigs_groupcheck.unwrap_or(false),
+      &rands,
+      64,
+    ) == BLST_ERROR::BLST_SUCCESS,
+  )
 }
 
 #[napi]
@@ -488,6 +454,19 @@ pub async fn verify_multiple_aggregate_signatures_async(
   verify_multiple_aggregate_signatures(sets, pks_validate, sigs_groupcheck)
 }
 
+#[napi]
+pub async fn verify_multiple_aggregate_signatures_same_message_async(
+  sets: Vec<SameMessageSignatureSet>,
+  pks_validate: Option<bool>,
+  sigs_groupcheck: Option<bool>,
+) -> Result<bool> {
+  verify_multiple_aggregate_signatures_same_message(
+    sets,
+    pks_validate,
+    sigs_groupcheck,
+  )
+}
+
 fn blst_error_to_string(error: BLST_ERROR) -> String {
   match error {
     BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS".to_string(),
@@ -505,7 +484,7 @@ fn to_err(blst_error: BLST_ERROR) -> napi::Error {
   napi::Error::from_reason(blst_error_to_string(blst_error))
 }
 
-pub fn convert_sets<'a>(
+fn convert_signature_sets<'a>(
   sets: &'a [SignatureSet],
 ) -> (
   Vec<&'a [u8]>,
@@ -526,13 +505,28 @@ pub fn convert_sets<'a>(
   (msgs, pks, sigs)
 }
 
-pub fn convert_same_message_sets<'a>(
+fn convert_aggregation_sets(
+  sets: &[AggregationSet],
+) -> Result<(Vec<min_pk::PublicKey>, Vec<min_pk::Signature>)> {
+  let len = sets.len();
+  let mut pks = Vec::with_capacity(len);
+  let mut sigs = Vec::with_capacity(len);
+
+  for set in sets {
+    pks.push(set.pk.0);
+    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?);
+  }
+
+  Ok((pks, sigs))
+}
+
+fn convert_same_message_signature_sets<'a>(
   sets: &'a [SameMessageSignatureSet],
-) -> (
+) -> Result<(
   Vec<&'a [u8]>,
-  Vec<Vec<&'a min_pk::PublicKey>>,
-  Vec<Vec<&'a [u8]>>,
-) {
+  Vec<Vec<min_pk::PublicKey>>,
+  Vec<Vec<min_pk::Signature>>,
+)> {
   let len = sets.len();
   let mut msgs = Vec::with_capacity(len);
   let mut pks = Vec::with_capacity(len);
@@ -540,11 +534,11 @@ pub fn convert_same_message_sets<'a>(
 
   for set in sets {
     msgs.push(set.msg.as_ref());
-    pks.push(set.pks.iter().map(|pk| &pk.0).collect::<Vec<_>>());
-    sigs.push(set.sigs.iter().map(|sig| sig.as_ref()).collect::<Vec<_>>());
+    pks.push(set.pks.iter().map(|pk| pk.0).collect::<Vec<_>>());
+    sigs.push(validate_signatures(&set.sigs)?);
   }
 
-  (msgs, pks, sigs)
+  Ok((msgs, pks, sigs))
 }
 
 fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
@@ -569,74 +563,12 @@ fn create_scalar(i: u64) -> blst_scalar {
   }
 }
 
-fn create_fr(i: u64) -> blst::blst_fr {
-  let mut vals = [0u64; 4];
-  vals[0] = i;
-  let mut scalar = std::mem::MaybeUninit::<blst::blst_fr>::uninit();
-  // TODO: remove this `unsafe` code-block once we get a safe option from `blst`.
-  //
-  // https://github.com/sigp/lighthouse/issues/1720
-  unsafe {
-    blst::blst_fr_from_uint64(scalar.as_mut_ptr(), vals.as_ptr());
-    scalar.assume_init()
-  }
-}
-
-fn fr_addi(out: &mut blst::blst_fr, a: &blst::blst_fr) -> () {
-  unsafe {
-    blst::blst_fr_add(out, a, out);
-  }
-  ()
-}
-
-fn u64_array_to_u8_array(input: [u64; 4]) -> [u8; 32] {
-    let mut output = [0u8; 32];
-    for (i, &value) in input.iter().enumerate() {
-        let bytes = value.to_le_bytes();
-        output[i*8..(i+1)*8].copy_from_slice(&bytes);
-    }
-    output
-}
-
-fn fr_to_bytes(a: &blst::blst_fr) -> [u8; 32] {
-  u64_array_to_u8_array(a.l)
-}
-
 /// Creates a vector of random scalars, each 64 bits
 fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
   let mut rng = rand::thread_rng();
   (0..len)
     .map(|_| create_scalar(rand_non_zero(&mut rng)))
     .collect()
-}
-
-fn create_aggregated_signatures(
-  sigs: Vec<Vec<&[u8]>>,
-) -> Result<(Vec<min_pk::Signature>, Vec<blst_scalar>)> {
-  let mut rng = rand::thread_rng();
-  let mut agg_sigs = Vec::with_capacity(sigs.len());
-  let mut rands = Vec::with_capacity(sigs.len());
-
-  for sigs in sigs {
-    let mut rand_agg = Vec::with_capacity(32 * sigs.len());
-    let mut rand = blst::blst_fr::default();
-    for _ in 0..sigs.len() {
-      let r_i = create_fr(rand_non_zero(&mut rng));
-      fr_addi(&mut rand, &r_i);
-      rand_agg.extend_from_slice(fr_to_bytes(&r_i).as_ref())
-    }
-    let sigs = sigs
-      .iter()
-      .try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
-        sigs.push(signature_to_affine(min_pk::Signature::sig_validate(sig, true).map_err(to_err)?));
-        Ok::<Vec<blst::blst_p2_affine>, Error>(sigs)
-      })?;
-    let sig = signature_from_projective(sigs.as_slice().mult(&rand_agg, 64));
-    agg_sigs.push(sig);
-    rands.push(blst_scalar { b: fr_to_bytes(&rand) });
-  }
-
-  Ok((agg_sigs, rands))
 }
 
 /// Creates a vector of random bytes from a vector of random scalars
@@ -648,76 +580,30 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
     .collect()
 }
 
-fn public_key_to_affine(pk: min_pk::PublicKey) -> blst::blst_p1_affine {
-  // TODO big bad NOTE NOTE NOTE NOTE Can be undefined behavior.
-  let point = unsafe { *(&pk as *const min_pk::PublicKey as *const blst::blst_p1_affine) };
-  point
-}
-
-fn public_key_from_affine(pk: blst::blst_p1_affine) -> min_pk::PublicKey {
-  let mut bytes = [0u8; 96];
-  unsafe {
-    blst::blst_p1_affine_serialize(bytes.as_mut_ptr(), &pk);
+fn aggregate_with_randomness_native(
+  pks: &Vec<min_pk::PublicKey>,
+  sigs: &Vec<min_pk::Signature>,
+) -> Result<(min_pk::PublicKey, min_pk::Signature)> {
+  if pks.len() != sigs.len() {
+    return Err(Error::from_reason(
+      "Public keys and signatures must have the same length",
+    ));
   }
-  min_pk::PublicKey::deserialize(&bytes).unwrap()
+
+  let rands = create_rand_slice(pks.len());
+  let pk = pks.as_slice().mult(rands.as_slice(), 64).to_public_key();
+  let sig = sigs.as_slice().mult(rands.as_slice(), 64).to_signature();
+
+  Ok((pk, sig))
 }
 
-fn public_key_from_projective(pk: blst::blst_p1) -> min_pk::PublicKey {
-  let mut aff = blst::blst_p1_affine::default();
-  unsafe {
-    blst::blst_p1_to_affine(&mut aff, &pk);
-  }
-  // Unsafe case blst_p1_affine to PublicKey
-  // TODO NOTE NOTE NOTE NOTE Can be undefined behavior.
-  let pk = unsafe { *(&aff as *const blst::blst_p1_affine as *const min_pk::PublicKey) };
-  pk
-}
-
-fn signature_to_affine(sig: min_pk::Signature) -> blst::blst_p2_affine {
-  // TODO big bad NOTE NOTE NOTE NOTE Can be undefined behavior.
-  let point = unsafe { *(&sig as *const min_pk::Signature as *const blst::blst_p2_affine) };
-  point
-}
-
-fn signature_from_affine(sig: blst::blst_p2_affine) -> min_pk::Signature {
-  let mut bytes = [0u8; 192];
-  unsafe {
-    blst::blst_p2_affine_serialize(bytes.as_mut_ptr(), &sig);
-  }
-  min_pk::Signature::deserialize(&bytes).unwrap()
-}
-
-fn signature_from_projective(sig: blst::blst_p2) -> min_pk::Signature {
-  let mut aff = blst::blst_p2_affine::default();
-  unsafe {
-    blst::blst_p2_to_affine(&mut aff, &sig);
-  }
-  // Unsafe case blst_p2_affine to Signature
-  // TODO NOTE NOTE NOTE NOTE Can be undefined behavior.
-  let sig = unsafe { *(&aff as *const blst::blst_p2_affine as *const min_pk::Signature) };
-  sig
-}
-
-#[napi]
-pub fn bench_pk_to_affine() -> u128 {
-  let sk = min_pk::SecretKey::key_gen(&[0; 32], &[]).unwrap();
-  let pk = sk.sk_to_pk();
-  let t0 = std::time::SystemTime::now();
-  for _ in 0..1000000 {
-    public_key_to_affine(pk);
-  }
-  let t1 = std::time::SystemTime::now();
-  t1.duration_since(t0).unwrap().as_nanos()
-}
-
-#[napi]
-pub fn bench_sig_to_affine() -> u128 {
-  let sk = min_pk::SecretKey::key_gen(&[0; 32], &[]).unwrap();
-  let sig = sk.sign(&[], &DST, &[]);
-  let t0 = std::time::SystemTime::now();
-  for _ in 0..1000000 {
-    signature_to_affine(sig);
-  }
-  let t1 = std::time::SystemTime::now();
-  t1.duration_since(t0).unwrap().as_nanos()
+fn validate_signatures(sigs: &Vec<Uint8Array>) -> Result<Vec<min_pk::Signature>> {
+  Ok(
+    sigs
+      .iter()
+      .try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
+        sigs.push(min_pk::Signature::sig_validate(sig.as_ref(), true).map_err(to_err)?);
+        Ok::<Vec<min_pk::Signature>, Error>(sigs)
+      })?,
+  )
 }
