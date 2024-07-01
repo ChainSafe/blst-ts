@@ -10,8 +10,7 @@ export interface SignatureSet {
 }
 export interface SameMessageSignatureSet {
   msg: Uint8Array
-  pks: Array<PublicKey>
-  sigs: Array<Uint8Array>
+  sets: Array<AggregationSet>
 }
 export interface AggregationSet {
   pk: PublicKey
