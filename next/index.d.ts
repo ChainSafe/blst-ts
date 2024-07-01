@@ -29,6 +29,14 @@ export interface SameMessageSignatureSetResult {
   attempts: number
   results: Array<boolean>
 }
+export interface SameMessageSignatureSetsResult {
+  startTimeSec: number
+  startTimeNs: number
+  endTimeSec: number
+  endTimeNs: number
+  attempts: number
+  results: Array<Array<boolean>>
+}
 export function aggregatePublicKeys(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): PublicKey
 export function aggregateSignatures(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Signature
 export function aggregateSerializedPublicKeys(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): PublicKey
@@ -41,6 +49,7 @@ export function fastAggregateVerifyPreAggregated(msg: Uint8Array, pk: PublicKey,
 export function verifyMultipleAggregateSignatures(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function verifyMultipleSignaturesSameMessage(set: SameMessageSignatureSet): boolean
 export function verifyMultipleSignaturesSameMessageWithRetries(set: SameMessageSignatureSet): SameMessageSignatureSetResult
+export function verifyMultipleSignaturesSameMessagesWithRetries(sets: Array<SameMessageSignatureSet>): SameMessageSignatureSetsResult
 export function aggregatePublicKeysAsync(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
 export function aggregateSignaturesAsync(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Promise<Signature>
 export function aggregateSerializedPublicKeysAsync(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
@@ -52,6 +61,7 @@ export function fastAggregateVerifyPreAggregatedAsync(msg: Uint8Array, pk: Publi
 export function verifyMultipleAggregateSignaturesAsync(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function verifyMultipleSignaturesSameMessageAsync(set: SameMessageSignatureSet): Promise<boolean>
 export function verifyMultipleSignaturesSameMessageWithRetriesAsync(set: SameMessageSignatureSet): Promise<SameMessageSignatureSetResult>
+export function verifyMultipleSignaturesSameMessagesWithRetriesAsync(sets: Array<SameMessageSignatureSet>): Promise<SameMessageSignatureSetsResult>
 export class SecretKey {
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
   static deriveMasterEip2333(ikm: Uint8Array): SecretKey

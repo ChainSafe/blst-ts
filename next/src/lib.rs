@@ -52,6 +52,16 @@ pub struct SameMessageSignatureSetResult {
   pub results: Vec<bool>,
 }
 
+#[napi(object)]
+pub struct SameMessageSignatureSetsResult {
+  pub start_time_sec: u32,
+  pub start_time_ns: u32,
+  pub end_time_sec: u32,
+  pub end_time_ns: u32,
+  pub attempts: u32,
+  pub results: Vec<Vec<bool>>,
+}
+
 #[napi]
 impl SecretKey {
   #[napi(factory)]
@@ -421,6 +431,102 @@ pub fn verify_multiple_signatures_same_message_with_retries(
 }
 
 #[napi]
+pub fn verify_multiple_signatures_same_messages_with_retries(
+  sets: Vec<SameMessageSignatureSet>,
+) -> SameMessageSignatureSetsResult {
+  let t0 = std::time::SystemTime::now();
+
+  let mut pks_agg = Vec::with_capacity(sets.len());
+  let mut sigs_agg = Vec::with_capacity(sets.len());
+  let mut results_sets = Vec::with_capacity(sets.len());
+  let mut msgs_sets = Vec::with_capacity(sets.len());
+  let mut pks_sets = Vec::with_capacity(sets.len());
+  let mut sigs_sets = Vec::with_capacity(sets.len());
+  let mut ids_sets = Vec::with_capacity(sets.len());
+  let mut rands_sets = Vec::with_capacity(sets.len());
+  for i in 0..sets.len() {
+    // first deserialize signatures for all sets
+    let (msg, pks_all, sigs_results) = convert_same_message_signature_set(&sets[i]);
+    let mut results = vec![true; sigs_results.len()];
+    let mut pks = Vec::with_capacity(pks_all.len());
+    let mut sigs = Vec::with_capacity(sigs_results.len());
+    let mut ids = Vec::with_capacity(sigs_results.len());
+    // filter out invalid signatures
+    for (i, sig_result) in sigs_results.iter().enumerate() {
+      match sig_result {
+        Ok(sig) => {
+          pks.push(pks_all[i]);
+          sigs.push(*sig);
+          ids.push(i);
+        }
+        Err(_) => {
+          results[i] = false;
+        }
+      }
+    }
+    let rands = create_rand_slice(pks.len());
+
+    let (pk_agg, sig_agg) = aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice());
+    pks_agg.push(pk_agg);
+    sigs_agg.push(sig_agg);
+
+    results_sets.push(results);
+    msgs_sets.push(msg);
+    pks_sets.push(pks);
+    sigs_sets.push(sigs);
+    ids_sets.push(ids);
+    rands_sets.push(rands);
+  }
+
+  // attempt batch verification for all valid signatures
+  let mut attempts = 1u32;
+  let rands = create_rand_scalars(sets.len());
+  if min_pk::Signature::verify_multiple_aggregate_signatures(
+    msgs_sets.as_slice(),
+    &DST,
+    pks_agg.iter().map(|pk| pk).collect::<Vec<_>>().as_slice(),
+    false,
+    sigs_agg.iter().map(|sig| sig).collect::<Vec<_>>().as_slice(),
+    true,
+    rands.as_slice(),
+    64,
+  ) != BLST_ERROR::BLST_SUCCESS {
+    // if batch verification fails, attempt verification msg by msg 
+    for (((((msg, pks), sigs), rands), ids), results) in msgs_sets
+      .iter()
+      .zip(pks_sets.iter())
+      .zip(sigs_sets.iter())
+      .zip(rands_sets.iter())
+      .zip(ids_sets.iter())
+      .zip(results_sets.iter_mut())
+    {
+      verify_multiple_signatures_same_message_recursive(
+        msg,
+        pks.as_slice(),
+        sigs.as_slice(),
+        rands.as_slice(),
+        ids.as_slice(),
+        results,
+        &mut attempts,
+      );
+    }
+  }
+
+  let t1 = std::time::SystemTime::now();
+  let duration_t0 = t0.duration_since(std::time::UNIX_EPOCH).unwrap();
+  let duration_t1 = t1.duration_since(std::time::UNIX_EPOCH).unwrap();
+
+  SameMessageSignatureSetsResult {
+    start_time_sec: duration_t0.as_secs() as u32,
+    start_time_ns: duration_t0.subsec_nanos(),
+    end_time_sec: duration_t1.as_secs() as u32,
+    end_time_ns: duration_t1.subsec_nanos(),
+    attempts,
+    results: results_sets,
+  }
+}
+
+#[napi]
 pub async fn aggregate_public_keys_async(
   pks: Vec<&PublicKey>,
   pks_validate: Option<bool>,
@@ -515,6 +621,13 @@ pub async fn verify_multiple_signatures_same_message_with_retries_async(
   set: SameMessageSignatureSet,
 ) -> SameMessageSignatureSetResult {
   verify_multiple_signatures_same_message_with_retries(set)
+}
+
+#[napi]
+pub async fn verify_multiple_signatures_same_messages_with_retries_async(
+  sets: Vec<SameMessageSignatureSet>,
+) -> SameMessageSignatureSetsResult {
+  verify_multiple_signatures_same_messages_with_retries(sets)
 }
 
 fn blst_error_to_string(error: BLST_ERROR) -> String {
@@ -666,8 +779,9 @@ fn verify_multiple_signatures_same_message_recursive(
   *attempts += 1;
 
   if pks.len() == 1 {
-    results[ids[0]] =
-      sigs[0].verify(false, msg, &DST, &[], &pks[0], false) == BLST_ERROR::BLST_SUCCESS;
+    if sigs[0].verify(false, msg, &DST, &[], &pks[0], false) != BLST_ERROR::BLST_SUCCESS {
+      results[ids[0]] = false;
+    }
     return;
   }
 
