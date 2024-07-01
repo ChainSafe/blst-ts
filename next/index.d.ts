@@ -6,12 +6,13 @@
 export interface SignatureSet {
   msg: Uint8Array
   pk: PublicKey
-  sig: Signature
+  sig: Uint8Array
 }
-export function aggregatePublicKeys(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): PublicKey
-export function aggregateSignatures(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Signature
-export function aggregateSerializedPublicKeys(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): PublicKey
-export function aggregateSerializedSignatures(sigs: Array<Uint8Array>, sigsGroupcheck?: boolean | undefined | null): Signature
+export interface SameMessageSignatureSet {
+  msg: Uint8Array
+  pks: Array<PublicKey>
+  sigs: Array<Uint8Array>
+}
 export interface AggregationSet {
   pk: PublicKey
   sig: Uint8Array
@@ -20,13 +21,26 @@ export interface AggregatedSet {
   pk: PublicKey
   sig: Signature
 }
+export interface SameMessageSignatureSetResult {
+  startTimeSec: number
+  startTimeNs: number
+  endTimeSec: number
+  endTimeNs: number
+  attempts: number
+  results: Array<boolean>
+}
+export function aggregatePublicKeys(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): PublicKey
+export function aggregateSignatures(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Signature
+export function aggregateSerializedPublicKeys(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): PublicKey
+export function aggregateSerializedSignatures(sigs: Array<Uint8Array>, sigsGroupcheck?: boolean | undefined | null): Signature
 export function aggregateWithRandomness(sets: Array<AggregationSet>): AggregatedSet
-export function aggregateWithMsm(sets: Array<AggregationSet>): AggregatedSet
 export function verify(msg: Uint8Array, pk: PublicKey, sig: Signature, pkValidate?: boolean | undefined | null, sigGroupcheck?: boolean | undefined | null): boolean
 export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, sig: Signature, pkValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerifyPreAggregated(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function verifyMultipleAggregateSignatures(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
+export function verifyMultipleSignaturesSameMessage(set: SameMessageSignatureSet): boolean
+export function verifyMultipleSignaturesSameMessageWithRetries(set: SameMessageSignatureSet): SameMessageSignatureSetResult
 export function aggregatePublicKeysAsync(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
 export function aggregateSignaturesAsync(sigs: Array<Signature>, sigsGroupcheck?: boolean | undefined | null): Promise<Signature>
 export function aggregateSerializedPublicKeysAsync(pks: Array<Uint8Array>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
@@ -36,8 +50,8 @@ export function aggregateVerifyAsync(msgs: Array<Uint8Array>, pks: Array<PublicK
 export function fastAggregateVerifyAsync(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function fastAggregateVerifyPreAggregatedAsync(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function verifyMultipleAggregateSignaturesAsync(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
-export function benchPkToAffine(): bigint
-export function benchSigToAffine(): bigint
+export function verifyMultipleSignaturesSameMessageAsync(set: SameMessageSignatureSet): Promise<boolean>
+export function verifyMultipleSignaturesSameMessageWithRetriesAsync(set: SameMessageSignatureSet): Promise<SameMessageSignatureSetResult>
 export class SecretKey {
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
   static deriveMasterEip2333(ikm: Uint8Array): SecretKey

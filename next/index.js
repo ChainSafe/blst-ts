@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, aggregateWithMsm, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync, benchPkToAffine, benchSigToAffine } = nativeBinding
+const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, verifyMultipleSignaturesSameMessage, verifyMultipleSignaturesSameMessageWithRetries, aggregatePublicKeysAsync, aggregateSignaturesAsync, aggregateSerializedPublicKeysAsync, aggregateSerializedSignaturesAsync, verifyAsync, aggregateVerifyAsync, fastAggregateVerifyAsync, fastAggregateVerifyPreAggregatedAsync, verifyMultipleAggregateSignaturesAsync, verifyMultipleSignaturesSameMessageAsync, verifyMultipleSignaturesSameMessageWithRetriesAsync } = nativeBinding
 
 module.exports.SecretKey = SecretKey
 module.exports.PublicKey = PublicKey
@@ -320,12 +320,13 @@ module.exports.aggregateSignatures = aggregateSignatures
 module.exports.aggregateSerializedPublicKeys = aggregateSerializedPublicKeys
 module.exports.aggregateSerializedSignatures = aggregateSerializedSignatures
 module.exports.aggregateWithRandomness = aggregateWithRandomness
-module.exports.aggregateWithMsm = aggregateWithMsm
 module.exports.verify = verify
 module.exports.aggregateVerify = aggregateVerify
 module.exports.fastAggregateVerify = fastAggregateVerify
 module.exports.fastAggregateVerifyPreAggregated = fastAggregateVerifyPreAggregated
 module.exports.verifyMultipleAggregateSignatures = verifyMultipleAggregateSignatures
+module.exports.verifyMultipleSignaturesSameMessage = verifyMultipleSignaturesSameMessage
+module.exports.verifyMultipleSignaturesSameMessageWithRetries = verifyMultipleSignaturesSameMessageWithRetries
 module.exports.aggregatePublicKeysAsync = aggregatePublicKeysAsync
 module.exports.aggregateSignaturesAsync = aggregateSignaturesAsync
 module.exports.aggregateSerializedPublicKeysAsync = aggregateSerializedPublicKeysAsync
@@ -335,5 +336,5 @@ module.exports.aggregateVerifyAsync = aggregateVerifyAsync
 module.exports.fastAggregateVerifyAsync = fastAggregateVerifyAsync
 module.exports.fastAggregateVerifyPreAggregatedAsync = fastAggregateVerifyPreAggregatedAsync
 module.exports.verifyMultipleAggregateSignaturesAsync = verifyMultipleAggregateSignaturesAsync
-module.exports.benchPkToAffine = benchPkToAffine
-module.exports.benchSigToAffine = benchSigToAffine
+module.exports.verifyMultipleSignaturesSameMessageAsync = verifyMultipleSignaturesSameMessageAsync
+module.exports.verifyMultipleSignaturesSameMessageWithRetriesAsync = verifyMultipleSignaturesSameMessageWithRetriesAsync

@@ -42,6 +42,16 @@ pub struct AggregatedSet {
   pub sig: Reference<Signature>,
 }
 
+#[napi(object)]
+pub struct SameMessageSignatureSetResult {
+  pub start_time_sec: u32,
+  pub start_time_ns: u32,
+  pub end_time_sec: u32,
+  pub end_time_ns: u32,
+  pub attempts: u32,
+  pub results: Vec<bool>,
+}
+
 #[napi]
 impl SecretKey {
   #[napi(factory)]
@@ -241,7 +251,7 @@ pub fn aggregate_serialized_signatures(
 #[napi]
 pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
   let (pks, sigs) = convert_aggregation_sets(&sets)?;
-  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs)?;
+  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
   Ok(AggregatedSet {
     pk: PublicKey::into_reference(PublicKey(pk), env)?,
@@ -343,33 +353,71 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
-pub fn verify_multiple_aggregate_signatures_same_message(
-  sets: Vec<SameMessageSignatureSet>,
-  pks_validate: Option<bool>,
-  sigs_groupcheck: Option<bool>,
-) -> Result<bool> {
-  let (msgs, pks, sigs) = convert_same_message_signature_sets(&sets)?;
-  let len = msgs.len();
-  let mut pks_rand = Vec::with_capacity(len);
-  let mut sigs_rand = Vec::with_capacity(len);
-  for i in 0..len {
-    let (pk, sig) = aggregate_with_randomness_native(&pks[i], &sigs[i])?;
-    pks_rand.push(pk);
-    sigs_rand.push(sig);
+pub fn verify_multiple_signatures_same_message(set: SameMessageSignatureSet) -> Result<bool> {
+  let (msg, pks, sigs_results) = convert_same_message_signature_set(&set);
+  let sigs = sigs_results.iter().try_fold(
+    Vec::with_capacity(sigs_results.len()),
+    |mut sigs, sig_result| {
+      let sig = sig_result.map_err(to_err)?;
+      sigs.push(sig);
+      Ok::<Vec<min_pk::Signature>, Error>(sigs)
+    },
+  )?;
+  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
+
+  Ok(sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS)
+}
+
+#[napi]
+pub fn verify_multiple_signatures_same_message_with_retries(
+  set: SameMessageSignatureSet,
+) -> SameMessageSignatureSetResult {
+  let t0 = std::time::SystemTime::now();
+  // first deserialize signatures
+  let (msg, pks_all, sigs_results) = convert_same_message_signature_set(&set);
+  let mut results = vec![true; sigs_results.len()];
+  let mut pks = Vec::with_capacity(pks_all.len());
+  let mut sigs = Vec::with_capacity(sigs_results.len());
+  let mut ids = Vec::with_capacity(sigs_results.len());
+  // filter out invalid signatures
+  for (i, sig_result) in sigs_results.iter().enumerate() {
+    match sig_result {
+      Ok(sig) => {
+        pks.push(pks_all[i]);
+        sigs.push(*sig);
+        ids.push(i);
+      }
+      Err(_) => {
+        results[i] = false;
+      }
+    }
   }
-  let rands = create_rand_scalars(len);
-  Ok(
-    min_pk::Signature::verify_multiple_aggregate_signatures(
-      &msgs,
-      &DST,
-      &pks_rand.iter().map(|pk| pk).collect::<Vec<_>>(),
-      pks_validate.unwrap_or(false),
-      &sigs_rand.iter().map(|sig| sig).collect::<Vec<_>>(),
-      sigs_groupcheck.unwrap_or(false),
-      &rands,
-      64,
-    ) == BLST_ERROR::BLST_SUCCESS,
-  )
+  let rands = create_rand_slice(pks.len());
+
+  // verify all signatures
+  let mut attempts = 0u32;
+  verify_multiple_signatures_same_message_recursive(
+    msg,
+    pks.as_slice(),
+    sigs.as_slice(),
+    rands.as_slice(),
+    ids.as_slice(),
+    &mut results,
+    &mut attempts,
+  );
+
+  let t1 = std::time::SystemTime::now();
+  let duration_t0 = t0.duration_since(std::time::UNIX_EPOCH).unwrap();
+  let duration_t1 = t1.duration_since(std::time::UNIX_EPOCH).unwrap();
+
+  SameMessageSignatureSetResult {
+    start_time_sec: duration_t0.as_secs() as u32,
+    start_time_ns: duration_t0.subsec_nanos(),
+    end_time_sec: duration_t1.as_secs() as u32,
+    end_time_ns: duration_t1.subsec_nanos(),
+    attempts,
+    results,
+  }
 }
 
 #[napi]
@@ -456,12 +504,17 @@ pub async fn verify_multiple_aggregate_signatures_async(
 }
 
 #[napi]
-pub async fn verify_multiple_aggregate_signatures_same_message_async(
-  sets: Vec<SameMessageSignatureSet>,
-  pks_validate: Option<bool>,
-  sigs_groupcheck: Option<bool>,
+pub async fn verify_multiple_signatures_same_message_async(
+  set: SameMessageSignatureSet,
 ) -> Result<bool> {
-  verify_multiple_aggregate_signatures_same_message(sets, pks_validate, sigs_groupcheck)
+  verify_multiple_signatures_same_message(set)
+}
+
+#[napi]
+pub async fn verify_multiple_signatures_same_message_with_retries_async(
+  set: SameMessageSignatureSet,
+) -> SameMessageSignatureSetResult {
+  verify_multiple_signatures_same_message_with_retries(set)
 }
 
 fn blst_error_to_string(error: BLST_ERROR) -> String {
@@ -517,25 +570,22 @@ fn convert_aggregation_sets(
   Ok((pks, sigs))
 }
 
-fn convert_same_message_signature_sets<'a>(
-  sets: &'a [SameMessageSignatureSet],
-) -> Result<(
-  Vec<&'a [u8]>,
-  Vec<Vec<min_pk::PublicKey>>,
-  Vec<Vec<min_pk::Signature>>,
-)> {
-  let len = sets.len();
-  let mut msgs = Vec::with_capacity(len);
-  let mut pks = Vec::with_capacity(len);
-  let mut sigs = Vec::with_capacity(len);
+fn convert_same_message_signature_set<'a>(
+  set: &'a SameMessageSignatureSet,
+) -> (
+  &'a [u8],
+  Vec<min_pk::PublicKey>,
+  Vec<std::result::Result<min_pk::Signature, BLST_ERROR>>,
+) {
+  let msg = set.msg.as_ref();
+  let pks = set.pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
+  let sigs = set
+    .sigs
+    .iter()
+    .map(|sig| min_pk::Signature::sig_validate(sig.as_ref(), true))
+    .collect::<Vec<_>>();
 
-  for set in sets {
-    msgs.push(set.msg.as_ref());
-    pks.push(set.pks.iter().map(|pk| pk.0).collect::<Vec<_>>());
-    sigs.push(validate_signatures(&set.sigs)?);
-  }
-
-  Ok((msgs, pks, sigs))
+  (msg, pks, sigs)
 }
 
 fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
@@ -577,30 +627,65 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
     .collect()
 }
 
+/// pks.len() == sigs.len()
 fn aggregate_with_randomness_native(
   pks: &Vec<min_pk::PublicKey>,
   sigs: &Vec<min_pk::Signature>,
-) -> Result<(min_pk::PublicKey, min_pk::Signature)> {
-  if pks.len() != sigs.len() {
-    return Err(Error::from_reason(
-      "Public keys and signatures must have the same length",
-    ));
-  }
-
+) -> (min_pk::PublicKey, min_pk::Signature) {
   let rands = create_rand_slice(pks.len());
-  let pk = pks.as_slice().mult(rands.as_slice(), 64).to_public_key();
-  let sig = sigs.as_slice().mult(rands.as_slice(), 64).to_signature();
-
-  Ok((pk, sig))
+  aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice())
 }
 
-fn validate_signatures(sigs: &Vec<Uint8Array>) -> Result<Vec<min_pk::Signature>> {
-  Ok(
-    sigs
-      .iter()
-      .try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
-        sigs.push(min_pk::Signature::sig_validate(sig.as_ref(), true).map_err(to_err)?);
-        Ok::<Vec<min_pk::Signature>, Error>(sigs)
-      })?,
-  )
+/// pks.len() == sigs.len() == rands.len() *32
+fn aggregate_with_native(
+  pks: &[min_pk::PublicKey],
+  sigs: &[min_pk::Signature],
+  rands: &[u8],
+) -> (min_pk::PublicKey, min_pk::Signature) {
+  let pk = pks.mult(rands, 64).to_public_key();
+  let sig = sigs.mult(rands, 64).to_signature();
+
+  (pk, sig)
+}
+
+/// Verifies multiple signatures with the same message using batch verification.
+/// If verification fails, work is divided into two halves and the function is called recursively.
+fn verify_multiple_signatures_same_message_recursive(
+  msg: &[u8],
+  pks: &[min_pk::PublicKey],
+  sigs: &[min_pk::Signature],
+  rands: &[u8],
+  ids: &[usize],
+  results: &mut Vec<bool>,
+  attempts: &mut u32,
+) {
+  if pks.len() == 0 {
+    return;
+  }
+
+  *attempts += 1;
+
+  if pks.len() == 1 {
+    results[ids[0]] =
+      sigs[0].verify(false, msg, &DST, &[], &pks[0], false) == BLST_ERROR::BLST_SUCCESS;
+    return;
+  }
+
+  let (pk, sig) = aggregate_with_native(pks, sigs, rands);
+  if sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS {
+    return;
+  }
+
+  let mid = pks.len() / 2;
+  let (pks1, pks2) = pks.split_at(mid);
+  let (sigs1, sigs2) = sigs.split_at(mid);
+  let (rands1, rands2) = rands.split_at(mid * 32);
+  let (ids1, ids2) = ids.split_at(mid);
+
+  verify_multiple_signatures_same_message_recursive(
+    msg, pks1, sigs1, rands1, ids1, results, attempts,
+  );
+  verify_multiple_signatures_same_message_recursive(
+    msg, pks2, sigs2, rands2, ids2, results, attempts,
+  );
 }
