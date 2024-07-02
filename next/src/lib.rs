@@ -363,8 +363,13 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
-pub fn verify_multiple_signatures_same_message(set: SameMessageSignatureSet) -> Result<bool> {
-  let (msg, pks, sigs_results) = convert_same_message_signature_set(&set);
+pub fn verify_multiple_signatures_same_message(msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<Uint8Array>) -> Result<bool> {
+  let msg = msg.as_ref();
+  let pks = pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
+  let sigs_results = sigs
+    .iter()
+    .map(|sig| min_pk::Signature::sig_validate(sig.as_ref(), true))
+    .collect::<Vec<_>>();
   let sigs = sigs_results.iter().try_fold(
     Vec::with_capacity(sigs_results.len()),
     |mut sigs, sig_result| {
@@ -611,9 +616,9 @@ pub async fn verify_multiple_aggregate_signatures_async(
 
 #[napi]
 pub async fn verify_multiple_signatures_same_message_async(
-  set: SameMessageSignatureSet,
+  msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<Uint8Array>
 ) -> Result<bool> {
-  verify_multiple_signatures_same_message(set)
+  verify_multiple_signatures_same_message(msg, pks, sigs)
 }
 
 #[napi]
