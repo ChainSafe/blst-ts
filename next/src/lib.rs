@@ -20,14 +20,14 @@ pub struct Signature(min_pk::Signature);
 pub struct SignatureSet {
   pub msg: Uint8Array,
   pub pk: Reference<PublicKey>,
-  pub sig: Uint8Array,
+  pub sig: Reference<Signature>,
 }
 
 #[napi(object)]
 pub struct SameMessageSignatureSet {
   pub msg: Uint8Array,
   pub pks: Vec<Reference<PublicKey>>,
-  pub sigs: Vec<Uint8Array>,
+  pub sigs: Vec<Reference<Signature>>,
 }
 
 #[napi(object)]
@@ -354,7 +354,7 @@ pub fn verify_multiple_aggregate_signatures(
       &DST,
       &pks,
       pks_validate.unwrap_or(false),
-      &sigs.iter().map(|sig| sig).collect::<Vec<_>>(),
+      &sigs,
       sigs_groupcheck.unwrap_or(false),
       &rands,
       64,
@@ -363,21 +363,10 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
-pub fn verify_multiple_signatures_same_message(msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<Uint8Array>) -> Result<bool> {
+pub fn verify_multiple_signatures_same_message(msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<&Signature>) -> Result<bool> {
   let msg = msg.as_ref();
   let pks = pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
-  let sigs_results = sigs
-    .iter()
-    .map(|sig| min_pk::Signature::sig_validate(sig.as_ref(), true))
-    .collect::<Vec<_>>();
-  let sigs = sigs_results.iter().try_fold(
-    Vec::with_capacity(sigs_results.len()),
-    |mut sigs, sig_result| {
-      let sig = sig_result.map_err(to_err)?;
-      sigs.push(sig);
-      Ok::<Vec<min_pk::Signature>, Error>(sigs)
-    },
-  )?;
+  let sigs = sigs.iter().map(|sig| sig.0).collect::<Vec<_>>();
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
   Ok(sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS)
@@ -616,7 +605,7 @@ pub async fn verify_multiple_aggregate_signatures_async(
 
 #[napi]
 pub async fn verify_multiple_signatures_same_message_async(
-  msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<Uint8Array>
+  msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<&Signature>
 ) -> Result<bool> {
   verify_multiple_signatures_same_message(msg, pks, sigs)
 }
@@ -657,7 +646,7 @@ fn convert_signature_sets<'a>(
 ) -> Result<(
   Vec<&'a [u8]>,
   Vec<&'a min_pk::PublicKey>,
-  Vec<min_pk::Signature>,
+  Vec<&'a min_pk::Signature>,
 )> {
   let len = sets.len();
   let mut msgs = Vec::with_capacity(len);
@@ -667,7 +656,7 @@ fn convert_signature_sets<'a>(
   for set in sets {
     msgs.push(set.msg.as_ref());
     pks.push(&set.pk.0);
-    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?);
+    sigs.push(&set.sig.0);
   }
 
   Ok((msgs, pks, sigs))
@@ -700,7 +689,7 @@ fn convert_same_message_signature_set<'a>(
   let sigs = set
     .sigs
     .iter()
-    .map(|sig| min_pk::Signature::sig_validate(sig.as_ref(), true))
+    .map(|sig| Ok(sig.0))
     .collect::<Vec<_>>();
 
   (msg, pks, sigs)

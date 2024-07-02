@@ -6,12 +6,12 @@
 export interface SignatureSet {
   msg: Uint8Array
   pk: PublicKey
-  sig: Uint8Array
+  sig: Signature
 }
 export interface SameMessageSignatureSet {
   msg: Uint8Array
   pks: Array<PublicKey>
-  sigs: Array<Uint8Array>
+  sigs: Array<Signature>
 }
 export interface AggregationSet {
   pk: PublicKey
@@ -47,7 +47,7 @@ export function aggregateVerify(msgs: Array<Uint8Array>, pks: Array<PublicKey>, 
 export function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function fastAggregateVerifyPreAggregated(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): boolean
 export function verifyMultipleAggregateSignatures(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
-export function verifyMultipleSignaturesSameMessage(set: SameMessageSignatureSet): boolean
+export function verifyMultipleSignaturesSameMessage(msg: Uint8Array, pks: Array<PublicKey>, sigs: Array<Signature>): boolean
 export function verifyMultipleSignaturesSameMessageWithRetries(set: SameMessageSignatureSet): SameMessageSignatureSetResult
 export function verifyMultipleSignaturesSameMessagesWithRetries(sets: Array<SameMessageSignatureSet>): SameMessageSignatureSetsResult
 export function aggregatePublicKeysAsync(pks: Array<PublicKey>, pksValidate?: boolean | undefined | null): Promise<PublicKey>
@@ -59,7 +59,7 @@ export function aggregateVerifyAsync(msgs: Array<Uint8Array>, pks: Array<PublicK
 export function fastAggregateVerifyAsync(msg: Uint8Array, pks: Array<PublicKey>, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function fastAggregateVerifyPreAggregatedAsync(msg: Uint8Array, pk: PublicKey, sig: Signature, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
 export function verifyMultipleAggregateSignaturesAsync(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): Promise<boolean>
-export function verifyMultipleSignaturesSameMessageAsync(set: SameMessageSignatureSet): Promise<boolean>
+export function verifyMultipleSignaturesSameMessageAsync(msg: Uint8Array, pks: Array<PublicKey>, sigs: Array<Signature>): Promise<boolean>
 export function verifyMultipleSignaturesSameMessageWithRetriesAsync(set: SameMessageSignatureSet): Promise<SameMessageSignatureSetResult>
 export function verifyMultipleSignaturesSameMessagesWithRetriesAsync(sets: Array<SameMessageSignatureSet>): Promise<SameMessageSignatureSetsResult>
 export class SecretKey {
