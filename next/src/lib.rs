@@ -26,7 +26,8 @@ pub struct SignatureSet {
 #[napi(object)]
 pub struct SameMessageSignatureSet {
   pub msg: Uint8Array,
-  pub sets: Vec<AggregationSet>,
+  pub pks: Vec<Reference<PublicKey>>,
+  pub sigs: Vec<Uint8Array>,
 }
 
 #[napi(object)]
@@ -690,11 +691,11 @@ fn convert_same_message_signature_set<'a>(
   Vec<std::result::Result<min_pk::Signature, BLST_ERROR>>,
 ) {
   let msg = set.msg.as_ref();
-  let pks = set.sets.iter().map(|set| set.pk.0).collect::<Vec<_>>();
+  let pks = set.pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
   let sigs = set
-    .sets
+    .sigs
     .iter()
-    .map(|set| min_pk::Signature::sig_validate(set.sig.as_ref(), true))
+    .map(|sig| min_pk::Signature::sig_validate(sig.as_ref(), true))
     .collect::<Vec<_>>();
 
   (msg, pks, sigs)
