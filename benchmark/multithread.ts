@@ -1,5 +1,6 @@
 import os from "os";
 import * as bls from "../src/lib";
+import * as next from "../next/index.js";
 import {BlsMultiThreadNaive} from "../test/unit/multithread/naive";
 import {warmUpWorkers, chunkify} from "../test/unit/multithread/naive/utils";
 import {Csv} from "./utils/csv";
@@ -24,10 +25,13 @@ import {BenchmarkRunner} from "./utils/runner";
 
   // Preparing test data
   const sets: bls.SignatureSet[] = [];
+  const setsNext: next.SignatureSet[] = [];
   for (let i = 0; i < sigCount; i++) {
     const msg = Buffer.alloc(32, i);
     const sk = bls.SecretKey.fromKeygen(Buffer.alloc(32, i));
     sets.push({msg, pk: sk.toPublicKey(), sig: sk.sign(msg)});
+    const skNext = next.SecretKey.fromKeygen(Buffer.alloc(32, i));
+    setsNext.push({msg, pk: skNext.toPublicKey(), sig: skNext.sign(msg)});
   }
 
   // BLS batch verify
@@ -51,6 +55,14 @@ import {BenchmarkRunner} from "./utils/runner";
       },
     });
 
+    const serieNext = await runner.run({
+      id: `BLS batch verify ${sigCount} sigs - main thread - next`,
+      before: () => {},
+      run: () => {
+        next.verifyMultipleAggregateSignatures(setsNext);
+      },
+    });
+
     for (let workers = 1; workers <= logicalCpuCount; workers++) {
       const parallel = await runner.run({
         id: `BLS batch verify ${sigCount} sigs - ${workers} worker_threads`,
@@ -67,6 +79,23 @@ import {BenchmarkRunner} from "./utils/runner";
         serie: serie,
         parallel: parallel,
         ratio: serie / parallel,
+      });
+
+      const parallelNext = await runner.run({
+        id: `BLS batch verify ${sigCount} sigs - ${workers} worker_threads - next`,
+        before: () => {},
+        run: async () => {
+          await Promise.all(
+            chunkify(setsNext, workers).map((setsWorker) => next.verifyMultipleAggregateSignaturesAsync(setsWorker))
+          );
+        },
+      });
+
+      csv.addRow({
+        workers,
+        serie: serieNext,
+        parallel: parallelNext,
+        ratio: serieNext / parallelNext,
       });
     }
     csv.logToConsole();

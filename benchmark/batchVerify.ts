@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import * as bls from "../src/lib";
+import * as next from "../next/index.js";
 import {Csv} from "./utils/csv";
 import {BenchmarkRunner} from "./utils/runner";
 
@@ -44,6 +45,45 @@ import {BenchmarkRunner} from "./utils/runner";
       batch: batch / i,
       ratio: batch / serie,
     });
+
+    {
+    const serie = await runner.run({
+      id: `${i} - BLS verification - next`,
+      before: () => {
+        const msg = Buffer.alloc(32, i);
+        const sk = next.SecretKey.fromKeygen(crypto.randomBytes(32));
+        const pk = sk.toPublicKey();
+        const sig = sk.sign(msg);
+        return {msg, pk, sig};
+      },
+      run: ({msg, pk, sig}) => {
+        for (let j = 0; j < i; j++) {
+          next.verify(msg, pk, sig);
+        }
+      },
+    });
+
+    const batch = await runner.run({
+      id: `${i} - BLS verification batch - next`,
+      before: () => {
+        const msg = Buffer.alloc(32, i);
+        const sk = next.SecretKey.fromKeygen(crypto.randomBytes(32));
+        const pk = sk.toPublicKey();
+        const sig = sk.sign(msg);
+        return Array.from({length: i}, (_, i) => ({msg, pk, sig}));
+      },
+      run: (sets) => {
+        next.verifyMultipleAggregateSignatures(sets);
+      },
+    });
+
+    csv.addRow({
+      n: i,
+      serie: serie / i,
+      batch: batch / i,
+      ratio: batch / serie,
+    });
+    }
   }
 
   csv.logToConsole();
