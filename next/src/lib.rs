@@ -26,7 +26,7 @@ pub struct SignatureSet {
 #[napi(object)]
 pub struct SameMessageSignatureSet {
   pub msg: Uint8Array,
-  pub sets: Vec<Reference<AggregationSet>>,
+  pub sets: Vec<AggregationSet>,
 }
 
 #[napi(object)]
