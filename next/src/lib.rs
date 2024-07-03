@@ -219,16 +219,10 @@ pub fn aggregate_public_keys(
   pks: Vec<&PublicKey>,
   pks_validate: Option<bool>,
 ) -> Result<PublicKey> {
-  let pks = if pks_validate.unwrap_or(false) {
-    pks.iter().map(|pk| pk.0).collect::<Vec<_>>()
-  } else {
-    pks.iter().try_fold(Vec::with_capacity(pks.len()), |mut pks, pk| {
-      pk.0.validate().map_err(to_err)?;
-      pks.push(pk.0);
-      Ok::<Vec<min_pk::PublicKey>, Error>(pks)
-    })?
-  };
-  Ok(PublicKey(pks.add().to_public_key()))
+  let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
+  min_pk::AggregatePublicKey::aggregate(&pks, pks_validate.unwrap_or(false))
+    .map(|pk| PublicKey(pk.to_public_key()))
+    .map_err(to_err)
 }
 
 #[napi]
@@ -236,16 +230,10 @@ pub fn aggregate_signatures(
   sigs: Vec<&Signature>,
   sigs_groupcheck: Option<bool>,
 ) -> Result<Signature> {
-  let sigs = if sigs_groupcheck.unwrap_or(false) {
-    sigs.iter().map(|s| s.0).collect::<Vec<_>>()
-  } else {
-    sigs.iter().try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
-      sig.0.validate(true).map_err(to_err)?;
-      sigs.push(sig.0);
-      Ok::<Vec<min_pk::Signature>, Error>(sigs)
-    })?
-  };
-  Ok(Signature(sigs.add().to_signature()))
+  let sigs = sigs.iter().map(|s| &s.0).collect::<Vec<_>>();
+  min_pk::AggregateSignature::aggregate(&sigs, sigs_groupcheck.unwrap_or(false))
+    .map(|sig| Signature(sig.to_signature()))
+    .map_err(to_err)
 }
 
 #[napi]
@@ -253,22 +241,10 @@ pub fn aggregate_serialized_public_keys(
   pks: Vec<Uint8Array>,
   pks_validate: Option<bool>,
 ) -> Result<PublicKey> {
-  let pks = if pks_validate.unwrap_or(false) {
-    pks.iter().try_fold(Vec::with_capacity(pks.len()), |mut pks, pk| {
-      pks.push(
-        min_pk::PublicKey::from_bytes(pk).map_err(to_err)?
-      );
-      Ok::<Vec<min_pk::PublicKey>, Error>(pks)
-    })?
-  } else {
-    pks.iter().try_fold(Vec::with_capacity(pks.len()), |mut pks, pk| {
-      pks.push(
-        min_pk::PublicKey::key_validate(pk).map_err(to_err)?
-      );
-      Ok::<Vec<min_pk::PublicKey>, Error>(pks)
-    })?
-  };
-  Ok(PublicKey(pks.add().to_public_key()))
+  let pks = pks.iter().map(|pk| pk.as_ref()).collect::<Vec<_>>();
+  min_pk::AggregatePublicKey::aggregate_serialized(&pks, pks_validate.unwrap_or(false))
+    .map(|pk| PublicKey(pk.to_public_key()))
+    .map_err(to_err)
 }
 
 #[napi]
@@ -276,22 +252,10 @@ pub fn aggregate_serialized_signatures(
   sigs: Vec<Uint8Array>,
   sigs_groupcheck: Option<bool>,
 ) -> Result<Signature> {
-  let sigs = if sigs_groupcheck.unwrap_or(false) {
-    sigs.iter().try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
-      sigs.push(
-        min_pk::Signature::from_bytes(sig).map_err(to_err)?
-      );
-      Ok::<Vec<min_pk::Signature>, Error>(sigs)
-    })?
-  } else {
-    sigs.iter().try_fold(Vec::with_capacity(sigs.len()), |mut sigs, sig| {
-      sigs.push(
-        min_pk::Signature::sig_validate(sig, true).map_err(to_err)?
-      );
-      Ok::<Vec<min_pk::Signature>, Error>(sigs)
-    })?
-  };
-  Ok(Signature(sigs.add().to_signature()))
+  let sigs = sigs.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+  min_pk::AggregateSignature::aggregate_serialized(&sigs, sigs_groupcheck.unwrap_or(false))
+    .map(|sig| Signature(sig.to_signature()))
+    .map_err(to_err)
 }
 
 #[napi]
