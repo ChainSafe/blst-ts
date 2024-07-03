@@ -363,7 +363,11 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
-pub fn verify_multiple_signatures_same_message(msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<&Signature>) -> Result<bool> {
+pub fn verify_multiple_signatures_same_message(
+  msg: Uint8Array,
+  pks: Vec<&PublicKey>,
+  sigs: Vec<&Signature>,
+) -> Result<bool> {
   let msg = msg.as_ref();
   let pks = pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
   let sigs = sigs.iter().map(|sig| sig.0).collect::<Vec<_>>();
@@ -460,7 +464,8 @@ pub fn verify_multiple_signatures_same_messages_with_retries(
     }
     let rands = create_rand_slice(pks.len());
 
-    let (pk_agg, sig_agg) = aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice());
+    let (pk_agg, sig_agg) =
+      aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice());
     pks_agg.push(pk_agg);
     sigs_agg.push(sig_agg);
 
@@ -480,12 +485,17 @@ pub fn verify_multiple_signatures_same_messages_with_retries(
     &DST,
     pks_agg.iter().map(|pk| pk).collect::<Vec<_>>().as_slice(),
     false,
-    sigs_agg.iter().map(|sig| sig).collect::<Vec<_>>().as_slice(),
+    sigs_agg
+      .iter()
+      .map(|sig| sig)
+      .collect::<Vec<_>>()
+      .as_slice(),
     true,
     rands.as_slice(),
     64,
-  ) != BLST_ERROR::BLST_SUCCESS {
-    // if batch verification fails, attempt verification msg by msg 
+  ) != BLST_ERROR::BLST_SUCCESS
+  {
+    // if batch verification fails, attempt verification msg by msg
     for (((((msg, pks), sigs), rands), ids), results) in msgs_sets
       .iter()
       .zip(pks_sets.iter())
@@ -605,7 +615,9 @@ pub async fn verify_multiple_aggregate_signatures_async(
 
 #[napi]
 pub async fn verify_multiple_signatures_same_message_async(
-  msg: Uint8Array, pks: Vec<&PublicKey>, sigs: Vec<&Signature>
+  msg: Uint8Array,
+  pks: Vec<&PublicKey>,
+  sigs: Vec<&Signature>,
 ) -> Result<bool> {
   verify_multiple_signatures_same_message(msg, pks, sigs)
 }
@@ -686,11 +698,7 @@ fn convert_same_message_signature_set<'a>(
 ) {
   let msg = set.msg.as_ref();
   let pks = set.pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
-  let sigs = set
-    .sigs
-    .iter()
-    .map(|sig| Ok(sig.0))
-    .collect::<Vec<_>>();
+  let sigs = set.sigs.iter().map(|sig| Ok(sig.0)).collect::<Vec<_>>();
 
   (msg, pks, sigs)
 }
