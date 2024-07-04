@@ -11,7 +11,7 @@ blst = { path = "blst/bindings/rust" }
 hex = "0.4.3"
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.16.8", default-features = false, features = ["full"] }
-napi-derive = "2.16.6"
+napi-derive = "2.16.8"
 rand = "0.8.5"
 
 [build-dependencies]

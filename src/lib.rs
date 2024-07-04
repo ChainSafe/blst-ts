@@ -7,6 +7,22 @@ use rand::{rngs::ThreadRng, Rng};
 
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
+pub enum ErrorStatus {
+  Blst(BLST_ERROR),
+  Other(String),
+}
+
+impl AsRef<str> for ErrorStatus {
+  fn as_ref(&self) -> &str {
+    match self {
+      ErrorStatus::Blst(err) => blst_error_to_str(*err),
+      ErrorStatus::Other(err) => err.as_str(),
+    }
+  }
+}
+
+type Result<T> = napi::Result<T, ErrorStatus>;
+
 #[napi]
 pub struct SecretKey(min_pk::SecretKey);
 
@@ -42,14 +58,14 @@ impl SecretKey {
     let key_info = key_info.as_deref().unwrap_or(&[]);
     min_pk::SecretKey::key_gen(&ikm, key_info)
       .map(Self)
-      .map_err(to_err)
+      .map_err(from_blst_err)
   }
 
   #[napi(factory)]
   pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self> {
     min_pk::SecretKey::derive_master_eip2333(&ikm)
       .map(Self)
-      .map_err(to_err)
+      .map_err(from_blst_err)
   }
 
   #[napi]
@@ -65,14 +81,14 @@ impl SecretKey {
   #[napi(factory)]
   pub fn from_hex(hex: String) -> Result<Self> {
     let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes)
   }
 
   fn from_slice(bytes: &[u8]) -> Result<Self> {
     min_pk::SecretKey::from_bytes(&bytes)
       .map(Self)
-      .map_err(to_err)
+      .map_err(from_blst_err)
   }
 
   #[napi]
@@ -106,7 +122,7 @@ impl PublicKey {
   #[napi(factory)]
   pub fn from_hex(hex: String, pk_validate: Option<bool>) -> Result<Self> {
     let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes, pk_validate)
   }
 
@@ -116,7 +132,7 @@ impl PublicKey {
     } else {
       min_pk::PublicKey::from_bytes(&bytes)
     };
-    pk.map(Self).map_err(to_err)
+    pk.map(Self).map_err(from_blst_err)
   }
 
   #[napi]
@@ -132,7 +148,7 @@ impl PublicKey {
 
   #[napi]
   pub fn key_validate(&self) -> Result<Undefined> {
-    self.0.validate().map_err(to_err)
+    self.0.validate().map_err(from_blst_err)
   }
 }
 
@@ -154,7 +170,7 @@ impl Signature {
     sig_infcheck: Option<bool>,
   ) -> Result<Self> {
     let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(|_| Error::from_reason("Invalid hex"))?;
+      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes, sig_validate, sig_infcheck)
   }
 
@@ -168,7 +184,7 @@ impl Signature {
     } else {
       min_pk::Signature::from_bytes(&bytes)
     };
-    sig.map(Self).map_err(to_err)
+    sig.map(Self).map_err(from_blst_err)
   }
 
   #[napi]
@@ -183,7 +199,7 @@ impl Signature {
 
   #[napi]
   pub fn sig_validate(&self, sig_infcheck: Option<bool>) -> Result<Undefined> {
-    min_pk::Signature::validate(&self.0, sig_infcheck.unwrap_or(false)).map_err(to_err)
+    min_pk::Signature::validate(&self.0, sig_infcheck.unwrap_or(false)).map_err(from_blst_err)
   }
 }
 
@@ -195,7 +211,7 @@ pub fn aggregate_public_keys(
   let pks = pks.iter().map(|pk| &pk.0).collect::<Vec<_>>();
   min_pk::AggregatePublicKey::aggregate(&pks, pks_validate.unwrap_or(false))
     .map(|pk| PublicKey(pk.to_public_key()))
-    .map_err(to_err)
+    .map_err(from_blst_err)
 }
 
 #[napi]
@@ -206,7 +222,7 @@ pub fn aggregate_signatures(
   let sigs = sigs.iter().map(|s| &s.0).collect::<Vec<_>>();
   min_pk::AggregateSignature::aggregate(&sigs, sigs_groupcheck.unwrap_or(false))
     .map(|sig| Signature(sig.to_signature()))
-    .map_err(to_err)
+    .map_err(from_blst_err)
 }
 
 #[napi]
@@ -217,7 +233,7 @@ pub fn aggregate_serialized_public_keys(
   let pks = pks.iter().map(|pk| pk.as_ref()).collect::<Vec<_>>();
   min_pk::AggregatePublicKey::aggregate_serialized(&pks, pks_validate.unwrap_or(false))
     .map(|pk| PublicKey(pk.to_public_key()))
-    .map_err(to_err)
+    .map_err(from_blst_err)
 }
 
 #[napi]
@@ -228,7 +244,7 @@ pub fn aggregate_serialized_signatures(
   let sigs = sigs.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
   min_pk::AggregateSignature::aggregate_serialized(&sigs, sigs_groupcheck.unwrap_or(false))
     .map(|sig| Signature(sig.to_signature()))
-    .map_err(to_err)
+    .map_err(from_blst_err)
 }
 
 #[napi]
@@ -237,8 +253,8 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
   Ok(AggregatedSet {
-    pk: PublicKey::into_reference(PublicKey(pk), env)?,
-    sig: Signature::into_reference(Signature(sig), env)?,
+    pk: PublicKey::into_reference(PublicKey(pk), env).map_err(from_napi_err)?,
+    sig: Signature::into_reference(Signature(sig), env).map_err(from_napi_err)?,
   })
 }
 
@@ -349,7 +365,7 @@ pub fn verify_multiple_signatures_same_message(
   Ok(sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS)
 }
 
-fn blst_error_to_string(error: BLST_ERROR) -> String {
+fn blst_error_to_reason(error: BLST_ERROR) -> String {
   match error {
     BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS".to_string(),
     BLST_ERROR::BLST_BAD_ENCODING => "Invalid encoding".to_string(),
@@ -362,8 +378,38 @@ fn blst_error_to_string(error: BLST_ERROR) -> String {
   }
 }
 
-fn to_err(blst_error: BLST_ERROR) -> napi::Error {
-  napi::Error::from_reason(blst_error_to_string(blst_error))
+fn blst_error_to_str <'a> (err: BLST_ERROR) -> &'a str {
+  match err {
+    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
+    BLST_ERROR::BLST_BAD_ENCODING => "BLST_BAD_ENCODING",
+    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "BLST_POINT_NOT_ON_CURVE",
+    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "BLST_POINT_NOT_IN_GROUP",
+    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "BLST_AGGR_TYPE_MISMATCH",
+    BLST_ERROR::BLST_VERIFY_FAIL => "BLST_VERIFY_FAIL",
+    BLST_ERROR::BLST_PK_IS_INFINITY => "BLST_PK_IS_INFINITY",
+    BLST_ERROR::BLST_BAD_SCALAR => "BLST_BAD_SCALAR",
+  }
+}
+
+fn from_blst_err(blst_error: BLST_ERROR) -> Error<ErrorStatus> {
+  Error::new(
+    ErrorStatus::Blst(blst_error),
+    blst_error_to_reason(blst_error)
+  )
+}
+
+fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
+  Error::new(
+    ErrorStatus::Other(napi_err.status.to_string()),
+    napi_err.reason.to_string()
+  )
+}
+
+fn invalid_hex_err<T> (_: T) -> Error<ErrorStatus> {
+  Error::new(
+    ErrorStatus::Other("INVALID_HEX".to_string()),
+    "Invalid hex"
+  )
 }
 
 fn convert_signature_sets<'a>(
@@ -396,7 +442,7 @@ fn convert_aggregation_sets(
 
   for set in sets {
     pks.push(set.pk.0);
-    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(to_err)?);
+    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(from_blst_err)?);
   }
 
   Ok((pks, sigs))
