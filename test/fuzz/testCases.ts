@@ -1,4 +1,4 @@
-import {verify, SecretKey, PublicKey, Signature} from "../../lib";
+import {verify, SecretKey, PublicKey, Signature} from "../../index.js";
 
 export interface FuzzTestCase {
   name: string;
@@ -17,21 +17,21 @@ export const testCases: FuzzTestCase[] = [
   {
     name: "SecretKey.deserialize",
     target: (data: Buffer) => {
-      return SecretKey.deserialize(data);
+      return SecretKey.fromBytes(data);
     },
     expectedErrors: ["BLST_ERROR: skBytes must be 32 bytes long"],
   },
   {
     name: "secretKey.sign",
     target: (data: Buffer) => {
-      return SecretKey.fromKeygen(Buffer.alloc(32), "*").sign(data);
+      return SecretKey.fromKeygen(Buffer.alloc(32), Buffer.from("*")).sign(data);
     },
     expectedErrors: [],
   },
   {
     name: "PublicKey.deserialize",
     target: (data: Buffer) => {
-      return PublicKey.deserialize(data);
+      return PublicKey.fromBytes(data);
     },
     expectedErrors: [
       "BLST_ERROR::BLST_PK_IS_INFINITY",
@@ -44,7 +44,7 @@ export const testCases: FuzzTestCase[] = [
   {
     name: "Signature.deserialize",
     target: (data: Buffer) => {
-      return Signature.deserialize(data);
+      return Signature.fromBytes(data);
     },
     expectedErrors: [
       "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
