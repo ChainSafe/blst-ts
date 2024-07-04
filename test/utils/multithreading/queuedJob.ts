@@ -1,4 +1,4 @@
-import {CoordType, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures} from "../../../lib";
+import {PublicKey, Signature, aggregatePublicKeys, aggregateSignatures} from "../../../index.js";
 import {BlsWorkRequest, ISignatureSet, SignatureSetType, VerifySignatureOpts} from "./types";
 import {LinkedList} from "./array";
 import {getAggregatePublicKey} from "./verify";
@@ -53,19 +53,19 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
 
   const publicKey = aggregatePublicKeys(
     job.sets.map((set, i) => {
-      if (job.opts.addVerificationRandomness) {
-        return (set.publicKey as PublicKey).multiplyBy(randomness[i]);
-      }
+      // if (job.opts.addVerificationRandomness) {
+      //   return (set.publicKey as PublicKey).multiplyBy(randomness[i]);
+      // }
       return set.publicKey as PublicKey;
     })
   );
   const signature = aggregateSignatures(
     job.sets.map((set, i) => {
-      const sig = Signature.deserialize(set.signature, CoordType.affine);
+      const sig = Signature.fromBytes(set.signature);
       sig.sigValidate();
-      if (job.opts.addVerificationRandomness) {
-        return sig.multiplyBy(randomness[i]);
-      }
+      // if (job.opts.addVerificationRandomness) {
+      //   return sig.multiplyBy(randomness[i]);
+      // }
       return sig;
     })
   );

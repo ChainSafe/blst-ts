@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import {aggregateSignatures} from "../../../lib";
+import {aggregateSignatures} from "../../../index.js";
 import {getTestSet, getTestSetSameMessage} from "../testSets";
 import {shuffle} from "../helpers";
 import {
@@ -119,7 +119,7 @@ export function getBatchesOfAggregatedSignatureSets(pubKeyCount: number, batchSi
   const sameMessageSets = getBatchesOfSameMessageSignatureSets(pubKeyCount, batchSize);
   for (const {sets, message} of sameMessageSets) {
     const sigs = sets.map((set) => set.signature);
-    const signature = aggregateSignatures(sigs).serialize();
+    const signature = aggregateSignatures(sigs).toBytes();
 
     aggregatedSets.push({
       type: SignatureSetType.aggregate,

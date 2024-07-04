@@ -1,7 +1,7 @@
-import {SignatureSet} from "../../../lib";
+import {SignatureSet} from "../../../index.js";
 import {chunkifyMaximizeChunkSize} from "../../utils";
 import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
-import {asyncVerifyNapiSignatureSets} from "./verify";
+import {verifySignatureSets} from "./verify.js";
 
 const BATCHABLE_MIN_PER_CHUNK = 16;
 
@@ -30,7 +30,7 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
 
     for (const batchableChunk of batchableChunks) {
       // flatten all sets into a single array for batch verification
-      const allSets: SignatureSet[] = [];
+      const allSets: ISignatureSet[] = [];
       for (const {sets} of batchableChunk) {
         // TODO: speed test in perf for potential switch to allSets.push(...sets);
         for (const set of sets) {
@@ -40,7 +40,7 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
 
       try {
         // Attempt to verify multiple sets at once
-        const isValid = await asyncVerifyNapiSignatureSets(allSets);
+        const isValid = await verifySignatureSets(allSets);
 
         if (isValid) {
           // The entire batch is valid, return success to all
@@ -65,7 +65,7 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
 
   await Promise.all(
     nonBatchableSets.map(({idx, sets}) =>
-      asyncVerifyNapiSignatureSets(sets)
+      verifySignatureSets(sets)
         .then((isValid) => {
           results[idx] = {code: WorkResultCode.success, result: isValid};
         })

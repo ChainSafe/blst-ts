@@ -5,7 +5,7 @@ import {Readable} from "stream";
 import {finished} from "stream/promises";
 import {ReadableStream} from "stream/web";
 import {execSync} from "child_process";
-import tar from "tar";
+import * as tar from "tar";
 import {SPEC_TEST_LOCATION, SPEC_TEST_VERSION, SPEC_TEST_REPO_URL, SPEC_TEST_TO_DOWNLOAD} from "./specTestVersioning";
 
 const specVersion = SPEC_TEST_VERSION;

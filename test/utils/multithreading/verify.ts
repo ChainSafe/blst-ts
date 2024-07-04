@@ -1,13 +1,10 @@
 import {
   PublicKey,
   Signature,
-  SignatureSet,
   aggregatePublicKeys,
-  asyncVerify,
-  asyncVerifyMultipleAggregateSignatures,
   verify,
   verifyMultipleAggregateSignatures,
-} from "../../../lib";
+} from "../../../index.js";
 import {ISignatureSet, SignatureSetType} from "./types";
 
 const MIN_SET_COUNT_TO_BATCH = 2;
@@ -28,9 +25,9 @@ export function getAggregatePublicKey(set: ISignatureSet): PublicKey {
 export function verifySignatureSets(sets: ISignatureSet[]): boolean {
   try {
     const aggregatedSets = sets.map((set) => ({
-      publicKey: getAggregatePublicKey(set),
-      message: set.signingRoot.valueOf(),
-      signature: Signature.deserialize(set.signature),
+      pk: getAggregatePublicKey(set),
+      msg: set.signingRoot.valueOf(),
+      sig: Signature.fromBytes(set.signature),
     }));
 
     if (sets.length >= MIN_SET_COUNT_TO_BATCH) {
@@ -41,27 +38,7 @@ export function verifySignatureSets(sets: ISignatureSet[]): boolean {
       throw Error("Empty signature set");
     }
 
-    return aggregatedSets.every((set) => verify(set.message, set.publicKey, set.signature));
-  } catch {
-    return false;
-  }
-}
-
-export async function asyncVerifyNapiSignatureSets(sets: SignatureSet[]): Promise<boolean> {
-  try {
-    if (sets.length >= MIN_SET_COUNT_TO_BATCH) {
-      return await asyncVerifyMultipleAggregateSignatures(sets);
-    }
-
-    if (sets.length === 0) {
-      throw Error("Empty signature set");
-    }
-
-    const verifications = await Promise.all(
-      sets.map((set) => asyncVerify(set.message, set.publicKey, set.signature).catch(() => false))
-    );
-
-    return verifications.every((v) => v);
+    return aggregatedSets.every((set) => verify(set.msg, set.pk, set.sig));
   } catch {
     return false;
   }

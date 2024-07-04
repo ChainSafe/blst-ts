@@ -1,9 +1,8 @@
 {
   "include": ["test"],
   "compilerOptions": {
-    "outDir": "dist",
     "target": "esnext",
-    "module": "commonjs",
+    "module": "CommonJS",
     "pretty": true,
     "lib": ["esnext.bigint", "DOM"],
 
@@ -21,5 +20,5 @@
     "sourceMap": true,
     "declarationMap": true,
     "esModuleInterop": true
-  }
+  },
 }

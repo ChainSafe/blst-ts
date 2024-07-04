@@ -12,8 +12,8 @@ import {
   verify as VERIFY,
   aggregateVerify,
   fastAggregateVerify,
-} from "../../lib";
-import {fromHex, toHex} from "../utils";
+} from "../../index.js";
+import {fromHex, toHex} from "../utils/index";
 
 // Example full path
 // blst-ts/spec-tests/tests/general/altair/bls/eth_aggregate_pubkeys/small/eth_aggregate_pubkeys_empty_list
@@ -114,8 +114,11 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  const agg = aggregateSignatures(input.map((hex) => Signature.deserialize(fromHex(hex))));
-  return toHex(agg.serialize());
+  try {
+    return aggregateSignatures(input.map((hex) => Signature.fromHex(hex))).toHex();
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -129,11 +132,15 @@ function aggregate(input: string[]): string | null {
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
   const {pubkeys, messages, signature} = input;
-  return aggregateVerify(
-    messages.map(fromHex),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
+  try {
+    return aggregateVerify(
+      messages.map(fromHex),
+      pubkeys.map((hex) => PublicKey.fromHex(hex)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -143,13 +150,11 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * ```
  */
 function eth_aggregate_pubkeys(input: string[]): string | null {
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of input) {
-    if (pk === G1_POINT_AT_INFINITY) return null;
+  try {
+    return aggregatePublicKeys(input.map((hex) => PublicKey.fromHex(hex, true))).toHex();
+  } catch (e) {
+    return null;
   }
-
-  const agg = aggregatePublicKeys(input.map((hex) => PublicKey.deserialize(fromHex(hex))));
-  return toHex(agg.serialize());
 }
 
 /**
@@ -168,16 +173,15 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     return true;
   }
 
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of pubkeys) {
-    if (pk === G1_POINT_AT_INFINITY) return false;
+  try {
+    return fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
   }
-
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
 }
 
 /**
@@ -189,19 +193,18 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
+function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
   const {pubkeys, message, signature} = input;
 
-  // Don't add this checks in the source as beacon nodes check the pubkeys for inf when onboarding
-  for (const pk of pubkeys) {
-    if (pk === G1_POINT_AT_INFINITY) return false;
+  try {
+    return fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
   }
-
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.deserialize(fromHex(hex))),
-    Signature.deserialize(fromHex(signature))
-  );
 }
 
 /**
@@ -212,9 +215,11 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  */
 function sign(input: {privkey: string; message: string}): string | null {
   const {privkey, message} = input;
-  const sk = SecretKey.deserialize(fromHex(privkey));
-  const signature = sk.sign(fromHex(message));
-  return toHex(signature.serialize());
+  try {
+    return SecretKey.fromHex(privkey).sign(fromHex(message)).toHex();
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -226,7 +231,11 @@ function sign(input: {privkey: string; message: string}): string | null {
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
   const {pubkey, message, signature} = input;
-  return VERIFY(fromHex(message), PublicKey.deserialize(fromHex(pubkey)), Signature.deserialize(fromHex(signature)));
+  try {
+    return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
+  } catch (e) {
+    return false;
+  }
 }
 
 function isBlstError(e: unknown): boolean {

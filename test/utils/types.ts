@@ -1,6 +1,6 @@
-import * as bindings from "../../lib";
+import * as bindings from "../../index.js";
 
-export type BufferLike = string | Uint8Array | Buffer | bindings.Serializable;
+export type BufferLike = string | Uint8Array | Buffer | bindings.PublicKey | bindings.Signature;
 
 export interface TestSet {
   message: Uint8Array;

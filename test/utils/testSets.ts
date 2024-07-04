@@ -1,12 +1,12 @@
 import crypto from "crypto";
-import {SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
+import {SecretKey, Signature} from "../../index.js";
 import {TestSet, SerializedSet} from "./types";
 import {arrayOfIndexes} from "./helpers";
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
 export function buildTestSetFromMessage(message: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
-  const secretKey = SecretKey.fromKeygen(crypto.randomBytes(BLST_CONSTANTS.SECRET_KEY_LENGTH));
+  const secretKey = SecretKey.fromKeygen(crypto.randomBytes(32));
   return {
     message,
     secretKey,
@@ -42,7 +42,7 @@ export function getTestSetSameMessage(i: number = 1): TestSet {
   const set = getTestSet(i);
   let signature = commonMessageSignatures.get(i);
   if (!signature) {
-    signature = set.secretKey.sign(commonMessage);
+    signature = set.secretKey.sign(commonMessage) as Signature;
     commonMessageSignatures.set(i, signature);
   }
   return {
@@ -62,9 +62,9 @@ export function getSerializedTestSet(i: number = 1): SerializedSet {
   const deserialized = getTestSet(i);
   const serialized = {
     message: deserialized.message,
-    secretKey: deserialized.secretKey.serialize(),
-    publicKey: deserialized.publicKey.serialize(),
-    signature: deserialized.signature.serialize(),
+    secretKey: deserialized.secretKey.toBytes(),
+    publicKey: deserialized.publicKey.toBytes(),
+    signature: deserialized.signature.toBytes(),
   };
   serializedSets.set(i, serialized);
   return serialized;
