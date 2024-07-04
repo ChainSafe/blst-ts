@@ -68,7 +68,7 @@
     "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
-    "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
+    "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/register' ts-node node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
     "test:spec": "mocha test/spec/**/*.test.ts",
     "test:unit": "mocha test/unit/**/*.test.ts",
     "universal": "napi universal",
