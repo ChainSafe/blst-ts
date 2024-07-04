@@ -1,6 +1,6 @@
 # blst-ts
 
-![ETH2.0_Spec_Version 0.12.0](https://img.shields.io/badge/ETH2.0_Spec_Version-0.12.0-2e86c1.svg)
+![ETH2.0_Spec_Version 1.4.0](https://img.shields.io/badge/ETH2.0_Spec_Version-1.4.0-2e86c1.svg)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
 ![Node Version](https://img.shields.io/badge/node-14.x-green)
 
@@ -37,10 +37,9 @@ const sig = sk.sign(msg);
 console.log(verify(msg, pk, sig)); // true
 ```
 
-This library exposes two types of classes for public keys and signatures: `PublicKey` & `AggregatePublicKey`, `Signature` & `AggregateSignature`
+This library exposes a single class for public keys and signatures: `PublicKey`, `Signature`
 
-- `PublicKey`: Contains an affine point (x,y). It's the default representation of the point and what you need to serialize to and deserialize from.
-- `AggregatePublicKey`: Contains a jacobian point (x,y,z). It's optimal to perform aggregation operations.
+- `PublicKey`, `Signature`: Contains an affine point (x,y). It's the default representation of the point and what you need to serialize to and deserialize from.
 
 ## Spec versioning
 

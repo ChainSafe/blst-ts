@@ -5,8 +5,11 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
+/// See https://github.com/ethereum/consensus-specs/blob/v1.4.0/specs/phase0/beacon-chain.md#bls-signatures
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
+/// Custom error status for programatic error handling.
+/// This status will be populated in `Error#code` on the javascript side
 pub enum ErrorStatus {
   Blst(BLST_ERROR),
   Other(String),
@@ -21,6 +24,7 @@ impl AsRef<str> for ErrorStatus {
   }
 }
 
+// All errors returned from this module will be of type `napi::Error<ErrorStatus>`
 type Result<T> = napi::Result<T, ErrorStatus>;
 
 #[napi]
@@ -40,13 +44,13 @@ pub struct SignatureSet {
 }
 
 #[napi(object)]
-pub struct AggregationSet {
+pub struct PkAndSerializedSig {
   pub pk: Reference<PublicKey>,
   pub sig: Uint8Array,
 }
 
 #[napi(object)]
-pub struct AggregatedSet {
+pub struct PkAndSig {
   pub pk: Reference<PublicKey>,
   pub sig: Reference<Signature>,
 }
@@ -54,6 +58,9 @@ pub struct AggregatedSet {
 #[napi]
 impl SecretKey {
   #[napi(factory)]
+  /// Generate a secret key deterministically from a secret byte array `ikm`.
+  ///
+  /// `ikm` must be at least 32 bytes long.
   pub fn from_keygen(ikm: Uint8Array, key_info: Option<Uint8Array>) -> Result<Self> {
     let key_info = key_info.as_deref().unwrap_or(&[]);
     min_pk::SecretKey::key_gen(&ikm, key_info)
@@ -62,6 +69,11 @@ impl SecretKey {
   }
 
   #[napi(factory)]
+  /// Generate a master secret key deterministically from a secret byte array `ikm` based on EIP-2333.
+  ///
+  /// `ikm` must be at least 32 bytes long.
+  ///
+  /// See https://eips.ethereum.org/EIPS/eip-2333
   pub fn derive_master_eip2333(ikm: Uint8Array) -> Result<Self> {
     min_pk::SecretKey::derive_master_eip2333(&ikm)
       .map(Self)
@@ -69,16 +81,21 @@ impl SecretKey {
   }
 
   #[napi]
+  /// Derive a child secret key from a parent secret key based on EIP-2333.
+  ///
+  /// See https://eips.ethereum.org/EIPS/eip-2333
   pub fn derive_child_eip2333(&self, index: u32) -> Self {
     Self(self.0.derive_child_eip2333(index))
   }
 
   #[napi(factory)]
+  /// Deserialize a secret key from a byte array.
   pub fn from_bytes(bytes: Uint8Array) -> Result<Self> {
     Self::from_slice(&bytes)
   }
 
   #[napi(factory)]
+  /// Deserialize a secret key from a hex string.
   pub fn from_hex(hex: String) -> Result<Self> {
     let bytes = hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes)
@@ -91,16 +108,19 @@ impl SecretKey {
   }
 
   #[napi]
+  /// Serialize a secret key to a byte array.
   pub fn to_bytes(&self) -> Uint8Array {
     Uint8Array::from(self.0.to_bytes())
   }
 
   #[napi]
+  /// Serialize a secret key to a hex string.
   pub fn to_hex(&self) -> String {
     format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]
+  /// Return the corresponding public key
   pub fn to_public_key(&self) -> PublicKey {
     PublicKey(self.0.sk_to_pk())
   }
@@ -114,11 +134,17 @@ impl SecretKey {
 #[napi]
 impl PublicKey {
   #[napi(factory)]
+  /// Deserialize a public key from a byte array.
+  ///
+  /// If `pk_validate` is `true`, the public key will be infinity and group checked.
   pub fn from_bytes(bytes: Uint8Array, pk_validate: Option<bool>) -> Result<Self> {
     Self::from_slice(&bytes, pk_validate)
   }
 
   #[napi(factory)]
+  /// Deserialize a public key from a hex string.
+  ///
+  /// If `pk_validate` is `true`, the public key will be infinity and group checked.
   pub fn from_hex(hex: String, pk_validate: Option<bool>) -> Result<Self> {
     let bytes = hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes, pk_validate)
@@ -134,17 +160,20 @@ impl PublicKey {
   }
 
   #[napi]
+  /// Serialize a public key to a byte array.
   pub fn to_bytes(&self) -> Uint8Array {
     let bytes = self.0.to_bytes();
     Uint8Array::from(bytes)
   }
 
   #[napi]
+  /// Serialize a public key to a hex string.
   pub fn to_hex(&self) -> String {
     format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]
+  /// Validate a public key with infinity and group check.
   pub fn key_validate(&self) -> Result<Undefined> {
     self.0.validate().map_err(from_blst_err)
   }
@@ -153,6 +182,11 @@ impl PublicKey {
 #[napi]
 impl Signature {
   #[napi(factory)]
+  /// Deserialize a signature from a byte array.
+  ///
+  /// If `sig_validate` is `true`, the public key will be infinity and group checked.
+  ///
+  /// If `sig_infcheck` is `false`, the infinity check will be skipped.
   pub fn from_bytes(
     bytes: Uint8Array,
     sig_validate: Option<bool>,
@@ -162,6 +196,11 @@ impl Signature {
   }
 
   #[napi(factory)]
+  /// Deserialize a signature from a hex string.
+  ///
+  /// If `sig_validate` is `true`, the public key will be infinity and group checked.
+  ///
+  /// If `sig_infcheck` is `false`, the infinity check will be skipped.
   pub fn from_hex(
     hex: String,
     sig_validate: Option<bool>,
@@ -185,22 +224,30 @@ impl Signature {
   }
 
   #[napi]
+  /// Serialize a signature to a byte array.
   pub fn to_bytes(&self) -> Uint8Array {
     Uint8Array::from(self.0.to_bytes())
   }
 
   #[napi]
+  /// Serialize a signature to a hex string.
   pub fn to_hex(&self) -> String {
     format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
   #[napi]
+  /// Validate a signature with infinity and group check.
+  ///
+  /// If `sig_infcheck` is `false`, the infinity check will be skipped.
   pub fn sig_validate(&self, sig_infcheck: Option<bool>) -> Result<Undefined> {
-    min_pk::Signature::validate(&self.0, sig_infcheck.unwrap_or(false)).map_err(from_blst_err)
+    min_pk::Signature::validate(&self.0, sig_infcheck.unwrap_or(true)).map_err(from_blst_err)
   }
 }
 
 #[napi]
+/// Aggregate multiple public keys into a single public key.
+///
+/// If `pks_validate` is `true`, the public keys will be infinity and group checked.
 pub fn aggregate_public_keys(
   pks: Vec<&PublicKey>,
   pks_validate: Option<bool>,
@@ -212,6 +259,9 @@ pub fn aggregate_public_keys(
 }
 
 #[napi]
+/// Aggregate multiple signatures into a single signature.
+/// 
+/// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_signatures(
   sigs: Vec<&Signature>,
   sigs_groupcheck: Option<bool>,
@@ -223,6 +273,9 @@ pub fn aggregate_signatures(
 }
 
 #[napi]
+/// Aggregate multiple serialized public keys into a single public key.
+///
+/// If `pks_validate` is `true`, the public keys will be infinity and group checked.
 pub fn aggregate_serialized_public_keys(
   pks: Vec<Uint8Array>,
   pks_validate: Option<bool>,
@@ -234,6 +287,9 @@ pub fn aggregate_serialized_public_keys(
 }
 
 #[napi]
+/// Aggregate multiple serialized signatures into a single signature.
+/// 
+/// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_serialized_signatures(
   sigs: Vec<Uint8Array>,
   sigs_groupcheck: Option<bool>,
@@ -245,17 +301,25 @@ pub fn aggregate_serialized_signatures(
 }
 
 #[napi]
-pub fn aggregate_with_randomness(env: Env, sets: Vec<AggregationSet>) -> Result<AggregatedSet> {
+/// Aggregate multiple public keys and multiple serialized signatures into a single blinded public key and blinded signature.
+/// 
+/// Signatures are deserialized and validated with infinity and group checks before aggregation.
+pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Result<PkAndSig> {
   let (pks, sigs) = convert_aggregation_sets(&sets)?;
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
-  Ok(AggregatedSet {
+  Ok(PkAndSig {
     pk: PublicKey::into_reference(PublicKey(pk), env).map_err(from_napi_err)?,
     sig: Signature::into_reference(Signature(sig), env).map_err(from_napi_err)?,
   })
 }
 
 #[napi]
+/// Verify a signature against a message and public key.
+/// 
+/// If `pk_validate` is `true`, the public key will be infinity and group checked.
+/// 
+/// If `sig_groupcheck` is `true`, the signature will be group checked.
 pub fn verify(
   msg: Uint8Array,
   pk: &PublicKey,
@@ -274,6 +338,11 @@ pub fn verify(
 }
 
 #[napi]
+/// Verify an aggregated signature against multiple messages and multiple public keys.
+/// 
+/// If `pk_validate` is `true`, the public keys will be infinity and group checked.
+/// 
+/// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_verify(
   msgs: Vec<Uint8Array>,
   pks: Vec<&PublicKey>,
@@ -294,6 +363,11 @@ pub fn aggregate_verify(
 }
 
 #[napi]
+/// Verify an aggregated signature against a single message and multiple public keys.
+/// 
+/// Proof-of-possession is required for public keys.
+/// 
+/// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn fast_aggregate_verify(
   msg: Uint8Array,
   pks: Vec<&PublicKey>,
@@ -311,22 +385,13 @@ pub fn fast_aggregate_verify(
 }
 
 #[napi]
-pub fn fast_aggregate_verify_pre_aggregated(
-  msg: Uint8Array,
-  pk: &PublicKey,
-  sig: &Signature,
-  sigs_groupcheck: Option<bool>,
-) -> bool {
-  min_pk::Signature::fast_aggregate_verify_pre_aggregated(
-    &sig.0,
-    sigs_groupcheck.unwrap_or(false),
-    &msg,
-    &DST,
-    &pk.0,
-  ) == BLST_ERROR::BLST_SUCCESS
-}
-
-#[napi]
+/// Verify multiple aggregated signatures against multiple messages and multiple public keys.
+/// 
+/// If `pks_validate` is `true`, the public keys will be infinity and group checked.
+/// 
+/// If `sigs_groupcheck` is `true`, the signatures will be group checked.
+/// 
+/// See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
 pub fn verify_multiple_aggregate_signatures(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
@@ -349,6 +414,11 @@ pub fn verify_multiple_aggregate_signatures(
 }
 
 #[napi]
+/// Verify multiple signatures against the same message.
+/// 
+/// Proof-of-possession is required for public keys.
+/// 
+/// See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
 pub fn verify_multiple_signatures_same_message(
   msg: Uint8Array,
   pks: Vec<&PublicKey>,
@@ -362,6 +432,7 @@ pub fn verify_multiple_signatures_same_message(
   Ok(sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS)
 }
 
+/// BLST_ERROR to human readable string
 fn blst_error_to_reason(error: BLST_ERROR) -> String {
   match error {
     BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS".to_string(),
@@ -375,6 +446,7 @@ fn blst_error_to_reason(error: BLST_ERROR) -> String {
   }
 }
 
+/// BLST_ERROR to "error code"
 fn blst_error_to_str<'a>(err: BLST_ERROR) -> &'a str {
   match err {
     BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
@@ -406,6 +478,7 @@ fn invalid_hex_err<T>(_: T) -> Error<ErrorStatus> {
   Error::new(ErrorStatus::Other("INVALID_HEX".to_string()), "Invalid hex")
 }
 
+/// Convert a list of tuples into a tuple of lists
 fn convert_signature_sets<'a>(
   sets: &'a [SignatureSet],
 ) -> Result<(
@@ -427,8 +500,9 @@ fn convert_signature_sets<'a>(
   Ok((msgs, pks, sigs))
 }
 
+/// Convert a list of tuples into a tuple of lists (deserializing and validating signatures along the way)
 fn convert_aggregation_sets(
-  sets: &[AggregationSet],
+  sets: &[PkAndSerializedSig],
 ) -> Result<(Vec<min_pk::PublicKey>, Vec<min_pk::Signature>)> {
   let len = sets.len();
   let mut pks = Vec::with_capacity(len);
@@ -442,6 +516,7 @@ fn convert_aggregation_sets(
   Ok((pks, sigs))
 }
 
+/// randomness used for multiplication (can't be zero)
 fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
   loop {
     let r = rng.gen();
@@ -451,6 +526,8 @@ fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
   }
 }
 
+/// copied from lighthouse:
+/// https://github.com/sigp/lighthouse/blob/9e12c21f268c80a3f002ae0ca27477f9f512eb6f/crypto/bls/src/impls/blst.rs#L52
 fn create_scalar(i: u64) -> blst_scalar {
   let mut vals = [0u64; 4];
   vals[0] = i;

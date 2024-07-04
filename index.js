@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, fastAggregateVerifyPreAggregated, verifyMultipleAggregateSignatures, verifyMultipleSignaturesSameMessage } = nativeBinding
+const { SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, verifyMultipleAggregateSignatures, verifyMultipleSignaturesSameMessage } = nativeBinding
 
 module.exports.SecretKey = SecretKey
 module.exports.PublicKey = PublicKey
@@ -323,6 +323,5 @@ module.exports.aggregateWithRandomness = aggregateWithRandomness
 module.exports.verify = verify
 module.exports.aggregateVerify = aggregateVerify
 module.exports.fastAggregateVerify = fastAggregateVerify
-module.exports.fastAggregateVerifyPreAggregated = fastAggregateVerifyPreAggregated
 module.exports.verifyMultipleAggregateSignatures = verifyMultipleAggregateSignatures
 module.exports.verifyMultipleSignaturesSameMessage = verifyMultipleSignaturesSameMessage
