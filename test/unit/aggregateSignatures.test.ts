@@ -5,7 +5,7 @@ import {badSignature} from "../__fixtures__";
 
 describe("Aggregate Signatures", () => {
   const sets = getTestSets(10);
-  const signatures = sets.map(({signature}) => signature);
+  const signatures = sets.map(({sig}) => sig);
 
   describe("aggregateSignatures()", () => {
     it("should return a Signature", () => {
@@ -18,7 +18,7 @@ describe("Aggregate Signatures", () => {
     });
     it("should throw for invalid Signature", () => {
       try {
-        aggregateSignatures(signatures.concat(badSignature as unknown as Signature));
+        aggregateSignatures(signatures.concat(Signature.fromBytes(badSignature)));
       } catch (e) {
         expect((e as CodeError).code.startsWith("BLST")).to.be.true;
         expect(

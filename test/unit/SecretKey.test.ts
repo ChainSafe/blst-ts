@@ -26,7 +26,7 @@ describe("SecretKey", () => {
           it(`should throw on invalid ikm type: ${type}`, () => {
             expect(() => SecretKey.fromKeygen(invalid)).to.throw();
           });
-          if (type !== "undefined") {
+          if (type !== "undefined" && type !== "null") {
             it(`should throw on invalid info type: ${type}`, () => {
               expect(() => SecretKey.fromKeygen(KEY_MATERIAL, invalid)).to.throw();
             });

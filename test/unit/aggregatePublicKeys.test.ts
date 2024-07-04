@@ -5,7 +5,7 @@ import {badPublicKey} from "../__fixtures__";
 
 describe("Aggregate Public Keys", () => {
   const sets = getTestSets(10);
-  const keys = sets.map(({publicKey}) => publicKey);
+  const keys = sets.map(({pk}) => pk);
 
   describe("aggregatePublicKeys()", () => {
     it("should return a PublicKey", () => {
@@ -18,10 +18,11 @@ describe("Aggregate Public Keys", () => {
     });
     it("should throw for invalid PublicKey", function () {
       try {
-        aggregatePublicKeys(keys.concat(badPublicKey as unknown as PublicKey));
+        aggregatePublicKeys(keys.concat(PublicKey.fromBytes(badPublicKey)));
         expect.fail("Did not throw error for badPublicKey");
       } catch (e) {
-        expect((e as CodeError).code.startsWith("BLST")).to.be.true;
+        console.log(e);
+        expect((e as CodeError).code.includes("BLST")).to.be.true;
         expect(
           (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") || (e as CodeError).code.includes("BLST_BAD_ENCODING")
         ).to.be.true;

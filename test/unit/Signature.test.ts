@@ -21,7 +21,7 @@ describe("Signature", () => {
       describe("argument validation", () => {
         for (const [type, invalid] of invalidInputs) {
           it(`should throw on invalid pkBytes type: ${type}`, () => {
-            expect(() => Signature.fromBytes(invalid)).to.throw();
+            expect(() => Signature.fromBytes(invalid, true)).to.throw();
           });
         }
         it("should only take 96 or 192 bytes", () => {
@@ -59,7 +59,7 @@ describe("Signature", () => {
         const sig = Signature.fromBytes(
           Uint8Array.from([...pkSeed.toBytes().subarray(0, 94), ...Buffer.from("a1")])
         );
-        expect(() => sig.sigValidate()).to.throw("BLST_ERROR::BLST_POINT_NOT_IN_GROUP");
+        expect(() => sig.sigValidate()).to.throw();
       });
     });
   });

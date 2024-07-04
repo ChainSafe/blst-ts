@@ -36,9 +36,9 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
       opts: job.opts,
       sets: job.sets.map((set) => {
         return {
-          signature: set.signature,
-          message: set.signingRoot,
-          publicKey: getAggregatePublicKey(set),
+          sig: Signature.fromBytes(set.signature),
+          msg: set.signingRoot,
+          pk: getAggregatePublicKey(set),
         };
       }),
     };
@@ -74,9 +74,9 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
     opts: job.opts,
     sets: [
       {
-        publicKey,
-        signature,
-        message: job.message,
+        pk: publicKey,
+        sig: signature,
+        msg: job.message,
       },
     ],
   };

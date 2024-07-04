@@ -33,12 +33,12 @@ describe("PublicKey", () => {
       });
       it("should throw on invalid key", () => {
         try {
-          PublicKey.fromBytes(sullyUint8Array(validPublicKey.compressed));
+          PublicKey.fromBytes(sullyUint8Array(validPublicKey.compressed), true);
           expect.fail("Did not throw error for badPublicKey");
         } catch (e) {
           expect(
             (e as CodeError).code === "BLST_POINT_NOT_ON_CURVE" ||
-              (e as Error).message === "BLST_BAD_ENCODING"
+              (e as CodeError).code === "BLST_BAD_ENCODING"
           ).to.be.true;
         }
       });

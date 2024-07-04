@@ -1,7 +1,7 @@
 import {SignatureSet} from "../../../index.js";
 import {chunkifyMaximizeChunkSize} from "../../utils";
-import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest} from "./types";
-import {verifySignatureSets} from "./verify.js";
+import {WorkResult, WorkResultCode, BlsWorkResult, BlsWorkRequest, ISignatureSet, SignatureSetType} from "./types";
+import {verifySignatureSets} from "./verify";
 
 const BATCHABLE_MIN_PER_CHUNK = 16;
 
@@ -34,7 +34,7 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
       for (const {sets} of batchableChunk) {
         // TODO: speed test in perf for potential switch to allSets.push(...sets);
         for (const set of sets) {
-          allSets.push(set);
+          allSets.push({type: SignatureSetType.single, signingRoot: set.msg, pubkey: set.pk, signature: set.sig.toBytes()});
         }
       }
 
@@ -64,15 +64,17 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
   }
 
   await Promise.all(
-    nonBatchableSets.map(({idx, sets}) =>
-      verifySignatureSets(sets)
-        .then((isValid) => {
-          results[idx] = {code: WorkResultCode.success, result: isValid};
-        })
-        .catch((e) => {
-          results[idx] = {code: WorkResultCode.error, error: e as Error};
-        })
-    )
+    nonBatchableSets.map(({idx, sets}) => {
+      results[idx] = {
+        code: WorkResultCode.success,
+        result: verifySignatureSets(sets.map((set) => ({
+          type: SignatureSetType.single,
+          signingRoot: set.msg,
+          pubkey: set.pk,
+          signature: set.sig.toBytes(),
+        }))),
+      };
+    })
   );
 
   return {
