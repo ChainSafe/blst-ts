@@ -1,10 +1,4 @@
-import {
-  PublicKey,
-  Signature,
-  aggregatePublicKeys,
-  verify,
-  verifyMultipleAggregateSignatures,
-} from "../../../index.js";
+import {PublicKey, Signature, aggregatePublicKeys, verify, verifyMultipleAggregateSignatures} from "../../../index.js";
 import {ISignatureSet, SignatureSetType} from "./types";
 
 const MIN_SET_COUNT_TO_BATCH = 2;

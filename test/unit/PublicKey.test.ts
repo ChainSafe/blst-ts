@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {PUBLIC_KEY_LENGTH, PublicKey, SecretKey} from "../../index.js";
-import {CodeError, expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
+import {CodeError, expectEqualHex, sullyUint8Array} from "../utils";
 import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("PublicKey", () => {
@@ -13,10 +13,7 @@ describe("PublicKey", () => {
         expect(() => PublicKey.fromBytes(Buffer.alloc(32, "*"))).to.throw();
       });
       it("should take uncompressed byte arrays", () => {
-        expectEqualHex(
-          PublicKey.fromBytes(validPublicKey.uncompressed).toBytes(),
-          validPublicKey.compressed
-        );
+        expectEqualHex(PublicKey.fromBytes(validPublicKey.uncompressed).toBytes(), validPublicKey.compressed);
       });
       it("should take compressed byte arrays", () => {
         expectEqualHex(PublicKey.fromBytes(validPublicKey.compressed).toBytes(), validPublicKey.compressed);
@@ -36,10 +33,8 @@ describe("PublicKey", () => {
           PublicKey.fromBytes(sullyUint8Array(validPublicKey.compressed), true);
           expect.fail("Did not throw error for badPublicKey");
         } catch (e) {
-          expect(
-            (e as CodeError).code === "BLST_POINT_NOT_ON_CURVE" ||
-              (e as CodeError).code === "BLST_BAD_ENCODING"
-          ).to.be.true;
+          expect((e as CodeError).code === "BLST_POINT_NOT_ON_CURVE" || (e as CodeError).code === "BLST_BAD_ENCODING")
+            .to.be.true;
         }
       });
       it("should throw on zero key", () => {

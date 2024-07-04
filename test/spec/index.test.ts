@@ -13,15 +13,13 @@ import {
   aggregateVerify,
   fastAggregateVerify,
 } from "../../index.js";
-import {fromHex, toHex} from "../utils/index";
+import {fromHex} from "../utils/index";
 
 // Example full path
 // blst-ts/spec-tests/tests/general/altair/bls/eth_aggregate_pubkeys/small/eth_aggregate_pubkeys_empty_list
 
 const G2_POINT_AT_INFINITY =
   "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-const G1_POINT_AT_INFINITY =
-  "0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 const testRootDirByFork = path.join(SPEC_TEST_LOCATION, "tests/general");
 for (const fork of fs.readdirSync(testRootDirByFork)) {

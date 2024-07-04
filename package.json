@@ -63,7 +63,7 @@
     "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts",
     "lint": "npm run lint:rs && npm run lint:ts",
     "lint:rs": "cargo fmt --check",
-    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts scripts/ test/ utils/",
+    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts test/",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",

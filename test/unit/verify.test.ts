@@ -1,9 +1,5 @@
 import {expect} from "chai";
-import {
-  aggregateVerify,
-  fastAggregateVerify,
-  verify,
-} from "../../index.js";
+import {aggregateVerify, fastAggregateVerify, verify} from "../../index.js";
 import {sullyUint8Array, getTestSet} from "../utils";
 import {TestSet} from "../utils/types";
 
@@ -58,8 +54,7 @@ describe("Fast Aggregate Verify", () => {
     });
     describe("should default to false", () => {
       it("should handle invalid message", () => {
-        expect(fastAggregateVerify(sullyUint8Array(testSet.msg), [testSet.pk], testSet.sig)).to.be
-          .false;
+        expect(fastAggregateVerify(sullyUint8Array(testSet.msg), [testSet.pk], testSet.sig)).to.be.false;
       });
     });
     it("should return true for valid sets", () => {

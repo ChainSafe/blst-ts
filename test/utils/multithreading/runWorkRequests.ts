@@ -34,13 +34,18 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
       for (const {sets} of batchableChunk) {
         // TODO: speed test in perf for potential switch to allSets.push(...sets);
         for (const set of sets) {
-          allSets.push({type: SignatureSetType.single, signingRoot: set.msg, pubkey: set.pk, signature: set.sig.toBytes()});
+          allSets.push({
+            type: SignatureSetType.single,
+            signingRoot: set.msg,
+            pubkey: set.pk,
+            signature: set.sig.toBytes(),
+          });
         }
       }
 
       try {
         // Attempt to verify multiple sets at once
-        const isValid = await verifySignatureSets(allSets);
+        const isValid = verifySignatureSets(allSets);
 
         if (isValid) {
           // The entire batch is valid, return success to all
@@ -67,12 +72,14 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
     nonBatchableSets.map(({idx, sets}) => {
       results[idx] = {
         code: WorkResultCode.success,
-        result: verifySignatureSets(sets.map((set) => ({
-          type: SignatureSetType.single,
-          signingRoot: set.msg,
-          pubkey: set.pk,
-          signature: set.sig.toBytes(),
-        }))),
+        result: verifySignatureSets(
+          sets.map((set) => ({
+            type: SignatureSetType.single,
+            signingRoot: set.msg,
+            pubkey: set.pk,
+            signature: set.sig.toBytes(),
+          }))
+        ),
       };
     })
   );

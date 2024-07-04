@@ -23,7 +23,7 @@ describe("Signature", () => {
       beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).sig),
       fn: (signatures) => {
         for (const signature of signatures) {
-          const sig = blst.Signature.fromBytes(signature, true);
+          blst.Signature.fromBytes(signature, true);
         }
       },
     });

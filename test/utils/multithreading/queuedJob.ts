@@ -52,7 +52,7 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
   }
 
   const publicKey = aggregatePublicKeys(
-    job.sets.map((set, i) => {
+    job.sets.map((set) => {
       // if (job.opts.addVerificationRandomness) {
       //   return (set.publicKey as PublicKey).multiplyBy(randomness[i]);
       // }
@@ -60,7 +60,7 @@ export function prepareWorkReqFromJob(job: QueuedJob): BlsWorkRequest {
     })
   );
   const signature = aggregateSignatures(
-    job.sets.map((set, i) => {
+    job.sets.map((set) => {
       const sig = Signature.fromBytes(set.signature);
       sig.sigValidate();
       // if (job.opts.addVerificationRandomness) {

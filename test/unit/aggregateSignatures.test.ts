@@ -22,7 +22,8 @@ describe("Aggregate Signatures", () => {
       } catch (e) {
         expect((e as CodeError).code.startsWith("BLST")).to.be.true;
         expect(
-          (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") || (e as CodeError).code.includes("BLST_BAD_ENCODING")
+          (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") ||
+            (e as CodeError).code.includes("BLST_BAD_ENCODING")
         ).to.be.true;
       }
     });

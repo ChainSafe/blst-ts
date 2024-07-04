@@ -23,7 +23,7 @@ describe("PublicKey", () => {
       beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).pk),
       fn: (publicKeys) => {
         for (const publicKey of publicKeys) {
-          const key = blst.PublicKey.fromBytes(publicKey, true);
+          blst.PublicKey.fromBytes(publicKey, true);
         }
       },
     });

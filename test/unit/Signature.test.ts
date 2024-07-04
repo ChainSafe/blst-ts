@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {SIGNATURE_LENGTH, SecretKey, Signature} from "../../index.js";
-import {expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
-import {G2_POINT_AT_INFINITY, KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
+import {expectEqualHex, sullyUint8Array} from "../utils";
+import {KEY_MATERIAL, invalidInputs, validSignature} from "../__fixtures__";
 
 describe("Signature", () => {
   it("should exist", () => {
@@ -10,10 +10,7 @@ describe("Signature", () => {
   describe("constructor", () => {
     describe("Signature.fromBytes()", () => {
       it("should take uncompressed byte arrays", () => {
-        expectEqualHex(
-          Signature.fromBytes(validSignature.uncompressed).toBytes(),
-          validSignature.compressed
-        );
+        expectEqualHex(Signature.fromBytes(validSignature.uncompressed).toBytes(), validSignature.compressed);
       });
       it("should take compressed byte arrays", () => {
         expectEqualHex(Signature.fromBytes(validSignature.compressed).toBytes(), validSignature.compressed);
@@ -56,9 +53,7 @@ describe("Signature", () => {
       });
       it("should throw for invalid", () => {
         const pkSeed = Signature.fromBytes(validSignature.compressed);
-        const sig = Signature.fromBytes(
-          Uint8Array.from([...pkSeed.toBytes().subarray(0, 94), ...Buffer.from("a1")])
-        );
+        const sig = Signature.fromBytes(Uint8Array.from([...pkSeed.toBytes().subarray(0, 94), ...Buffer.from("a1")]));
         expect(() => sig.sigValidate()).to.throw();
       });
     });

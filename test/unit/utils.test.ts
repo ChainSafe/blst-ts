@@ -1,5 +1,11 @@
 import {expect} from "chai";
-import {Signature, aggregateSignatures, fastAggregateVerify, verify, verifyMultipleAggregateSignatures} from "../../index.js";
+import {
+  Signature,
+  aggregateSignatures,
+  fastAggregateVerify,
+  verify,
+  verifyMultipleAggregateSignatures,
+} from "../../index.js";
 import {
   BlsMultiThreading,
   arrayOfIndexes,
