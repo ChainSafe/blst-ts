@@ -114,11 +114,7 @@ for (const fork of fs.readdirSync(testRootDirByFork)) {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  try {
-    return aggregateSignatures(input.map((hex) => Signature.fromHex(hex))).toHex();
-  } catch (e) {
-    return null;
-  }
+  return aggregateSignatures(input.map((hex) => Signature.fromHex(hex))).toHex();
 }
 
 /**
@@ -132,15 +128,11 @@ function aggregate(input: string[]): string | null {
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
   const {pubkeys, messages, signature} = input;
-  try {
-    return aggregateVerify(
-      messages.map(fromHex),
-      pubkeys.map((hex) => PublicKey.fromHex(hex)),
-      Signature.fromHex(signature)
-    );
-  } catch (e) {
-    return false;
-  }
+  return aggregateVerify(
+    messages.map(fromHex),
+    pubkeys.map((hex) => PublicKey.fromHex(hex)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -150,11 +142,7 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * ```
  */
 function eth_aggregate_pubkeys(input: string[]): string | null {
-  try {
-    return aggregatePublicKeys(input.map((hex) => PublicKey.fromHex(hex, true))).toHex();
-  } catch (e) {
-    return null;
-  }
+  return aggregatePublicKeys(input.map((hex) => PublicKey.fromHex(hex, true))).toHex();
 }
 
 /**
@@ -173,15 +161,11 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     return true;
   }
 
-  try {
-    return fastAggregateVerify(
-      fromHex(message),
-      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
-      Signature.fromHex(signature)
-    );
-  } catch (e) {
-    return false;
-  }
+  return fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -196,15 +180,11 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
 function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
   const {pubkeys, message, signature} = input;
 
-  try {
-    return fastAggregateVerify(
-      fromHex(message),
-      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
-      Signature.fromHex(signature)
-    );
-  } catch (e) {
-    return false;
-  }
+  return fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -215,11 +195,7 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  */
 function sign(input: {privkey: string; message: string}): string | null {
   const {privkey, message} = input;
-  try {
-    return SecretKey.fromHex(privkey).sign(fromHex(message)).toHex();
-  } catch (e) {
-    return null;
-  }
+  return SecretKey.fromHex(privkey).sign(fromHex(message)).toHex();
 }
 
 /**
@@ -231,13 +207,9 @@ function sign(input: {privkey: string; message: string}): string | null {
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
   const {pubkey, message, signature} = input;
-  try {
-    return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
-  } catch (e) {
-    return false;
-  }
+  return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
 }
 
 function isBlstError(e: unknown): boolean {
-  return (e as Error).message.includes("BLST_ERROR");
+  return ((e as {code?: string}).code ?? "").startsWith("BLST");
 }
