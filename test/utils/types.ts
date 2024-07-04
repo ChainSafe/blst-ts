@@ -3,10 +3,10 @@ import * as bindings from "../../index.js";
 export type BufferLike = string | Uint8Array | Buffer | bindings.PublicKey | bindings.Signature;
 
 export interface TestSet {
-  message: Uint8Array;
-  secretKey: bindings.SecretKey;
-  publicKey: bindings.PublicKey;
-  signature: bindings.Signature;
+  msg: Uint8Array;
+  sk: bindings.SecretKey;
+  pk: bindings.PublicKey;
+  sig: bindings.Signature;
 }
 
 export type SerializedSet = Record<keyof TestSet, Uint8Array>;
@@ -23,4 +23,9 @@ export type InstanceTestCases<InstanceType extends {[key: string]: any}> = {
     args: Parameters<InstanceType[P]>;
     res?: ReturnType<InstanceType[P]>;
   }[];
+};
+
+export type CodeError = {
+  code: string;
+  message: string;
 };

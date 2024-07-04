@@ -8,6 +8,18 @@ use rand::{rngs::ThreadRng, Rng};
 /// See https://github.com/ethereum/consensus-specs/blob/v1.4.0/specs/phase0/beacon-chain.md#bls-signatures
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
+#[napi]
+/// The length of a secret key.
+pub const SECRET_KEY_LENGTH: u32 = 32;
+
+#[napi]
+/// The length of a serialized public key.
+pub const PUBLIC_KEY_LENGTH: u32 = 48;
+
+#[napi]
+/// The length of a serialized signature.
+pub const SIGNATURE_LENGTH: u32 = 96;
+
 /// Custom error status for programatic error handling.
 /// This status will be populated in `Error#code` on the javascript side
 pub enum ErrorStatus {

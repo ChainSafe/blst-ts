@@ -40,7 +40,7 @@ export const validPublicKey = {
 };
 export const badPublicKey = Uint8Array.from(
   Buffer.from([
-    ...Uint8Array.prototype.slice.call(getTestSet().publicKey.serialize(false), 8),
+    ...Uint8Array.prototype.slice.call(getTestSet().pk.toBytes(), 8),
     ...Buffer.from("0123456789abcdef", "hex"),
   ])
 );
@@ -65,4 +65,4 @@ export const validSignature = {
   ),
 };
 
-export const badSignature = sullyUint8Array(getTestSet().signature.serialize(false));
+export const badSignature = sullyUint8Array(getTestSet().sig.toBytes());

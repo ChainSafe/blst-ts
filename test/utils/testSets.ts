@@ -8,10 +8,10 @@ const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 export function buildTestSetFromMessage(message: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
   const secretKey = SecretKey.fromKeygen(crypto.randomBytes(32));
   return {
-    message,
-    secretKey,
-    publicKey: secretKey.toPublicKey(),
-    signature: secretKey.sign(message),
+    msg: message,
+    sk: secretKey,
+    pk: secretKey.toPublicKey(),
+    sig: secretKey.sign(message),
   };
 }
 
@@ -42,14 +42,14 @@ export function getTestSetSameMessage(i: number = 1): TestSet {
   const set = getTestSet(i);
   let signature = commonMessageSignatures.get(i);
   if (!signature) {
-    signature = set.secretKey.sign(commonMessage) as Signature;
+    signature = set.sk.sign(commonMessage) as Signature;
     commonMessageSignatures.set(i, signature);
   }
   return {
-    message: commonMessage,
-    secretKey: set.secretKey,
-    publicKey: set.publicKey,
-    signature,
+    msg: commonMessage,
+    sk: set.sk,
+    pk: set.pk,
+    sig: signature,
   };
 }
 
@@ -61,10 +61,10 @@ export function getSerializedTestSet(i: number = 1): SerializedSet {
   }
   const deserialized = getTestSet(i);
   const serialized = {
-    message: deserialized.message,
-    secretKey: deserialized.secretKey.toBytes(),
-    publicKey: deserialized.publicKey.toBytes(),
-    signature: deserialized.signature.toBytes(),
+    msg: deserialized.msg,
+    sk: deserialized.sk.toBytes(),
+    pk: deserialized.pk.toBytes(),
+    sig: deserialized.sig.toBytes(),
   };
   serializedSets.set(i, serialized);
   return serialized;

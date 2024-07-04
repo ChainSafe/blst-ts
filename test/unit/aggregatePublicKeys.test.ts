@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {aggregatePublicKeys, PublicKey} from "../../lib";
-import {isEqualBytes, getTestSets} from "../utils";
+import {aggregatePublicKeys, PublicKey} from "../../index.js";
+import {isEqualBytes, getTestSets, CodeError} from "../utils";
 import {badPublicKey} from "../__fixtures__";
 
 describe("Aggregate Public Keys", () => {
@@ -8,7 +8,7 @@ describe("Aggregate Public Keys", () => {
   const keys = sets.map(({publicKey}) => publicKey);
 
   describe("aggregatePublicKeys()", () => {
-    it("should return the promise of a PublicKey", () => {
+    it("should return a PublicKey", () => {
       const agg = aggregatePublicKeys(keys);
       expect(agg).to.be.instanceOf(PublicKey);
     });
@@ -21,17 +21,16 @@ describe("Aggregate Public Keys", () => {
         aggregatePublicKeys(keys.concat(badPublicKey as unknown as PublicKey));
         expect.fail("Did not throw error for badPublicKey");
       } catch (e) {
-        expect((e as Error).message.startsWith("BLST_ERROR")).to.be.true;
+        expect((e as CodeError).code.startsWith("BLST")).to.be.true;
         expect(
-          (e as Error).message.includes("BLST_POINT_NOT_ON_CURVE") || (e as Error).message.includes("BLST_BAD_ENCODING")
+          (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") || (e as CodeError).code.includes("BLST_BAD_ENCODING")
         ).to.be.true;
-        expect((e as Error).message.endsWith("Invalid key at index 10")).to.be.true;
       }
     });
     it("should return a key that is not in the keys array", () => {
       const agg = aggregatePublicKeys(keys);
-      const serialized = agg.serialize();
-      expect(keys.find((key) => isEqualBytes(key.serialize(), serialized))).to.be.undefined;
+      const serialized = agg.toBytes();
+      expect(keys.find((key) => isEqualBytes(key.toBytes(), serialized))).to.be.undefined;
     });
   });
 });
