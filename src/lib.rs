@@ -80,8 +80,7 @@ impl SecretKey {
 
   #[napi(factory)]
   pub fn from_hex(hex: String) -> Result<Self> {
-    let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
+    let bytes = hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes)
   }
 
@@ -121,8 +120,7 @@ impl PublicKey {
 
   #[napi(factory)]
   pub fn from_hex(hex: String, pk_validate: Option<bool>) -> Result<Self> {
-    let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
+    let bytes = hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes, pk_validate)
   }
 
@@ -169,8 +167,7 @@ impl Signature {
     sig_validate: Option<bool>,
     sig_infcheck: Option<bool>,
   ) -> Result<Self> {
-    let bytes =
-      hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
+    let bytes = hex::decode(&hex.trim_start_matches("0x")).map_err(invalid_hex_err)?;
     Self::from_slice(&bytes, sig_validate, sig_infcheck)
   }
 
@@ -378,7 +375,7 @@ fn blst_error_to_reason(error: BLST_ERROR) -> String {
   }
 }
 
-fn blst_error_to_str <'a> (err: BLST_ERROR) -> &'a str {
+fn blst_error_to_str<'a>(err: BLST_ERROR) -> &'a str {
   match err {
     BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
     BLST_ERROR::BLST_BAD_ENCODING => "BLST_BAD_ENCODING",
@@ -394,22 +391,19 @@ fn blst_error_to_str <'a> (err: BLST_ERROR) -> &'a str {
 fn from_blst_err(blst_error: BLST_ERROR) -> Error<ErrorStatus> {
   Error::new(
     ErrorStatus::Blst(blst_error),
-    blst_error_to_reason(blst_error)
+    blst_error_to_reason(blst_error),
   )
 }
 
 fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
   Error::new(
     ErrorStatus::Other(napi_err.status.to_string()),
-    napi_err.reason.to_string()
+    napi_err.reason.to_string(),
   )
 }
 
-fn invalid_hex_err<T> (_: T) -> Error<ErrorStatus> {
-  Error::new(
-    ErrorStatus::Other("INVALID_HEX".to_string()),
-    "Invalid hex"
-  )
+fn invalid_hex_err<T>(_: T) -> Error<ErrorStatus> {
+  Error::new(ErrorStatus::Other("INVALID_HEX".to_string()), "Invalid hex")
 }
 
 fn convert_signature_sets<'a>(
@@ -493,17 +487,18 @@ fn aggregate_with_randomness_native(
   sigs: &Vec<min_pk::Signature>,
 ) -> (min_pk::PublicKey, min_pk::Signature) {
   let rands = create_rand_slice(pks.len());
-  aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice())
+  aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice(), 64)
 }
 
-/// pks.len() == sigs.len() == rands.len() *32
+/// pks.len() == sigs.len() == rands.len() * 32
 fn aggregate_with_native(
   pks: &[min_pk::PublicKey],
   sigs: &[min_pk::Signature],
-  rands: &[u8],
+  scalars: &[u8],
+  nbits: usize,
 ) -> (min_pk::PublicKey, min_pk::Signature) {
-  let pk = pks.mult(rands, 64).to_public_key();
-  let sig = sigs.mult(rands, 64).to_signature();
+  let pk = pks.mult(scalars, nbits).to_public_key();
+  let sig = sigs.mult(scalars, nbits).to_signature();
 
   (pk, sig)
 }
