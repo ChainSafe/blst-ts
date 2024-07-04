@@ -1,5 +1,5 @@
 {
-  "include": ["src", "test"],
+  "include": ["test"],
   "compilerOptions": {
     "outDir": "dist",
     "target": "esnext",
