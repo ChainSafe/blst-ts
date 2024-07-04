@@ -260,7 +260,7 @@ pub fn aggregate_public_keys(
 
 #[napi]
 /// Aggregate multiple signatures into a single signature.
-/// 
+///
 /// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_signatures(
   sigs: Vec<&Signature>,
@@ -288,7 +288,7 @@ pub fn aggregate_serialized_public_keys(
 
 #[napi]
 /// Aggregate multiple serialized signatures into a single signature.
-/// 
+///
 /// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_serialized_signatures(
   sigs: Vec<Uint8Array>,
@@ -302,10 +302,10 @@ pub fn aggregate_serialized_signatures(
 
 #[napi]
 /// Aggregate multiple public keys and multiple serialized signatures into a single blinded public key and blinded signature.
-/// 
+///
 /// Signatures are deserialized and validated with infinity and group checks before aggregation.
 pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Result<PkAndSig> {
-  let (pks, sigs) = convert_aggregation_sets(&sets)?;
+  let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
   Ok(PkAndSig {
@@ -316,9 +316,9 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
 
 #[napi]
 /// Verify a signature against a message and public key.
-/// 
+///
 /// If `pk_validate` is `true`, the public key will be infinity and group checked.
-/// 
+///
 /// If `sig_groupcheck` is `true`, the signature will be group checked.
 pub fn verify(
   msg: Uint8Array,
@@ -339,9 +339,9 @@ pub fn verify(
 
 #[napi]
 /// Verify an aggregated signature against multiple messages and multiple public keys.
-/// 
+///
 /// If `pk_validate` is `true`, the public keys will be infinity and group checked.
-/// 
+///
 /// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn aggregate_verify(
   msgs: Vec<Uint8Array>,
@@ -364,9 +364,9 @@ pub fn aggregate_verify(
 
 #[napi]
 /// Verify an aggregated signature against a single message and multiple public keys.
-/// 
+///
 /// Proof-of-possession is required for public keys.
-/// 
+///
 /// If `sigs_groupcheck` is `true`, the signatures will be group checked.
 pub fn fast_aggregate_verify(
   msg: Uint8Array,
@@ -386,50 +386,48 @@ pub fn fast_aggregate_verify(
 
 #[napi]
 /// Verify multiple aggregated signatures against multiple messages and multiple public keys.
-/// 
+///
 /// If `pks_validate` is `true`, the public keys will be infinity and group checked.
-/// 
+///
 /// If `sigs_groupcheck` is `true`, the signatures will be group checked.
-/// 
+///
 /// See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
 pub fn verify_multiple_aggregate_signatures(
   sets: Vec<SignatureSet>,
   pks_validate: Option<bool>,
   sigs_groupcheck: Option<bool>,
-) -> Result<bool> {
-  let (msgs, pks, sigs) = convert_signature_sets(&sets)?;
+) -> bool {
+  let (msgs, pks, sigs) = unzip_signature_sets(&sets);
   let rands = create_rand_scalars(sets.len());
-  Ok(
-    min_pk::Signature::verify_multiple_aggregate_signatures(
-      &msgs,
-      &DST,
-      &pks,
-      pks_validate.unwrap_or(false),
-      &sigs,
-      sigs_groupcheck.unwrap_or(false),
-      &rands,
-      64,
-    ) == BLST_ERROR::BLST_SUCCESS,
-  )
+  min_pk::Signature::verify_multiple_aggregate_signatures(
+    &msgs,
+    &DST,
+    &pks,
+    pks_validate.unwrap_or(false),
+    &sigs,
+    sigs_groupcheck.unwrap_or(false),
+    &rands,
+    64,
+  ) == BLST_ERROR::BLST_SUCCESS
 }
 
 #[napi]
 /// Verify multiple signatures against the same message.
-/// 
+///
 /// Proof-of-possession is required for public keys.
-/// 
+///
 /// See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
 pub fn verify_multiple_signatures_same_message(
   msg: Uint8Array,
   pks: Vec<&PublicKey>,
   sigs: Vec<&Signature>,
-) -> Result<bool> {
+) -> bool {
   let msg = msg.as_ref();
   let pks = pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
   let sigs = sigs.iter().map(|sig| sig.0).collect::<Vec<_>>();
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 
-  Ok(sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS)
+  sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS
 }
 
 /// BLST_ERROR to human readable string
@@ -479,13 +477,13 @@ fn invalid_hex_err<T>(_: T) -> Error<ErrorStatus> {
 }
 
 /// Convert a list of tuples into a tuple of lists
-fn convert_signature_sets<'a>(
+fn unzip_signature_sets<'a>(
   sets: &'a [SignatureSet],
-) -> Result<(
+) -> (
   Vec<&'a [u8]>,
   Vec<&'a min_pk::PublicKey>,
   Vec<&'a min_pk::Signature>,
-)> {
+) {
   let len = sets.len();
   let mut msgs = Vec::with_capacity(len);
   let mut pks = Vec::with_capacity(len);
@@ -497,11 +495,11 @@ fn convert_signature_sets<'a>(
     sigs.push(&set.sig.0);
   }
 
-  Ok((msgs, pks, sigs))
+  (msgs, pks, sigs)
 }
 
 /// Convert a list of tuples into a tuple of lists (deserializing and validating signatures along the way)
-fn convert_aggregation_sets(
+fn unzip_and_validate_aggregation_sets(
   sets: &[PkAndSerializedSig],
 ) -> Result<(Vec<min_pk::PublicKey>, Vec<min_pk::Signature>)> {
   let len = sets.len();
