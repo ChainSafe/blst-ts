@@ -62,7 +62,7 @@
     "lint:rs": "cargo fmt --check",
     "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts test/",
     "prepublishOnly": "napi prepublish -t npm",
-    "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
+    "test": "yarn test:unit && yarn test:spec",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
     "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/register' ts-node node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
