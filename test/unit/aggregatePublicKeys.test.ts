@@ -21,6 +21,7 @@ describe("Aggregate Public Keys", () => {
         aggregatePublicKeys(keys.concat(PublicKey.fromBytes(badPublicKey)));
         expect.fail("Did not throw error for badPublicKey");
       } catch (e) {
+        console.log(e);
         expect((e as CodeError).code.includes("BLST")).to.be.true;
         expect(
           (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") ||
