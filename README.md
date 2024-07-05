@@ -1,6 +1,6 @@
 # blst-ts
 
-![ETH2.0_Spec_Version 0.12.0](https://img.shields.io/badge/ETH2.0_Spec_Version-0.12.0-2e86c1.svg)
+![ETH2.0_Spec_Version 1.4.0](https://img.shields.io/badge/ETH2.0_Spec_Version-1.4.0-2e86c1.svg)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
 ![Node Version](https://img.shields.io/badge/node-16.x-green)
 
@@ -36,6 +36,10 @@ const sig = sk.sign(msg);
 console.log(verify(msg, pk, sig)); // true
 ```
 
+This library exposes a single class for public keys and signatures: `PublicKey`, `Signature`
+
+- `PublicKey`, `Signature`: Contains an affine point (x,y). It's the default representation of the point and what you need to serialize to and deserialize from.
+
 ## Spec versioning
 
 This library has a hardcoded configuration compatible with Eth2.0 spec:
@@ -57,8 +61,16 @@ Please check out [CONTRIBUTING.md](./CONTRIBUTING.md) for more info on how to us
 
 ## Release/Publishing
 
-The release process is automatically [triggered](.github/workflows/main.yml#L198) when a change to the version in package.json is merged to master.  See [CONTRIBUTING.md](./CONTRIBUTING.md) for more specifics about how the release and package are built.
+## Release
+
+The release process is automatically [triggered](.github/workflows/CI.yml#216) when a tagged commit is pushed.
+
+To create a new release: 
+
+1. First, increment the project version in [package.json](package.json#3), run `yarn run version`, and merge the associated commit
+2. Then tag this commit with `git tag v${NEW_VERSION}`
+3. Finally push the new tag with `git push ${REMOTE} v${NEW_VERSION}`
 
 ## License
 
-Apache-2.0
+MIT

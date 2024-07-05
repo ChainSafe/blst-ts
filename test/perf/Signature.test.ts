@@ -1,30 +1,29 @@
 import {itBench} from "@dapplion/benchmark";
-import * as blst from "../../lib";
+import * as blst from "../../index.js";
 import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
-const napiTestSignature = getTestSet(0).signature;
+const napiTestSignature = getTestSet(0).sig;
 
 describe("Signature", () => {
   itBench("Signature serialization", () => {
-    napiTestSignature.serialize();
+    napiTestSignature.toBytes();
   });
 
   itBench({
     id: "Signature deserialize",
-    beforeEach: () => napiTestSignature.serialize(),
+    beforeEach: () => napiTestSignature.toBytes(),
     fn: (serialized) => {
-      blst.Signature.deserialize(serialized, blst.CoordType.jacobian);
+      blst.Signature.fromBytes(serialized);
     },
   });
 
   for (const count of [1, 100, 10_000]) {
     itBench({
       id: `Signatures deserialize and validate - ${count} sets`,
-      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).signature),
+      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).sig),
       fn: (signatures) => {
         for (const signature of signatures) {
-          const sig = blst.Signature.deserialize(signature, blst.CoordType.affine);
-          sig.sigValidate();
+          blst.Signature.fromBytes(signature, true);
         }
       },
     });

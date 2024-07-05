@@ -1,4 +1,4 @@
-import {PublicKey} from "../../../lib";
+import {PublicKey} from "../../../index.js";
 import {chunkifyMaximizeChunkSize} from "../../utils";
 import {
   BlsMultiThreadWorkerPoolOptions,

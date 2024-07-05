@@ -1,5 +1,11 @@
 import {expect} from "chai";
-import {aggregateSignatures, fastAggregateVerify, verify, verifyMultipleAggregateSignatures} from "../../lib";
+import {
+  Signature,
+  aggregateSignatures,
+  fastAggregateVerify,
+  verify,
+  verifyMultipleAggregateSignatures,
+} from "../../index.js";
 import {
   BlsMultiThreading,
   arrayOfIndexes,
@@ -18,7 +24,7 @@ describe("utils", () => {
   describe("helpers", () => {
     it("should build valid test sets", () => {
       const set = getTestSet();
-      expect(verify(set.message, set.publicKey, set.signature)).to.be.true;
+      expect(verify(set.msg, set.pk, set.sig)).to.be.true;
     });
   });
   describe("chunkifyMaximizeChunkSize", () => {
@@ -59,12 +65,12 @@ describe("utils", () => {
       expectEqualHex(sets[0].message, sets[1].message);
       expect(
         verifyMultipleAggregateSignatures(
-          sets[0].sets.map(({publicKey, signature}) => ({message: sets[0].message, publicKey, signature}))
+          sets[0].sets.map(({publicKey, signature}) => ({msg: sets[0].message, pk: publicKey, sig: signature}))
         )
       ).to.be.true;
       expect(
         verifyMultipleAggregateSignatures(
-          sets[1].sets.map(({publicKey, signature}) => ({message: sets[1].message, publicKey, signature}))
+          sets[1].sets.map(({publicKey, signature}) => ({msg: sets[1].message, pk: publicKey, sig: signature}))
         )
       ).to.be.true;
     });
@@ -76,14 +82,14 @@ describe("utils", () => {
       const aggregated = aggregateSignatures(sameMessageSets[0].sets.map(({signature}) => signature));
       expectEqualHex(aggregatedSigSets[0].signature, aggregated);
       for (const set of aggregatedSigSets) {
-        expect(fastAggregateVerify(set.signingRoot, set.pubkeys, set.signature)).to.be.true;
+        expect(fastAggregateVerify(set.signingRoot, set.pubkeys, Signature.fromBytes(set.signature))).to.be.true;
       }
     });
     it("should build batches of single signature sets", () => {
       const singleSets = getBatchesOfSingleSignatureSets(4);
       expect(singleSets.length).to.equal(4);
       for (const set of singleSets) {
-        expect(verify(set.signingRoot, set.pubkey, set.signature)).to.be.true;
+        expect(verify(set.signingRoot, set.pubkey, Signature.fromBytes(set.signature))).to.be.true;
       }
     });
     it("should build groups correctly", () => {

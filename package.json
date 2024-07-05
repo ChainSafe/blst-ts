@@ -1,93 +1,74 @@
 {
   "name": "@chainsafe/blst",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
-  "scripts": {
-    "install": "ts-node scripts/install",
-    "clean": "npm run clean:dist && npm run clean:prebuild && npm run clean:gyp",
-    "clean:dist": "rm -rf dist",
-    "clean:gyp": "node-gyp clean && node-gyp configure",
-    "clean:prebuild": "rm -rf prebuild",
-    "build": "yarn build:gyp && yarn build:ts",
-    "build:gyp": "node-gyp build",
-    "build:gyp:debug": "node-gyp build --debug",
-    "build:ts:cjs": "tsc --project tsconfig.cjs.json",
-    "build:ts:esm": "tsc --project tsconfig.esm.json",
-    "build:ts": "yarn build:ts:cjs && yarn build:ts:esm",
-    "postbuild:ts": "ts-node scripts/prepareDist",
-    "build:fuzz": "tsc --project tsconfig.fuzz.json",
-    "build:clean": "npm run clean && npm run install && npm run build:ts",
-    "dev": "ts-node scripts/dev",
-    "lint": "npm run lint:c && npm run lint:ts",
-    "lint:c": "clang-format -i src/*.cc src/*.h",
-    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts lib/ scripts/ test/ utils/",
-    "test": "yarn test:unit && yarn test:spec && yarn test:perf && yarn test:memory",
-    "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
-    "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
-    "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/esm' ts-node-esm node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
-    "test:spec": "mocha test/spec/**/*.test.ts",
-    "test:unit": "mocha test/unit/**/*.test.ts",
-    "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts"
+  "main": "index.js",
+  "type":"commonjs",
+  "types": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "keywords": [
+    "bls",
+    "bls12-381",
+    "blst",
+    "crypto",
+    "ethereum",
+    "napi"
+  ],
+  "napi": {
+    "name": "blst",
+    "triples": {
+      "additional": [
+        "aarch64-apple-darwin",
+        "aarch64-unknown-linux-gnu"
+      ]
+    }
   },
-  "dependencies": {
-    "node-addon-api": "^6.1.0",
-    "node-gyp": "^10.0.1",
-    "ts-node": "^10.9.2"
-  },
+  "license": "MIT",
   "devDependencies": {
     "@dapplion/benchmark": "^0.2.4",
-    "@types/chai": "^4.2.13",
-    "@types/js-yaml": "^4.0.5",
-    "@types/mocha": "^8.0.3",
-    "@types/node": "^20.10.4",
-    "@types/tar": "^6.1.4",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
-    "chai": "^4.2.0",
-    "eslint": "^8.55.0",
-    "eslint-plugin-import": "^2.29.0",
+    "@napi-rs/cli": "^2.18.3",
+    "@types/chai": "^4.3.16",
+    "@types/js-yaml": "^4.0.9",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.9",
+    "@types/tar": "^6.1.13",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "chai": "^4.3.4",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-prettier": "^5.1.3",
     "js-yaml": "^4.1.0",
-    "mocha": "^8.1.3",
-    "prettier": "^3.1.1",
-    "tar": "^6.1.14",
-    "typescript": "^5.2.2"
+    "mocha": "^8.3.2",
+    "prettier": "^3.3.2",
+    "tar": "^7.4.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^5.5.3"
   },
-  "main": "./dist/cjs/lib/index.cjs",
-  "types": "./dist/cjs/lib/index.d.cts",
-  "module": "./dist/esm/lib/index.mjs",
-  "exports": {
-    "require": "./dist/cjs/lib/index.cjs",
-    "import": "./dist/esm/lib/index.mjs",
-    "default": "./dist/cjs/lib/index.cjs",
-    "types": "./dist/cjs/lib/index.d.cts"
+  "engines": {
+    "node": ">= 10"
   },
-  "files": [
-    "blst/bindings/blst_aux.h",
-    "blst/bindings/blst.h",
-    "blst/bindings/blst.hpp",
-    "blst/build",
-    "blst/src",
-    "dist",
-    "prebuild",
-    "scripts/install.ts",
-    "src",
-    "utils",
-    "binding.gyp",
-    "LICENSE",
-    "package.json",
-    "tsconfig.json"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ChainSafe/blst-ts.git"
-  },
-  "keywords": [],
-  "author": "ChainSafe Systems",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/ChainSafe/blst-ts/issues"
-  },
-  "homepage": "https://github.com/ChainSafe/blst-ts#readme"
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "build:fuzz": "tsc --project tsconfig.fuzz.json",
+    "download-spec-tests": "node -r ts-node/register test/spec/downloadTests.ts",
+    "lint": "npm run lint:rs && npm run lint:ts",
+    "lint:rs": "cargo fmt --check",
+    "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts test/",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "yarn test:unit && yarn test:spec",
+    "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
+    "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
+    "test:perf": "UV_THREADPOOL_SIZE=$(node -e 'console.log(require(`os`).availableParallelism())') NODE_OPTIONS='--loader=ts-node/register' ts-node node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
+    "test:spec": "mocha test/spec/**/*.test.ts",
+    "test:unit": "mocha test/unit/**/*.test.ts",
+    "universal": "napi universal",
+    "version": "napi version"
+  }
 }

@@ -1,31 +1,17 @@
 import crypto from "crypto";
-import {SecretKey, Signature, BLST_CONSTANTS} from "../../lib";
-import {TestSet, SerializedSet, SameMessageTestSets} from "./types";
+import {SecretKey, Signature} from "../../index.js";
+import {TestSet, SerializedSet} from "./types";
 import {arrayOfIndexes} from "./helpers";
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
 export function buildTestSetFromMessage(message: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
-  const secretKey = SecretKey.fromKeygen(crypto.randomBytes(BLST_CONSTANTS.SECRET_KEY_LENGTH));
-  const publicKey = secretKey.toPublicKey();
-  const signature = secretKey.sign(message);
-  try {
-    publicKey.keyValidate();
-  } catch {
-    console.log(">>>\n>>>\n>>> Invalid Key Found in a TestSet\n>>>\n>>>");
-    return buildTestSetFromMessage(message);
-  }
-  try {
-    signature.sigValidate();
-  } catch {
-    console.log(">>>\n>>>\n>>> Invalid Signature Found in a TestSet\n>>>\n>>>");
-    return buildTestSetFromMessage(message);
-  }
+  const secretKey = SecretKey.fromKeygen(crypto.randomBytes(32));
   return {
-    message,
-    secretKey,
-    publicKey,
-    signature,
+    msg: message,
+    sk: secretKey,
+    pk: secretKey.toPublicKey(),
+    sig: secretKey.sign(message),
   };
 }
 
@@ -56,22 +42,14 @@ export function getTestSetSameMessage(i: number = 1): TestSet {
   const set = getTestSet(i);
   let signature = commonMessageSignatures.get(i);
   if (!signature) {
-    signature = set.secretKey.sign(commonMessage);
+    signature = set.sk.sign(commonMessage) as Signature;
     commonMessageSignatures.set(i, signature);
   }
   return {
-    message: commonMessage,
-    secretKey: set.secretKey,
-    publicKey: set.publicKey,
-    signature,
-  };
-}
-
-export function getTestSetsSameMessage(count: number): SameMessageTestSets {
-  const sets = arrayOfIndexes(0, count - 1).map(getTestSetSameMessage);
-  return {
-    message: sets[0].message,
-    sets: sets.map(({secretKey, publicKey, signature}) => ({secretKey, publicKey, signature})),
+    msg: commonMessage,
+    sk: set.sk,
+    pk: set.pk,
+    sig: signature,
   };
 }
 
@@ -83,10 +61,10 @@ export function getSerializedTestSet(i: number = 1): SerializedSet {
   }
   const deserialized = getTestSet(i);
   const serialized = {
-    message: deserialized.message,
-    secretKey: deserialized.secretKey.serialize(),
-    publicKey: deserialized.publicKey.serialize(),
-    signature: deserialized.signature.serialize(),
+    msg: deserialized.msg,
+    sk: deserialized.sk.toBytes(),
+    pk: deserialized.pk.toBytes(),
+    sig: deserialized.sig.toBytes(),
   };
   serializedSets.set(i, serialized);
   return serialized;

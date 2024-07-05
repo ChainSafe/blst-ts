@@ -1,4 +1,4 @@
-import {PublicKey, Signature} from "../../../lib";
+import {PublicKey, Signature} from "../../../index.js";
 import {SignatureSetArray} from "../types";
 
 export enum SignatureSetType {

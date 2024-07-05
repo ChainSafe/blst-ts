@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import {aggregateSignatures} from "../../../lib";
+import {aggregateSignatures} from "../../../index.js";
 import {getTestSet, getTestSetSameMessage} from "../testSets";
 import {shuffle} from "../helpers";
 import {
@@ -55,9 +55,9 @@ export function getBatchesOfSingleSignatureSets(batchSize: number): SingleSignat
     const set = getTestSet(i);
     sets.push({
       type: SignatureSetType.single,
-      pubkey: set.publicKey,
-      signingRoot: set.message,
-      signature: set.signature.serialize(),
+      pubkey: set.pk,
+      signingRoot: set.msg,
+      signature: set.sig.toBytes(),
     });
   }
 
@@ -94,9 +94,9 @@ export function getBatchesOfSameMessageSignatureSets(setCount: number, batchSize
     for (let j = 0; j < setCount; j++) {
       const set = getTestSetSameMessage(i + j);
       if (j === 0) {
-        message = set.message;
+        message = set.msg;
       }
-      sets.push({publicKey: set.publicKey, signature: set.signature});
+      sets.push({publicKey: set.pk, signature: set.sig});
     }
 
     aggregatedSets.push({
@@ -119,7 +119,7 @@ export function getBatchesOfAggregatedSignatureSets(pubKeyCount: number, batchSi
   const sameMessageSets = getBatchesOfSameMessageSignatureSets(pubKeyCount, batchSize);
   for (const {sets, message} of sameMessageSets) {
     const sigs = sets.map((set) => set.signature);
-    const signature = aggregateSignatures(sigs).serialize();
+    const signature = aggregateSignatures(sigs).toBytes();
 
     aggregatedSets.push({
       type: SignatureSetType.aggregate,

@@ -1,8 +1,8 @@
 import {itBench} from "@dapplion/benchmark";
-import * as blst from "../../lib";
+import * as blst from "../../index.js";
 import {keygenMaterial, commonMessage, getTestSet} from "../utils";
 
-const napiTestKey = getTestSet(0).secretKey;
+const napiTestKey = getTestSet(0).sk;
 
 describe("SecretKey", () => {
   itBench("SecretKey.fromKeygen", () => {
@@ -10,14 +10,14 @@ describe("SecretKey", () => {
   });
 
   itBench("SecretKey serialization", () => {
-    napiTestKey.serialize();
+    napiTestKey.toBytes();
   });
 
   itBench({
     id: "SecretKey deserialization",
-    beforeEach: () => napiTestKey.serialize(),
+    beforeEach: () => napiTestKey.toBytes(),
     fn: (serialized) => {
-      blst.SecretKey.deserialize(serialized);
+      blst.SecretKey.fromBytes(serialized);
     },
   });
 
