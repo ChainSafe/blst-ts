@@ -6,7 +6,6 @@
     "pretty": true,
     "allowJs": true,
     "checkJs": true,
-    "esModuleInterop": true,
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,
