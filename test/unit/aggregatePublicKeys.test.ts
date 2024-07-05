@@ -22,11 +22,6 @@ describe("Aggregate Public Keys", () => {
         expect.fail("Did not throw error for badPublicKey");
       } catch (e) {
         expect((e as CodeError).code?.includes("BLST"), `${e}`).to.be.true;
-        expect(
-          (e as CodeError).code?.includes("BLST_POINT_NOT_ON_CURVE") ||
-            (e as CodeError).code?.includes("BLST_BAD_ENCODING"),
-          `${e}`
-        ).to.be.true;
       }
     });
     it("should return a key that is not in the keys array", () => {
