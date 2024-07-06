@@ -6,9 +6,11 @@
 /** The length of a secret key. */
 export const SECRET_KEY_LENGTH: number
 /** The length of a serialized public key. */
-export const PUBLIC_KEY_LENGTH: number
+export const PUBLIC_KEY_LENGTH_COMPRESSED: number
+export const PUBLIC_KEY_LENGTH_UNCOMPRESSED: number
 /** The length of a serialized signature. */
-export const SIGNATURE_LENGTH: number
+export const SIGNATURE_LENGTH_COMPRESSED: number
+export const SIGNATURE_LENGTH_UNCOMPRESSED: number
 export interface SignatureSet {
   msg: Uint8Array
   pk: PublicKey
@@ -141,9 +143,9 @@ export class PublicKey {
    */
   static fromHex(hex: string, pkValidate?: boolean | undefined | null): PublicKey
   /** Serialize a public key to a byte array. */
-  toBytes(): Uint8Array
+  toBytes(compress?: boolean | undefined | null): Uint8Array
   /** Serialize a public key to a hex string. */
-  toHex(): string
+  toHex(compress?: boolean | undefined | null): string
   /** Validate a public key with infinity and group check. */
   keyValidate(): void
 }
@@ -165,9 +167,9 @@ export class Signature {
    */
   static fromHex(hex: string, sigValidate?: boolean | undefined | null, sigInfcheck?: boolean | undefined | null): Signature
   /** Serialize a signature to a byte array. */
-  toBytes(): Uint8Array
+  toBytes(compress?: boolean | undefined | null): Uint8Array
   /** Serialize a signature to a hex string. */
-  toHex(): string
+  toHex(compress?: boolean | undefined | null): string
   /**
    * Validate a signature with infinity and group check.
    *

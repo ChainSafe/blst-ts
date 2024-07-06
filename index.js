@@ -310,11 +310,13 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SECRET_KEY_LENGTH, PUBLIC_KEY_LENGTH, SIGNATURE_LENGTH, SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, verifyMultipleAggregateSignatures, verifyMultipleSignaturesSameMessage } = nativeBinding
+const { SECRET_KEY_LENGTH, PUBLIC_KEY_LENGTH_COMPRESSED, PUBLIC_KEY_LENGTH_UNCOMPRESSED, SIGNATURE_LENGTH_COMPRESSED, SIGNATURE_LENGTH_UNCOMPRESSED, SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, verifyMultipleAggregateSignatures, verifyMultipleSignaturesSameMessage } = nativeBinding
 
 module.exports.SECRET_KEY_LENGTH = SECRET_KEY_LENGTH
-module.exports.PUBLIC_KEY_LENGTH = PUBLIC_KEY_LENGTH
-module.exports.SIGNATURE_LENGTH = SIGNATURE_LENGTH
+module.exports.PUBLIC_KEY_LENGTH_COMPRESSED = PUBLIC_KEY_LENGTH_COMPRESSED
+module.exports.PUBLIC_KEY_LENGTH_UNCOMPRESSED = PUBLIC_KEY_LENGTH_UNCOMPRESSED
+module.exports.SIGNATURE_LENGTH_COMPRESSED = SIGNATURE_LENGTH_COMPRESSED
+module.exports.SIGNATURE_LENGTH_UNCOMPRESSED = SIGNATURE_LENGTH_UNCOMPRESSED
 module.exports.SecretKey = SecretKey
 module.exports.PublicKey = PublicKey
 module.exports.Signature = Signature
