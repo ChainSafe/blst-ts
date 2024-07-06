@@ -4,8 +4,6 @@
     "target": "esnext",
     "module": "CommonJS",
     "pretty": true,
-    "allowJs": true,
-    "checkJs": true,
     "strict": true,
     "alwaysStrict": true,
     "strictNullChecks": true,

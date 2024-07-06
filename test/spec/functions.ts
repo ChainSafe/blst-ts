@@ -1,3 +1,4 @@
+import { c } from "tar";
 import {
   SecretKey,
   PublicKey,
@@ -47,11 +48,15 @@ function aggregate(input: string[]): string | null {
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
   const {pubkeys, messages, signature} = input;
-  return aggregateVerify(
-    messages.map(fromHex),
-    pubkeys.map((hex) => PublicKey.fromHex(hex)),
-    Signature.fromHex(signature)
-  );
+  try {
+    return aggregateVerify(
+      messages.map(fromHex),
+      pubkeys.map((hex) => PublicKey.fromHex(hex)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -80,11 +85,15 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     return true;
   }
 
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
-    Signature.fromHex(signature)
-  );
+  try {
+    return fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -99,11 +108,15 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
 function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
   const {pubkeys, message, signature} = input;
 
-  return fastAggregateVerify(
-    fromHex(message),
-    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
-    Signature.fromHex(signature)
-  );
+  try {
+    return fastAggregateVerify(
+      fromHex(message),
+      pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+      Signature.fromHex(signature)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -126,7 +139,11 @@ function sign(input: {privkey: string; message: string}): string | null {
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
   const {pubkey, message, signature} = input;
-  return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
+  try {
+    return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
+  } catch (e) {
+    return false;
+  }
 }
 
 /**

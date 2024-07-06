@@ -96,7 +96,7 @@ export declare function verifyMultipleAggregateSignatures(sets: Array<SignatureS
  * See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
  */
 export declare function verifyMultipleSignaturesSameMessage(msg: Uint8Array, pks: Array<PublicKey>, sigs: Array<Signature>): boolean
-export class SecretKey {
+export declare class SecretKey {
   /**
    * Generate a secret key deterministically from a secret byte array `ikm`.
    *
@@ -129,7 +129,7 @@ export class SecretKey {
   toPublicKey(): PublicKey
   sign(msg: Uint8Array): Signature
 }
-export class PublicKey {
+export declare class PublicKey {
   /**
    * Deserialize a public key from a byte array.
    *
@@ -149,7 +149,7 @@ export class PublicKey {
   /** Validate a public key with infinity and group check. */
   keyValidate(): void
 }
-export class Signature {
+export declare class Signature {
   /**
    * Deserialize a signature from a byte array.
    *
