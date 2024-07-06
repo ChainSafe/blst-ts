@@ -334,6 +334,13 @@ pub fn aggregate_serialized_signatures(
 ///
 /// Signatures are deserialized and validated with infinity and group checks before aggregation.
 pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Result<PkAndSig> {
+  if sets.is_empty() {
+    return Err(Error::new(
+      ErrorStatus::Other("EMPTY_LIST".to_string()),
+      "Empty list",
+    ));
+  }
+
   let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
   let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
 

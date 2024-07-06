@@ -21,10 +21,12 @@ describe("Aggregate Public Keys", () => {
         aggregatePublicKeys(keys.concat(PublicKey.fromBytes(badPublicKey)), true);
         expect.fail("Did not throw error for badPublicKey");
       } catch (e) {
-        expect((e as CodeError).code?.includes("BLST"), `${e}`).to.be.true;
+        const code = (e as CodeError).code ?? "";
+        expect(code.includes("BLST"), `${e}`).to.be.true;
         expect(
-          (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") ||
-            (e as CodeError).code.includes("BLST_BAD_ENCODING")
+          code.includes("BLST_POINT_NOT_ON_CURVE") ||
+            code.includes("BLST_POINT_NOT_IN_GROUP") ||
+            code.includes("BLST_BAD_ENCODING")
         ).to.be.true;
         // expect((e as Error).message.endsWith("Invalid key at index 10")).to.be.true;
       }

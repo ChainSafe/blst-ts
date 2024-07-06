@@ -9,6 +9,15 @@ export interface TestSet {
   sig: bindings.Signature;
 }
 
+export interface SameMessageTestSets {
+  msg: Uint8Array;
+  sets: {
+    sk: bindings.SecretKey;
+    pk: bindings.PublicKey;
+    sig: bindings.Signature;
+  }[];
+}
+
 export type SerializedSet = Record<keyof TestSet, Uint8Array>;
 
 export type SignatureSetArray = bindings.SignatureSet[];

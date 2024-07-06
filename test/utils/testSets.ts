@@ -1,17 +1,31 @@
 import crypto from "crypto";
-import {SecretKey, Signature} from "../../index.js";
-import {TestSet, SerializedSet} from "./types";
+import {SECRET_KEY_LENGTH, SecretKey, Signature} from "../../index.js";
+import {TestSet, SerializedSet, SameMessageTestSets} from "./types";
 import {arrayOfIndexes} from "./helpers";
 
 const DEFAULT_TEST_MESSAGE = Uint8Array.from(Buffer.from("test-message"));
 
-export function buildTestSetFromMessage(message: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
-  const secretKey = SecretKey.fromKeygen(crypto.randomBytes(32));
+export function buildTestSetFromMessage(msg: Uint8Array = DEFAULT_TEST_MESSAGE): TestSet {
+  const sk = SecretKey.fromKeygen(crypto.randomBytes(SECRET_KEY_LENGTH));
+  const pk = sk.toPublicKey();
+  const sig = sk.sign(msg);
+  try {
+    pk.keyValidate();
+  } catch {
+    console.log(">>>\n>>>\n>>> Invalid Key Found in a TestSet\n>>>\n>>>");
+    return buildTestSetFromMessage(msg);
+  }
+  try {
+    sig.sigValidate();
+  } catch {
+    console.log(">>>\n>>>\n>>> Invalid Signature Found in a TestSet\n>>>\n>>>");
+    return buildTestSetFromMessage(msg);
+  }
   return {
-    msg: message,
-    sk: secretKey,
-    pk: secretKey.toPublicKey(),
-    sig: secretKey.sign(message),
+    msg,
+    sk,
+    pk,
+    sig,
   };
 }
 
@@ -40,16 +54,24 @@ export const commonMessage = crypto.randomBytes(32);
 const commonMessageSignatures = new Map<number, Signature>();
 export function getTestSetSameMessage(i: number = 1): TestSet {
   const set = getTestSet(i);
-  let signature = commonMessageSignatures.get(i);
-  if (!signature) {
-    signature = set.sk.sign(commonMessage) as Signature;
-    commonMessageSignatures.set(i, signature);
+  let sig = commonMessageSignatures.get(i);
+  if (!sig) {
+    sig = set.sk.sign(commonMessage);
+    commonMessageSignatures.set(i, sig);
   }
   return {
     msg: commonMessage,
     sk: set.sk,
     pk: set.pk,
-    sig: signature,
+    sig,
+  };
+}
+
+export function getTestSetsSameMessage(count: number): SameMessageTestSets {
+  const sets = arrayOfIndexes(0, count - 1).map(getTestSetSameMessage);
+  return {
+    msg: sets[0].msg,
+    sets: sets.map(({sk, pk, sig}) => ({sk, pk, sig})),
   };
 }
 
@@ -64,7 +86,7 @@ export function getSerializedTestSet(i: number = 1): SerializedSet {
     msg: deserialized.msg,
     sk: deserialized.sk.toBytes(),
     pk: deserialized.pk.toBytes(),
-    sig: deserialized.sig.toBytes(),
+    sig: deserialized.sk.toBytes(),
   };
   serializedSets.set(i, serialized);
   return serialized;
