@@ -1,4 +1,3 @@
-import { c } from "tar";
 import {
   SecretKey,
   PublicKey,
