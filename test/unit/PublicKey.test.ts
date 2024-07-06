@@ -1,6 +1,6 @@
 import {expect} from "chai";
-import {PUBLIC_KEY_LENGTH, PublicKey, SecretKey} from "../../index.js";
-import {CodeError, expectEqualHex, sullyUint8Array} from "../utils";
+import {PUBLIC_KEY_LENGTH_COMPRESSED, PUBLIC_KEY_LENGTH_UNCOMPRESSED, PublicKey, SecretKey} from "../../index.js";
+import {CodeError, expectEqualHex, expectNotEqualHex, sullyUint8Array} from "../utils";
 import {validPublicKey, SECRET_KEY_BYTES, invalidInputs, G1_POINT_AT_INFINITY} from "../__fixtures__";
 
 describe("PublicKey", () => {
@@ -8,9 +8,17 @@ describe("PublicKey", () => {
     expect(PublicKey).to.exist;
   });
   describe("constructors", () => {
-    describe("fromBytes", () => {
+    describe("new PublicKey()", () => {
+      it("should have a private constructor", () => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
+        expect(() => new (PublicKey as any)("foo-bar-baz")).to.throw(
+          "Class contains no `constructor`, can not new it!"
+        );
+      });
+    });
+    describe("deserialize", () => {
       it("should only take 48 or 96 bytes", () => {
-        expect(() => PublicKey.fromBytes(Buffer.alloc(32, "*"))).to.throw();
+        expect(() => PublicKey.fromBytes(Buffer.alloc(32, "*"))).to.throw("Invalid encoding");
       });
       it("should take uncompressed byte arrays", () => {
         expectEqualHex(PublicKey.fromBytes(validPublicKey.uncompressed).toBytes(), validPublicKey.compressed);
@@ -25,7 +33,7 @@ describe("PublicKey", () => {
           });
         }
         it("should throw incorrect length pkBytes", () => {
-          expect(() => PublicKey.fromBytes(Buffer.alloc(12, "*"))).to.throw();
+          expect(() => PublicKey.fromBytes(Buffer.alloc(12, "*"))).to.throw("Invalid encoding");
         });
       });
       it("should throw on invalid key", () => {
@@ -38,7 +46,7 @@ describe("PublicKey", () => {
         }
       });
       it("should throw on zero key", () => {
-        expect(() => PublicKey.fromBytes(Buffer.from(G1_POINT_AT_INFINITY))).to.throw();
+        expect(() => PublicKey.fromBytes(Buffer.from(G1_POINT_AT_INFINITY))).to.throw("Invalid encoding");
       });
     });
   });
@@ -49,14 +57,21 @@ describe("PublicKey", () => {
       it("should toBytes the key to Uint8Array", () => {
         expect(pk.toBytes()).to.be.instanceof(Uint8Array);
       });
-      it("should toBytes the correct length", () => {
-        expect(pk.toBytes()).to.have.lengthOf(PUBLIC_KEY_LENGTH);
+      it("should default to compressed serialization", () => {
+        expectEqualHex(pk.toBytes(), pk.toBytes(true));
+        expectNotEqualHex(pk.toBytes(), pk.toBytes(false));
+      });
+      it("should serialize compressed to the correct length", () => {
+        expect(pk.toBytes(true)).to.have.lengthOf(PUBLIC_KEY_LENGTH_COMPRESSED);
+      });
+      it("should serialize uncompressed to the correct length", () => {
+        expect(pk.toBytes(false)).to.have.lengthOf(PUBLIC_KEY_LENGTH_UNCOMPRESSED);
       });
     });
     describe("toHex", () => {
       it("should toHex string correctly", () => {
         const key = PublicKey.fromBytes(validPublicKey.compressed);
-        expectEqualHex(key.toHex(), validPublicKey.compressed);
+        expectEqualHex(key.toHex(true), validPublicKey.compressed);
       });
     });
     describe("keyValidate()", () => {
