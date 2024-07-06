@@ -1,5 +1,5 @@
 import {expect} from "chai";
-import * as bindings from "../../lib";
+import * as bindings from "../..";
 
 describe("bindings", () => {
   describe("exports", () => {
@@ -8,22 +8,25 @@ describe("bindings", () => {
     exports.delete("default");
 
     const expectedFunctions = [
-      "randomBytesNonZero",
       "aggregatePublicKeys",
       "aggregateSignatures",
+      "aggregateSerializedPublicKeys",
+      "aggregateSerializedSignatures",
       "aggregateWithRandomness",
-      "asyncAggregateWithRandomness",
       "verify",
-      "asyncVerify",
-      "fastAggregateVerify",
-      "asyncFastAggregateVerify",
       "aggregateVerify",
-      "asyncAggregateVerify",
+      "fastAggregateVerify",
       "verifyMultipleAggregateSignatures",
-      "asyncVerifyMultipleAggregateSignatures",
+      "verifyMultipleSignaturesSameMessage",
     ];
     const expectedClasses = ["PublicKey", "SecretKey", "Signature"];
-    const expectedConstants = ["CoordType", "BLST_CONSTANTS"];
+    const expectedConstants = [
+      "SECRET_KEY_LENGTH",
+      "PUBLIC_KEY_LENGTH_COMPRESSED",
+      "PUBLIC_KEY_LENGTH_UNCOMPRESSED",
+      "SIGNATURE_LENGTH_COMPRESSED",
+      "SIGNATURE_LENGTH_UNCOMPRESSED",
+    ];
     after(() => {
       expect(exports.size).to.equal(0);
     });
@@ -54,16 +57,12 @@ describe("bindings", () => {
   });
   describe("constants", () => {
     const {
-      DST,
-      PUBLIC_KEY_LENGTH_UNCOMPRESSED,
       SECRET_KEY_LENGTH,
       PUBLIC_KEY_LENGTH_COMPRESSED,
+      PUBLIC_KEY_LENGTH_UNCOMPRESSED,
       SIGNATURE_LENGTH_COMPRESSED,
       SIGNATURE_LENGTH_UNCOMPRESSED,
-    } = bindings.BLST_CONSTANTS;
-    it("DST", () => {
-      expect(DST).to.be.a("string");
-    });
+    } = bindings;
     it("SECRET_KEY_LENGTH", () => {
       expect(SECRET_KEY_LENGTH).to.be.a("number");
     });

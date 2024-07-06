@@ -8,19 +8,23 @@ use rand::{rngs::ThreadRng, Rng};
 /// See https://github.com/ethereum/consensus-specs/blob/v1.4.0/specs/phase0/beacon-chain.md#bls-signatures
 const DST: &[u8] = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
-#[napi]
 /// The length of a secret key.
+#[napi]
 pub const SECRET_KEY_LENGTH: u32 = 32;
 
-#[napi]
 /// The length of a serialized public key.
-pub const PUBLIC_KEY_LENGTH: u32 = 48;
-
 #[napi]
-/// The length of a serialized signature.
-pub const SIGNATURE_LENGTH: u32 = 96;
+pub const PUBLIC_KEY_LENGTH_COMPRESSED: u32 = 48;
+#[napi]
+pub const PUBLIC_KEY_LENGTH_UNCOMPRESSED: u32 = 96;
 
-/// Custom error status for programatic error handling.
+/// The length of a serialized signature.
+#[napi]
+pub const SIGNATURE_LENGTH_COMPRESSED: u32 = 96;
+#[napi]
+pub const SIGNATURE_LENGTH_UNCOMPRESSED: u32 = 192;
+
+/// Custom error status for programmatic error handling.
 /// This status will be populated in `Error#code` on the javascript side
 pub enum ErrorStatus {
   Blst(BLST_ERROR),
@@ -173,14 +177,19 @@ impl PublicKey {
 
   #[napi]
   /// Serialize a public key to a byte array.
-  pub fn to_bytes(&self) -> Uint8Array {
-    let bytes = self.0.to_bytes();
-    Uint8Array::from(bytes)
+  pub fn to_bytes(&self, compress: Option<bool>) -> Uint8Array {
+    if compress.unwrap_or(true) == true {
+      return Uint8Array::from(self.0.compress());
+    }
+    Uint8Array::from(self.0.serialize())
   }
 
   #[napi]
   /// Serialize a public key to a hex string.
-  pub fn to_hex(&self) -> String {
+  pub fn to_hex(&self, compress: Option<bool>) -> String {
+    if compress.unwrap_or(true) == true {
+      return format!("0x{}", hex::encode(self.0.compress()));
+    }
     format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
@@ -237,13 +246,19 @@ impl Signature {
 
   #[napi]
   /// Serialize a signature to a byte array.
-  pub fn to_bytes(&self) -> Uint8Array {
-    Uint8Array::from(self.0.to_bytes())
+  pub fn to_bytes(&self, compress: Option<bool>) -> Uint8Array {
+    if compress.unwrap_or(true) == true {
+      return Uint8Array::from(self.0.compress());
+    }
+    Uint8Array::from(self.0.serialize())
   }
 
   #[napi]
   /// Serialize a signature to a hex string.
-  pub fn to_hex(&self) -> String {
+  pub fn to_hex(&self, compress: Option<bool>) -> String {
+    if compress.unwrap_or(true) == true {
+      return format!("0x{}", hex::encode(self.0.compress()));
+    }
     format!("0x{}", hex::encode(self.0.to_bytes()))
   }
 
