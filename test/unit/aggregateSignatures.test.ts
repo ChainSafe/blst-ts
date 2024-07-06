@@ -18,13 +18,14 @@ describe("Aggregate Signatures", () => {
     });
     it("should throw for invalid Signature", () => {
       try {
-        aggregateSignatures(signatures.concat(Signature.fromBytes(badSignature)));
+        aggregateSignatures(signatures.concat(Signature.fromBytes(badSignature)), true);
       } catch (e) {
         expect((e as CodeError).code.startsWith("BLST")).to.be.true;
         expect(
           (e as CodeError).code.includes("BLST_POINT_NOT_ON_CURVE") ||
             (e as CodeError).code.includes("BLST_BAD_ENCODING")
         ).to.be.true;
+        // expect((e as Error).message.endsWith("Invalid signature at index 10")).to.be.true;
       }
     });
     it("should return a key that is not in the keys array", () => {
