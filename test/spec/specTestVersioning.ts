@@ -1,4 +1,5 @@
-import {join} from "path";
+import {join} from "node:path";
+import {DownloadTestsOptions} from "./utils";
 
 // WARNING! Don't move or rename this file !!!
 //
@@ -7,8 +8,20 @@ import {join} from "path";
 //
 // The contents of this file MUST include the URL, version and target path, and nothing else.
 
-export const SPEC_TEST_REPO_URL = "https://github.com/ethereum/consensus-spec-tests";
-export const SPEC_TEST_VERSION = "v1.3.0";
-export const SPEC_TEST_TO_DOWNLOAD = ["general" as const];
 // Target directory is the host package root: '<roo>/spec-tests'
-export const SPEC_TEST_LOCATION = join(__dirname, "../../spec-tests");
+
+export const ethereumConsensusSpecsTests: DownloadTestsOptions = {
+  specVersion: "v1.4.0",
+  // Target directory is the host package root: 'packages/*/spec-tests'
+  outputDir: join(__dirname, "../../spec-tests"),
+  specTestsRepoUrl: "https://github.com/ethereum/consensus-spec-tests",
+  testsToDownload: ["general"],
+};
+
+export const blsSpecTests: DownloadTestsOptions = {
+  specVersion: "v0.1.2",
+  // Target directory is the host package root: 'packages/*/spec-tests-bls'
+  outputDir: join(__dirname, "../../spec-tests-bls"),
+  specTestsRepoUrl: "https://github.com/ethereum/bls12-381-tests",
+  testsToDownload: ["bls_tests_yaml"],
+};

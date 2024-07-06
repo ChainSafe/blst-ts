@@ -9,8 +9,8 @@ import {
   fastAggregateVerify,
   verifyMultipleAggregateSignatures,
   SignatureSet,
-} from "../../lib";
-import {fromHex, toHex} from "../utils";
+} from "../../index.js";
+import {fromHex} from "../utils";
 import {G2_POINT_AT_INFINITY} from "./utils";
 
 export const testFnByName: Record<string, (data: any) => any> = {
@@ -33,8 +33,7 @@ export const testFnByName: Record<string, (data: any) => any> = {
  * ```
  */
 function aggregate(input: string[]): string | null {
-  const agg = aggregateSignatures(input.map(fromHex));
-  return toHex(agg.serialize());
+  return aggregateSignatures(input.map((hex) => Signature.fromHex(hex))).toHex();
 }
 
 /**
@@ -48,7 +47,11 @@ function aggregate(input: string[]): string | null {
  */
 function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signature: string}): boolean {
   const {pubkeys, messages, signature} = input;
-  return aggregateVerify(messages.map(fromHex), pubkeys.map(fromHex), fromHex(signature));
+  return aggregateVerify(
+    messages.map(fromHex),
+    pubkeys.map((hex) => PublicKey.fromHex(hex)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -58,8 +61,7 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
  * ```
  */
 function eth_aggregate_pubkeys(input: string[]): string | null {
-  const agg = aggregatePublicKeys(input.map(fromHex));
-  return toHex(agg.serialize());
+  return aggregatePublicKeys(input.map((hex) => PublicKey.fromHex(hex, true))).toHex();
 }
 
 /**
@@ -78,7 +80,11 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
     return true;
   }
 
-  return fastAggregateVerify(fromHex(message), pubkeys.map(fromHex), fromHex(signature));
+  return fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -90,10 +96,14 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
  * output: bool  --  true (VALID) or false (INVALID)
  * ```
  */
-function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean | null {
+function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signature: string}): boolean {
   const {pubkeys, message, signature} = input;
 
-  return fastAggregateVerify(fromHex(message), pubkeys.map(fromHex), fromHex(signature));
+  return fastAggregateVerify(
+    fromHex(message),
+    pubkeys.map((hex) => PublicKey.fromHex(hex, true)),
+    Signature.fromHex(signature)
+  );
 }
 
 /**
@@ -104,9 +114,7 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
  */
 function sign(input: {privkey: string; message: string}): string | null {
   const {privkey, message} = input;
-  const sk = SecretKey.deserialize(fromHex(privkey));
-  const signature = sk.sign(fromHex(message));
-  return toHex(signature.serialize());
+  return SecretKey.fromHex(privkey).sign(fromHex(message)).toHex();
 }
 
 /**
@@ -118,7 +126,7 @@ function sign(input: {privkey: string; message: string}): string | null {
  */
 function verify(input: {pubkey: string; message: string; signature: string}): boolean {
   const {pubkey, message, signature} = input;
-  return VERIFY(fromHex(message), fromHex(pubkey), fromHex(signature));
+  return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
 }
 
 /**
@@ -139,9 +147,9 @@ function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures:
   const sets: SignatureSet[] = [];
   for (let i = 0; i < length; i++) {
     sets.push({
-      message: fromHex(input.messages[i]),
-      publicKey: fromHex(input.pubkeys[i]),
-      signature: fromHex(input.signatures[i]),
+      msg: fromHex(input.messages[i]),
+      pk: PublicKey.fromHex(input.pubkeys[i]),
+      sig: Signature.fromHex(input.signatures[i]),
     });
   }
   return verifyMultipleAggregateSignatures(sets);
@@ -156,8 +164,7 @@ function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures:
  */
 function deserialization_G1(input: {pubkey: string}): boolean {
   try {
-    const pk = PublicKey.deserialize(fromHex(input.pubkey));
-    pk.keyValidate();
+    PublicKey.fromHex(input.pubkey, true);
     return true;
   } catch {
     return false;
@@ -173,8 +180,7 @@ function deserialization_G1(input: {pubkey: string}): boolean {
  */
 function deserialization_G2(input: {signature: string}): boolean {
   try {
-    const sig = Signature.deserialize(fromHex(input.signature));
-    sig.sigValidate();
+    Signature.fromHex(input.signature, true);
     return true;
   } catch {
     return false;
