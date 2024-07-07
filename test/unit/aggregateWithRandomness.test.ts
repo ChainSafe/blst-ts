@@ -23,9 +23,9 @@ describe("Aggregate With Randomness", () => {
 
   before(() => {
     // make sure sets are valid before starting
-    expect(() => PublicKey.fromBytes(infinityPublicKey).keyValidate()).to.throw();
+    expect(() => PublicKey.fromBytes(infinityPublicKey).keyValidate()).to.throw("Public key is infinity");
     expect(verify(msg, sets[0].pk, Signature.fromBytes(sets[0].sig))).to.be.true;
-    expect(verifyMultipleAggregateSignatures(sets.map((s) => ({...s, msg, sig: Signature.fromBytes(s.sig)})))).to.be
+    expect(verifyMultipleAggregateSignatures(sets.map((s) => ({msg, pk: s.pk, sig: Signature.fromBytes(s.sig)})))).to.be
       .true;
     expectNotEqualHex(msg, randomSet.msg);
     expect(verify(randomSet.msg, randomSet.pk, randomSet.sig)).to.be.true;
@@ -61,7 +61,7 @@ describe("Aggregate With Randomness", () => {
         aggregateWithRandomness(
           sets.concat({
             pk: sets[0].pk,
-            sig: G2_POINT_AT_INFINITY,
+            sig: G2_POINT_AT_INFINITY, //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature
           } as any)
         )
       ).to.throw();
