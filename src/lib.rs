@@ -28,6 +28,7 @@ pub const SIGNATURE_LENGTH_UNCOMPRESSED: u32 = 192;
 /// This status will be populated in `Error#code` on the javascript side
 pub enum ErrorStatus {
   Blst(BLST_ERROR),
+  InvalidHex,
   Other(String),
 }
 
@@ -35,6 +36,7 @@ impl AsRef<str> for ErrorStatus {
   fn as_ref(&self) -> &str {
     match self {
       ErrorStatus::Blst(err) => blst_error_to_str(*err),
+      ErrorStatus::InvalidHex => "INVALID_HEX",
       ErrorStatus::Other(err) => err.as_str(),
     }
   }
@@ -506,7 +508,7 @@ fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
 }
 
 fn invalid_hex_err<T>(_: T) -> Error<ErrorStatus> {
-  Error::new(ErrorStatus::Other("INVALID_HEX".to_string()), "Invalid hex")
+  Error::new(ErrorStatus::InvalidHex, "Invalid hex")
 }
 
 /// Convert a list of tuples into a tuple of lists
