@@ -13,7 +13,7 @@ describe("PublicKey", () => {
     id: "PublicKey deserialize",
     beforeEach: () => napiTestKey.toBytes(),
     fn: (serialized) => {
-      blst.PublicKey.fromBytes(serialized);
+      blst.PublicKey.fromBytes(serialized, false);
     },
   });
 

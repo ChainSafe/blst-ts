@@ -86,7 +86,7 @@ export function getSerializedTestSet(i: number = 1): SerializedSet {
     msg: deserialized.msg,
     sk: deserialized.sk.toBytes(),
     pk: deserialized.pk.toBytes(),
-    sig: deserialized.sk.toBytes(),
+    sig: deserialized.sig.toBytes(),
   };
   serializedSets.set(i, serialized);
   return serialized;

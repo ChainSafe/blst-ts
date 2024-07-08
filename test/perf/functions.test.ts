@@ -1,6 +1,6 @@
 import {itBench} from "@dapplion/benchmark";
 import * as blst from "../../index.js";
-import {arrayOfIndexes, getTestSet, getTestSetSameMessage} from "../utils";
+import {arrayOfIndexes, getTestSet, getTestSetSameMessage, getTestSetsSameMessage} from "../utils";
 
 describe("functions", () => {
   describe("aggregatePublicKeys", () => {
@@ -21,6 +21,24 @@ describe("functions", () => {
         beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).sig),
         fn: (signatures) => {
           blst.aggregateSignatures(signatures);
+        },
+      });
+    }
+  });
+  describe("aggregateWithRandomness", () => {
+    for (const count of [1, 16, 128, 256, 512, 1024]) {
+      itBench({
+        id: `aggregateWithRandomness - ${count} sets`,
+        before: () => {
+          const {sets} = getTestSetsSameMessage(count);
+          return sets.map((s) => ({
+            pk: s.pk,
+            sig: s.sig.toBytes(),
+          }));
+        },
+        beforeEach: (sets) => sets,
+        fn: (sets) => {
+          blst.aggregateWithRandomness(sets);
         },
       });
     }
@@ -86,8 +104,7 @@ describe("functions", () => {
           const aggregatedPubkey = blst.aggregatePublicKeys(sets.map((set) => set.publicKey));
           const aggregatedSignature = blst.aggregateSignatures(
             sets.map((set) => {
-              const sig = blst.Signature.fromBytes(set.signature);
-              sig.sigValidate();
+              const sig = blst.Signature.fromBytes(set.signature, true, true);
               return sig;
             })
           );

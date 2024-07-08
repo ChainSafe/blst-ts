@@ -20,7 +20,10 @@ describe("Signature", () => {
   for (const count of [1, 100, 10_000]) {
     itBench({
       id: `Signatures deserialize and validate - ${count} sets`,
-      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).sig),
+      before() {
+        return arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).sig);
+      },
+      beforeEach: (sigs) => sigs,
       fn: (signatures) => {
         for (const signature of signatures) {
           blst.Signature.fromBytes(signature, true);
