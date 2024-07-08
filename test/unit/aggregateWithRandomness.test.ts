@@ -38,7 +38,7 @@ describe("Aggregate With Randomness", () => {
         aggregateWithRandomness([]);
         expect.fail("aggregateWithRandomness with empty list should throw");
       } catch (e) {
-        expect((e as any).code).to.equal("EMPTY_LIST");
+        expect((e as any).code).to.equal("BLST_AGGR_TYPE_MISMATCH");
       }
     });
     it("should accept an array of {pk: PublicKey, sig: Uint8Array}", () => {

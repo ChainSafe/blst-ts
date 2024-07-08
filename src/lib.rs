@@ -167,7 +167,7 @@ impl PublicKey {
   }
 
   fn from_slice(bytes: &[u8], pk_validate: Option<bool>) -> Result<Self> {
-    let pk = if pk_validate == Some(true) {
+    let pk = if pk_validate.unwrap_or(false) {
       min_pk::PublicKey::key_validate(&bytes)
     } else {
       min_pk::PublicKey::from_bytes(&bytes)
@@ -176,7 +176,7 @@ impl PublicKey {
   }
 
   fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
-    if compress.unwrap_or(true) == true {
+    if compress.unwrap_or(true) {
       return self.0.compress().to_vec();
     }
     self.0.serialize().to_vec()
@@ -237,7 +237,7 @@ impl Signature {
     sig_validate: Option<bool>,
     sig_infcheck: Option<bool>,
   ) -> Result<Self> {
-    let sig = if sig_validate == Some(true) {
+    let sig = if sig_validate.unwrap_or(false) {
       min_pk::Signature::sig_validate(&bytes, sig_infcheck.unwrap_or(true))
     } else {
       min_pk::Signature::from_bytes(&bytes)
@@ -246,7 +246,7 @@ impl Signature {
   }
 
   fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
-    if compress.unwrap_or(true) == true {
+    if compress.unwrap_or(true) {
       return self.0.compress().to_vec();
     }
     self.0.serialize().to_vec()
@@ -335,10 +335,7 @@ pub fn aggregate_serialized_signatures(
 /// Signatures are deserialized and validated with infinity and group checks before aggregation.
 pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Result<PkAndSig> {
   if sets.is_empty() {
-    return Err(Error::new(
-      ErrorStatus::Other("EMPTY_LIST".to_string()),
-      "Empty list",
-    ));
+    return Err(from_blst_err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH));
   }
 
   let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
