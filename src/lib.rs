@@ -446,25 +446,6 @@ pub fn verify_multiple_aggregate_signatures(
   ) == BLST_ERROR::BLST_SUCCESS
 }
 
-#[napi]
-/// Verify multiple signatures against the same message.
-///
-/// Proof-of-possession is required for public keys.
-///
-/// See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
-pub fn verify_multiple_signatures_same_message(
-  msg: Uint8Array,
-  pks: Vec<&PublicKey>,
-  sigs: Vec<&Signature>,
-) -> bool {
-  let msg = msg.as_ref();
-  let pks = pks.iter().map(|pk| pk.0).collect::<Vec<_>>();
-  let sigs = sigs.iter().map(|sig| sig.0).collect::<Vec<_>>();
-  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
-
-  sig.verify(true, msg, &DST, &[], &pk, false) == BLST_ERROR::BLST_SUCCESS
-}
-
 /// BLST_ERROR to human readable string
 fn blst_error_to_reason(error: BLST_ERROR) -> String {
   match error {

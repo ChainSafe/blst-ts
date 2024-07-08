@@ -88,14 +88,6 @@ export declare function fastAggregateVerify(msg: Uint8Array, pks: Array<PublicKe
  * See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
  */
 export declare function verifyMultipleAggregateSignatures(sets: Array<SignatureSet>, pksValidate?: boolean | undefined | null, sigsGroupcheck?: boolean | undefined | null): boolean
-/**
- * Verify multiple signatures against the same message.
- *
- * Proof-of-possession is required for public keys.
- *
- * See https://ethresear.ch/t/fast-verification-of-multiple-bls-signatures/5407
- */
-export declare function verifyMultipleSignaturesSameMessage(msg: Uint8Array, pks: Array<PublicKey>, sigs: Array<Signature>): boolean
 export declare class SecretKey {
   /**
    * Generate a secret key deterministically from a secret byte array `ikm`.
