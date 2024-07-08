@@ -68,21 +68,19 @@ export async function runWorkRequests(workReqArr: BlsWorkRequest[]): Promise<Bls
     }
   }
 
-  await Promise.all(
-    nonBatchableSets.map(({idx, sets}) => {
-      results[idx] = {
-        code: WorkResultCode.success,
-        result: verifySignatureSets(
-          sets.map((set) => ({
-            type: SignatureSetType.single,
-            signingRoot: set.msg,
-            pubkey: set.pk,
-            signature: set.sig.toBytes(),
-          }))
-        ),
-      };
-    })
-  );
+  nonBatchableSets.map(({idx, sets}) => {
+    results[idx] = {
+      code: WorkResultCode.success,
+      result: verifySignatureSets(
+        sets.map((set) => ({
+          type: SignatureSetType.single,
+          signingRoot: set.msg,
+          pubkey: set.pk,
+          signature: set.sig.toBytes(),
+        }))
+      ),
+    };
+  });
 
   return {
     batchRetries,
