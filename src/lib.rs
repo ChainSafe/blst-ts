@@ -488,8 +488,8 @@ fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
   )
 }
 
-fn invalid_hex_err<T>(_: T) -> Error<ErrorStatus> {
-  Error::new(ErrorStatus::InvalidHex, "Invalid hex")
+fn invalid_hex_err(e: hex::FromHexError) -> Error<ErrorStatus> {
+  Error::new(ErrorStatus::InvalidHex, format!("Invalid hex: {}", e))
 }
 
 /// Convert a list of tuples into a tuple of lists
