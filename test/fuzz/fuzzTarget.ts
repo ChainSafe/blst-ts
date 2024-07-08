@@ -18,6 +18,6 @@ export async function fuzz(data: Buffer): Promise<any> {
     if (e instanceof Error && testCase?.expectedErrors.includes(e.message)) {
       return;
     }
-    throw e;
+    throw new Error(`in ${testCase?.name}: ${(e as Error).message}`);
   }
 }

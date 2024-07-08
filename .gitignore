@@ -12,6 +12,9 @@ yarn-error.log
 spec-tests
 spec-tests-bls
 
+# Fuzz Test Meta
+fuzz-tests
+
 # Created by https://www.toptal.com/developers/gitignore/api/node
 # Edit at https://www.toptal.com/developers/gitignore?templates=node
 
