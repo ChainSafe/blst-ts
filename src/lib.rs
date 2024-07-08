@@ -177,13 +177,6 @@ impl PublicKey {
     pk.map(Self).map_err(from_blst_err)
   }
 
-  fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
-    if compress.unwrap_or(true) {
-      return self.0.compress().to_vec();
-    }
-    self.0.serialize().to_vec()
-  }
-
   #[napi]
   /// Serialize a public key to a byte array.
   pub fn to_bytes(&self, compress: Option<bool>) -> Uint8Array {
@@ -194,6 +187,13 @@ impl PublicKey {
   /// Serialize a public key to a hex string.
   pub fn to_hex(&self, compress: Option<bool>) -> String {
     format!("0x{}", hex::encode(self.to_vec(compress)))
+  }
+
+  fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
+    if compress.unwrap_or(true) {
+      return self.0.compress().to_vec();
+    }
+    self.0.serialize().to_vec()
   }
 
   #[napi]
@@ -247,13 +247,6 @@ impl Signature {
     sig.map(Self).map_err(from_blst_err)
   }
 
-  fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
-    if compress.unwrap_or(true) {
-      return self.0.compress().to_vec();
-    }
-    self.0.serialize().to_vec()
-  }
-
   #[napi]
   /// Serialize a signature to a byte array.
   pub fn to_bytes(&self, compress: Option<bool>) -> Uint8Array {
@@ -264,6 +257,13 @@ impl Signature {
   /// Serialize a signature to a hex string.
   pub fn to_hex(&self, compress: Option<bool>) -> String {
     format!("0x{}", hex::encode(self.to_vec(compress)))
+  }
+
+  fn to_vec(&self, compress: Option<bool>) -> Vec<u8> {
+    if compress.unwrap_or(true) {
+      return self.0.compress().to_vec();
+    }
+    self.0.serialize().to_vec()
   }
 
   #[napi]
