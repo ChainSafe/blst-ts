@@ -17,7 +17,6 @@ describe("bindings", () => {
       "aggregateVerify",
       "fastAggregateVerify",
       "verifyMultipleAggregateSignatures",
-      "verifyMultipleSignaturesSameMessage",
     ];
     const expectedClasses = ["PublicKey", "SecretKey", "Signature"];
     const expectedConstants = [
