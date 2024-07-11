@@ -565,9 +565,9 @@ fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
 
 /// Creates a vector of random bytes from a vector of random scalars
 fn create_rand_slice(len: usize) -> Vec<u8> {
-  create_rand_scalars(len)
-    .iter()
-    .map(|s| s.b)
+  let mut rng = rand::thread_rng();
+  (0..len)
+    .map(|_| rand_non_zero(&mut rng).to_be_bytes())
     .flatten()
     .collect()
 }
