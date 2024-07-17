@@ -47,7 +47,7 @@
       ]
     }
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@dapplion/benchmark": "^0.2.4",
     "@napi-rs/cli": "^2.18.3",

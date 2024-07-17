@@ -73,4 +73,4 @@ To create a new release:
 
 ## License
 
-MIT
+Apache-2.0
