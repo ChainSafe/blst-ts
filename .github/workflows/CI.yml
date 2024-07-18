@@ -175,6 +175,10 @@ jobs:
         shell: bash
       - name: Lint project
         run: yarn lint
+      - name: Run napi version
+        run: yarn run version
+      - name: Ensure there are no unstaged changes
+        run: git diff --exit-code
       - name: Test bindings
         run: yarn test:unit
       - name: Download spec tests
