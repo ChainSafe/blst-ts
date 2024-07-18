@@ -391,7 +391,8 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
   }
 
   let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
-  let (pk, sig) = aggregate_with_randomness_native(&pks, &sigs);
+  let rands = create_rand_slice(pks.len());
+  let (pk, sig) = aggregate_with(pks.as_slice(), sigs.as_slice(), rands.as_slice(), 64);
 
   Ok(PkAndSig {
     pk: PublicKey::into_reference(PublicKey(pk), env).map_err(from_napi_err)?,
@@ -565,7 +566,7 @@ fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
     .collect()
 }
 
-/// Creates a vector of random bytes from a vector of random scalars
+/// Creates a vector of random bytes, length len * 8
 fn create_rand_slice(len: usize) -> Vec<u8> {
   let mut rng = rand::thread_rng();
   (0..len)
@@ -574,17 +575,8 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
     .collect()
 }
 
-/// pks.len() == sigs.len()
-fn aggregate_with_randomness_native(
-  pks: &Vec<min_pk::PublicKey>,
-  sigs: &Vec<min_pk::Signature>,
-) -> (min_pk::PublicKey, min_pk::Signature) {
-  let rands = create_rand_slice(pks.len());
-  aggregate_with_native(pks.as_slice(), sigs.as_slice(), rands.as_slice(), 64)
-}
-
-/// pks.len() == sigs.len() == rands.len() * 32
-fn aggregate_with_native(
+/// pks.len() == sigs.len() == rands.len() * nbits / 8
+fn aggregate_with(
   pks: &[min_pk::PublicKey],
   sigs: &[min_pk::Signature],
   scalars: &[u8],
