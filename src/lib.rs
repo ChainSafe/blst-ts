@@ -42,8 +42,56 @@ impl AsRef<str> for ErrorStatus {
   }
 }
 
+/// BLST_ERROR to human readable string
+fn blst_error_to_reason<'a>(error: BLST_ERROR) -> &'a str {
+  match error {
+    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
+    BLST_ERROR::BLST_BAD_ENCODING => "Invalid encoding",
+    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "Point not on curve",
+    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "Point not in group",
+    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "Aggregation type mismatch",
+    BLST_ERROR::BLST_VERIFY_FAIL => "Verification failed",
+    BLST_ERROR::BLST_PK_IS_INFINITY => "Public key is infinity",
+    BLST_ERROR::BLST_BAD_SCALAR => "Invalid scalar",
+  }
+}
+
+/// BLST_ERROR to "error code"
+fn blst_error_to_str<'a>(err: BLST_ERROR) -> &'a str {
+  match err {
+    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
+    BLST_ERROR::BLST_BAD_ENCODING => "BLST_BAD_ENCODING",
+    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "BLST_POINT_NOT_ON_CURVE",
+    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "BLST_POINT_NOT_IN_GROUP",
+    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "BLST_AGGR_TYPE_MISMATCH",
+    BLST_ERROR::BLST_VERIFY_FAIL => "BLST_VERIFY_FAIL",
+    BLST_ERROR::BLST_PK_IS_INFINITY => "BLST_PK_IS_INFINITY",
+    BLST_ERROR::BLST_BAD_SCALAR => "BLST_BAD_SCALAR",
+  }
+}
+
+fn from_blst_err(blst_error: BLST_ERROR) -> Error<ErrorStatus> {
+  Error::new(
+    ErrorStatus::Blst(blst_error),
+    blst_error_to_reason(blst_error),
+  )
+}
+
+fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
+  Error::new(
+    ErrorStatus::Other(napi_err.status.to_string()),
+    napi_err.reason.to_string(),
+  )
+}
+
+fn invalid_hex_err(e: hex::FromHexError) -> Error<ErrorStatus> {
+  Error::new(ErrorStatus::InvalidHex, format!("Invalid hex: {}", e))
+}
+
 // All errors returned from this module will be of type `napi::Error<ErrorStatus>`
 type Result<T> = napi::Result<T, ErrorStatus>;
+
+//// Exposed classes / objects
 
 #[napi]
 pub struct SecretKey(min_pk::SecretKey);
@@ -275,6 +323,8 @@ impl Signature {
   }
 }
 
+//// Exposed functions
+
 #[napi]
 /// Aggregate multiple public keys into a single public key.
 ///
@@ -446,51 +496,7 @@ pub fn verify_multiple_aggregate_signatures(
   ) == BLST_ERROR::BLST_SUCCESS
 }
 
-/// BLST_ERROR to human readable string
-fn blst_error_to_reason(error: BLST_ERROR) -> String {
-  match error {
-    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS".to_string(),
-    BLST_ERROR::BLST_BAD_ENCODING => "Invalid encoding".to_string(),
-    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "Point not on curve".to_string(),
-    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "Point not in group".to_string(),
-    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "Aggregation type mismatch".to_string(),
-    BLST_ERROR::BLST_VERIFY_FAIL => "Verification failed".to_string(),
-    BLST_ERROR::BLST_PK_IS_INFINITY => "Public key is infinity".to_string(),
-    BLST_ERROR::BLST_BAD_SCALAR => "Invalid scalar".to_string(),
-  }
-}
-
-/// BLST_ERROR to "error code"
-fn blst_error_to_str<'a>(err: BLST_ERROR) -> &'a str {
-  match err {
-    BLST_ERROR::BLST_SUCCESS => "BLST_SUCCESS",
-    BLST_ERROR::BLST_BAD_ENCODING => "BLST_BAD_ENCODING",
-    BLST_ERROR::BLST_POINT_NOT_ON_CURVE => "BLST_POINT_NOT_ON_CURVE",
-    BLST_ERROR::BLST_POINT_NOT_IN_GROUP => "BLST_POINT_NOT_IN_GROUP",
-    BLST_ERROR::BLST_AGGR_TYPE_MISMATCH => "BLST_AGGR_TYPE_MISMATCH",
-    BLST_ERROR::BLST_VERIFY_FAIL => "BLST_VERIFY_FAIL",
-    BLST_ERROR::BLST_PK_IS_INFINITY => "BLST_PK_IS_INFINITY",
-    BLST_ERROR::BLST_BAD_SCALAR => "BLST_BAD_SCALAR",
-  }
-}
-
-fn from_blst_err(blst_error: BLST_ERROR) -> Error<ErrorStatus> {
-  Error::new(
-    ErrorStatus::Blst(blst_error),
-    blst_error_to_reason(blst_error),
-  )
-}
-
-fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
-  Error::new(
-    ErrorStatus::Other(napi_err.status.to_string()),
-    napi_err.reason.to_string(),
-  )
-}
-
-fn invalid_hex_err(e: hex::FromHexError) -> Error<ErrorStatus> {
-  Error::new(ErrorStatus::InvalidHex, format!("Invalid hex: {}", e))
-}
+//// Utility functions
 
 /// Convert a list of tuples into a tuple of lists
 fn unzip_signature_sets<'a>(
