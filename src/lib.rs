@@ -569,7 +569,7 @@ fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
 fn create_rand_slice(len: usize) -> Vec<u8> {
   let mut rng = rand::thread_rng();
   (0..len)
-    .map(|_| rand_non_zero(&mut rng).to_be_bytes())
+    .map(|_| rand_non_zero(&mut rng).to_le_bytes())
     .flatten()
     .collect()
 }
