@@ -10,7 +10,7 @@ import {
   verifyMultipleAggregateSignatures,
   SignatureSet,
 } from "../../index.js";
-import {fromHex} from "../utils";
+import {CodeError, fromHex} from "../utils";
 import {G2_POINT_AT_INFINITY} from "./utils";
 
 export const testFnByName: Record<string, (data: any) => any> = {
@@ -25,6 +25,11 @@ export const testFnByName: Record<string, (data: any) => any> = {
   deserialization_G1,
   deserialization_G2,
 };
+
+function catchBLSTError(e: unknown): boolean {
+  if ((e as CodeError).code?.startsWith("BLST")) return false;
+  throw e;
+}
 
 /**
  * ```
@@ -54,7 +59,7 @@ function aggregate_verify(input: {pubkeys: string[]; messages: string[]; signatu
       Signature.fromHex(signature)
     );
   } catch (e) {
-    return false;
+    return catchBLSTError(e);
   }
 }
 
@@ -91,7 +96,7 @@ function eth_fast_aggregate_verify(input: {pubkeys: string[]; message: string; s
       Signature.fromHex(signature)
     );
   } catch (e) {
-    return false;
+    return catchBLSTError(e);
   }
 }
 
@@ -114,7 +119,7 @@ function fast_aggregate_verify(input: {pubkeys: string[]; message: string; signa
       Signature.fromHex(signature)
     );
   } catch (e) {
-    return false;
+    return catchBLSTError(e);
   }
 }
 
@@ -141,7 +146,7 @@ function verify(input: {pubkey: string; message: string; signature: string}): bo
   try {
     return VERIFY(fromHex(message), PublicKey.fromHex(pubkey), Signature.fromHex(signature));
   } catch (e) {
-    return false;
+    return catchBLSTError(e);
   }
 }
 
@@ -161,14 +166,18 @@ function batch_verify(input: {pubkeys: string[]; messages: string[]; signatures:
     throw new Error("Invalid spec test. Must have same number in each array. Check spec yaml file");
   }
   const sets: SignatureSet[] = [];
-  for (let i = 0; i < length; i++) {
-    sets.push({
-      msg: fromHex(input.messages[i]),
-      pk: PublicKey.fromHex(input.pubkeys[i]),
-      sig: Signature.fromHex(input.signatures[i]),
-    });
+  try {
+    for (let i = 0; i < length; i++) {
+      sets.push({
+        msg: fromHex(input.messages[i]),
+        pk: PublicKey.fromHex(input.pubkeys[i]),
+        sig: Signature.fromHex(input.signatures[i]),
+      });
+    }
+    return verifyMultipleAggregateSignatures(sets);
+  } catch (e) {
+    return catchBLSTError(e);
   }
-  return verifyMultipleAggregateSignatures(sets);
 }
 
 /**
@@ -182,8 +191,8 @@ function deserialization_G1(input: {pubkey: string}): boolean {
   try {
     PublicKey.fromHex(input.pubkey, true);
     return true;
-  } catch {
-    return false;
+  } catch (e) {
+    return catchBLSTError(e);
   }
 }
 
@@ -198,7 +207,7 @@ function deserialization_G2(input: {signature: string}): boolean {
   try {
     Signature.fromHex(input.signature, true);
     return true;
-  } catch {
-    return false;
+  } catch (e) {
+    return catchBLSTError(e);
   }
 }
