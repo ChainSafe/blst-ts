@@ -543,8 +543,7 @@ fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
 /// copied from lighthouse:
 /// https://github.com/sigp/lighthouse/blob/9e12c21f268c80a3f002ae0ca27477f9f512eb6f/crypto/bls/src/impls/blst.rs#L52
 fn create_scalar(i: u64) -> blst_scalar {
-  let mut vals = [0u64; 4];
-  vals[0] = i;
+  let vals = [i, 0, 0, 0];
   let mut scalar = std::mem::MaybeUninit::<blst_scalar>::uninit();
   // TODO: remove this `unsafe` code-block once we get a safe option from `blst`.
   //
