@@ -63,13 +63,15 @@ Please check out [CONTRIBUTING.md](./CONTRIBUTING.md) for more info on how to us
 
 ## Release
 
-The release process is automatically [triggered](.github/workflows/CI.yml#216) when a tagged commit is pushed.
+The release process is automatically [triggered](.github/workflows/CI.yml#216) when the master branch has the version in package.json updated.
 
 To create a new release: 
 
-1. First, increment the project version in [package.json](package.json#3), run `yarn run version`, and merge the associated commit
-2. Then tag this commit with `git tag v${NEW_VERSION}`
-3. Finally push the new tag with `git push ${REMOTE} v${NEW_VERSION}`
+1. Increment the project version in [package.json](package.json#3)
+    - A pre-release can be published by ensuring that the project version is appended with non-numeric characters, eg: `-beta`
+2. run `yarn run version`
+3. merge a commit with these changes
+4. CI will run and result in a new release being published
 
 ## License
 
