@@ -36,7 +36,7 @@ jobs:
             target: aarch64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
             build: yarn build --target aarch64-unknown-linux-gnu
-    name: stable - ${{ matrix.settings.target }} - node@22
+    name: Build - ${{ matrix.settings.target }} - node@22
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -103,7 +103,7 @@ jobs:
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
   test-macOS-windows-binding:
-    name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
+    name: Test - ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -144,7 +144,7 @@ jobs:
         run: yarn test:spec
 
   test-linux-x64-gnu-binding:
-    name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
+    name: Test - Linux-x64-gnu - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -185,7 +185,7 @@ jobs:
         run: yarn test:spec
 
   test-linux-aarch64-gnu-binding:
-    name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
+    name: Test - aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
       - build
     strategy:
