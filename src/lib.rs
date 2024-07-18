@@ -545,9 +545,6 @@ fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
 fn create_scalar(i: u64) -> blst_scalar {
   let vals = [i, 0, 0, 0];
   let mut scalar = std::mem::MaybeUninit::<blst_scalar>::uninit();
-  // TODO: remove this `unsafe` code-block once we get a safe option from `blst`.
-  //
-  // https://github.com/sigp/lighthouse/issues/1720
   unsafe {
     blst_scalar_from_uint64(scalar.as_mut_ptr(), vals.as_ptr());
     scalar.assume_init()
