@@ -83,17 +83,6 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["lib/index.mjs"],
-      parserOptions: {
-        sourceType: "module"
-      },
-      rules: {
-        // The imports are all resolved via tsconfig.mjs.json but the root tsconfig that eslint uses
-        // shows them as unresolved.
-        "import/no-unresolved": "off",
-      },
-    }, 
-    {
       files: ["test/**/*.ts"],
       rules: {
         "import/no-extraneous-dependencies": "off",
@@ -101,10 +90,9 @@ module.exports = {
       },
     }, 
     {
-      // Is a dev file and squacks about chokidar being a devDependency
-      files: ["scripts/watch.ts"],
+      files: ["test/utils/testSets.ts"],
       rules: {
-        "import/no-extraneous-dependencies": "off"
+        "no-console": "off",
       },
     },
   ],
