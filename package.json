@@ -72,6 +72,6 @@
     "typescript": "^5.5.3"
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 16"
   }
 }
