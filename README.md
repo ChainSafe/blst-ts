@@ -36,9 +36,9 @@ const sig = sk.sign(msg);
 console.log(verify(msg, pk, sig)); // true
 ```
 
-This library exposes a single class for public keys and signatures: `PublicKey`, `Signature`
+This library exposes a classes for secret keys, public keys and signatures: `SecretKey`, `PublicKey` & `Signature`
 
-- `PublicKey`, `Signature`: Contains an affine point (x,y). It's the default representation of the point and what you need to serialize to and deserialize from.
+The `PublicKey` and `Signature` contain an affine point (x,y) encoding of P1 in G1 and P2 in G2 respectively.
 
 ## Spec versioning
 
