@@ -228,7 +228,7 @@ impl PublicKey {
   #[napi]
   /// Serialize a public key to a byte array.
   pub fn to_bytes(&self, compress: Option<bool>) -> Uint8Array {
-    Uint8Array::from(self.to_vec(compress))
+    self.to_vec(compress).into()
   }
 
   #[napi]
