@@ -392,7 +392,7 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
 
   let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
   let rands = create_rand_slice(pks.len());
-  let (pk, sig) = aggregate_with(pks.as_slice(), sigs.as_slice(), rands.as_slice(), 64);
+  let (pk, sig) = aggregate_with(pks.as_slice(), sigs.as_slice(), rands.as_slice());
 
   Ok(PkAndSig {
     pk: PublicKey::into_reference(PublicKey(pk), env).map_err(from_napi_err)?,
@@ -579,11 +579,10 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
 fn aggregate_with(
   pks: &[min_pk::PublicKey],
   sigs: &[min_pk::Signature],
-  scalars: &[u8],
-  nbits: usize,
+  scalars: &[u8]
 ) -> (min_pk::PublicKey, min_pk::Signature) {
-  let pk = pks.mult(scalars, nbits).to_public_key();
-  let sig = sigs.mult(scalars, nbits).to_signature();
+  let pk = pks.mult(scalars, 64).to_public_key();
+  let sig = sigs.mult(scalars, 64).to_signature();
 
   (pk, sig)
 }
