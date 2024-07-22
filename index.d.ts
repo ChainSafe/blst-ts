@@ -93,6 +93,9 @@ export declare class SecretKey {
    * Generate a secret key deterministically from a secret byte array `ikm`.
    *
    * `ikm` must be at least 32 bytes long.
+   *
+   * Optionally pass `key_info` bytes to derive multiple independent keys from the same `ikm`.
+   * By default, the `key_info` is empty.
    */
   static fromKeygen(ikm: Uint8Array, keyInfo?: Uint8Array | undefined | null): SecretKey
   /**
