@@ -11,7 +11,11 @@
   "files": [
     "blst.darwin-arm64.node"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChainSafe/blst-ts"
+  },
   "engines": {
     "node": ">= 10"
   }

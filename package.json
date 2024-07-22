@@ -38,6 +38,10 @@
     "ethereum",
     "napi"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChainSafe/blst-ts"
+  },
   "napi": {
     "name": "blst",
     "triples": {
