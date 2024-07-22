@@ -126,8 +126,10 @@ impl SecretKey {
   #[napi(factory)]
   /// Generate a secret key deterministically from a secret byte array `ikm`.
   ///
-  /// `ikm` must be at least 32 bytes long.  Can optionally pass `key_info` bytes to derive multiple
-  /// keys from the same `ikm`.  By default, the `key_info` is an empty Uint8Array.
+  /// `ikm` must be at least 32 bytes long.
+  ///
+  /// Optionally pass `key_info` bytes to derive multiple independent keys from the same `ikm`.
+  /// By default, the `key_info` is empty.
   pub fn from_keygen(ikm: Uint8Array, key_info: Option<Uint8Array>) -> Result<Self> {
     let key_info = key_info.as_deref().unwrap_or(&[]);
     min_pk::SecretKey::key_gen(&ikm, key_info)
