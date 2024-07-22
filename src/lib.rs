@@ -582,7 +582,7 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
 fn aggregate_with(
   pks: &[min_pk::PublicKey],
   sigs: &[min_pk::Signature],
-  scalars: &[u8]
+  scalars: &[u8],
 ) -> (min_pk::PublicKey, min_pk::Signature) {
   let pk = pks.mult(scalars, 64).to_public_key();
   let sig = sigs.mult(scalars, 64).to_signature();
