@@ -578,7 +578,7 @@ fn create_rand_slice(len: usize) -> Vec<u8> {
     .collect()
 }
 
-/// pks.len() == sigs.len() == rands.len() * nbits / 8
+/// pks.len() == sigs.len() == rands.len() * 8
 fn aggregate_with(
   pks: &[min_pk::PublicKey],
   sigs: &[min_pk::Signature],
