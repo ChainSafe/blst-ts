@@ -1,12 +1,13 @@
 import {itBench} from "@dapplion/benchmark";
 import * as blst from "../../index.js";
-import {keygenMaterial, commonMessage, getTestSet} from "../utils";
+import {commonMessage, getTestSet} from "../utils";
 
 const napiTestKey = getTestSet(0).sk;
 
 describe("SecretKey", () => {
+  const ikm = Buffer.alloc(32, 1);
   itBench("SecretKey.fromKeygen", () => {
-    blst.SecretKey.fromKeygen(keygenMaterial);
+    blst.SecretKey.fromKeygen(ikm);
   });
 
   itBench("SecretKey serialization", () => {
