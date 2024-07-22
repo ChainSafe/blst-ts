@@ -1,19 +1,20 @@
-import * as bindings from "../../lib";
+import * as bindings from "../../index.js";
 
-export type BufferLike = string | Uint8Array | Buffer | bindings.Serializable;
+export type BufferLike = string | Uint8Array | Buffer | bindings.PublicKey | bindings.Signature;
 
 export interface TestSet {
-  message: Uint8Array;
-  secretKey: bindings.SecretKey;
-  publicKey: bindings.PublicKey;
-  signature: bindings.Signature;
+  msg: Uint8Array;
+  sk: bindings.SecretKey;
+  pk: bindings.PublicKey;
+  sig: bindings.Signature;
 }
+
 export interface SameMessageTestSets {
-  message: Uint8Array;
+  msg: Uint8Array;
   sets: {
-    secretKey: bindings.SecretKey;
-    publicKey: bindings.PublicKey;
-    signature: bindings.Signature;
+    sk: bindings.SecretKey;
+    pk: bindings.PublicKey;
+    sig: bindings.Signature;
   }[];
 }
 
@@ -31,4 +32,9 @@ export type InstanceTestCases<InstanceType extends {[key: string]: any}> = {
     args: Parameters<InstanceType[P]>;
     res?: ReturnType<InstanceType[P]>;
   }[];
+};
+
+export type CodeError = {
+  code: string;
+  message: string;
 };

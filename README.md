@@ -1,6 +1,6 @@
 # blst-ts
 
-![ETH2.0_Spec_Version 0.12.0](https://img.shields.io/badge/ETH2.0_Spec_Version-0.12.0-2e86c1.svg)
+![ETH2.0_Spec_Version 1.4.0](https://img.shields.io/badge/ETH2.0_Spec_Version-1.4.0-2e86c1.svg)
 ![ES Version](https://img.shields.io/badge/ES-2017-yellow)
 ![Node Version](https://img.shields.io/badge/node-16.x-green)
 
@@ -36,6 +36,10 @@ const sig = sk.sign(msg);
 console.log(verify(msg, pk, sig)); // true
 ```
 
+This library exposes a classes for secret keys, public keys and signatures: `SecretKey`, `PublicKey` & `Signature`
+
+The `PublicKey` and `Signature` contain an affine point (x,y) encoding of P1 in G1 and P2 in G2 respectively.
+
 ## Spec versioning
 
 This library has a hardcoded configuration compatible with Eth2.0 spec:
@@ -57,7 +61,17 @@ Please check out [CONTRIBUTING.md](./CONTRIBUTING.md) for more info on how to us
 
 ## Release/Publishing
 
-The release process is automatically [triggered](.github/workflows/main.yml#L198) when a change to the version in package.json is merged to master.  See [CONTRIBUTING.md](./CONTRIBUTING.md) for more specifics about how the release and package are built.
+## Release
+
+The release process is automatically [triggered](.github/workflows/CI.yml#216) when the master branch has the version in package.json updated.
+
+To create a new release: 
+
+1. Increment the project version in [package.json](package.json#3)
+    - A pre-release can be published by ensuring that the project version is appended with non-numeric characters, eg: `-beta`
+2. run `yarn run version`
+3. merge a commit with these changes
+4. CI will run and result in a new release being published
 
 ## License
 

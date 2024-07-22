@@ -1,5 +1,5 @@
 import {itBench} from "@dapplion/benchmark";
-import * as blst from "../../lib";
+import * as blst from "../../index.js";
 import {arrayOfIndexes, getTestSet, getTestSetSameMessage, getTestSetsSameMessage} from "../utils";
 
 describe("functions", () => {
@@ -7,7 +7,7 @@ describe("functions", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
         id: `aggregatePublicKeys - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).publicKey),
+        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).pk),
         fn: (publicKeys) => {
           blst.aggregatePublicKeys(publicKeys);
         },
@@ -18,7 +18,7 @@ describe("functions", () => {
     for (const count of [1, 8, 32, 128, 256]) {
       itBench({
         id: `aggregateSignatures - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).signature),
+        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i).sig),
         fn: (signatures) => {
           blst.aggregateSignatures(signatures);
         },
@@ -26,43 +26,22 @@ describe("functions", () => {
     }
   });
   describe("aggregateWithRandomness", () => {
-    const SAME_MESSAGE_SET_COUNT = 1024;
-    itBench({
-      id: "JS version of aggregateWithRandomness",
-      beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(SAME_MESSAGE_SET_COUNT);
-        return sets.map((s) => ({
-          publicKey: s.publicKey,
-          signature: s.signature.serialize(),
-        }));
-      },
-      fn: (sets) => {
-        const signatures = sets.map((set) => {
-          const sig = blst.Signature.deserialize(set.signature, blst.CoordType.jacobian);
-          sig.sigValidate();
-          return sig;
-        });
-        const randomness: Uint8Array[] = [];
-        for (let i = 0; i < sets.length; i++) {
-          randomness.push(blst.randomBytesNonZero(8));
-        }
-        blst.aggregatePublicKeys(sets.map((set, i) => set.publicKey.multiplyBy(randomness[i])));
-        blst.aggregateSignatures(signatures.map((sig, i) => sig.multiplyBy(randomness[i])));
-      },
-    });
-    itBench({
-      id: "native version of aggregateWithRandomness",
-      beforeEach: () => {
-        const {sets} = getTestSetsSameMessage(SAME_MESSAGE_SET_COUNT);
-        return sets.map((s) => ({
-          publicKey: s.publicKey,
-          signature: s.signature.serialize(),
-        }));
-      },
-      fn: (sets) => {
-        blst.aggregateWithRandomness(sets, true);
-      },
-    });
+    for (const count of [1, 16, 128, 256, 512, 1024]) {
+      itBench({
+        id: `aggregateWithRandomness - ${count} sets`,
+        before: () => {
+          const {sets} = getTestSetsSameMessage(count);
+          return sets.map((s) => ({
+            pk: s.pk,
+            sig: s.sig.toBytes(),
+          }));
+        },
+        beforeEach: (sets) => sets,
+        fn: (sets) => {
+          blst.aggregateWithRandomness(sets);
+        },
+      });
+    }
   });
   describe("aggregateVerify", () => {
     for (const count of [1, 8, 32, 128, 256]) {
@@ -73,14 +52,14 @@ describe("functions", () => {
             .map((i) => getTestSet(i))
             .reduce(
               (sets, set) => ({
-                messages: [...sets.messages, set.message],
-                publicKeys: [...sets.publicKeys, set.publicKey],
-                signatures: [...sets.signatures, set.signature],
+                messages: [...sets.messages, set.msg],
+                publicKeys: [...sets.publicKeys, set.pk],
+                signatures: [...sets.signatures, set.sig],
               }),
               {
                 messages: [] as Uint8Array[],
-                publicKeys: [] as blst.PublicKeyArg[],
-                signatures: [] as blst.SignatureArg[],
+                publicKeys: [] as blst.PublicKey[],
+                signatures: [] as blst.Signature[],
               }
             );
           return {
@@ -115,18 +94,17 @@ describe("functions", () => {
             .map((i) => getTestSetSameMessage(i))
             .map((set) => {
               return {
-                message: set.message,
-                secretKey: set.secretKey,
-                publicKey: set.publicKey,
-                signature: set.signature.serialize(),
+                message: set.msg,
+                secretKey: set.sk,
+                publicKey: set.pk,
+                signature: set.sig.toBytes(),
               };
             }),
         fn: (sets) => {
           const aggregatedPubkey = blst.aggregatePublicKeys(sets.map((set) => set.publicKey));
           const aggregatedSignature = blst.aggregateSignatures(
             sets.map((set) => {
-              const sig = blst.Signature.deserialize(set.signature, blst.CoordType.affine);
-              sig.sigValidate();
+              const sig = blst.Signature.fromBytes(set.signature, true, true);
               return sig;
             })
           );

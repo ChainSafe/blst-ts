@@ -1,4 +1,4 @@
-import {join} from "path";
+import {join} from "node:path";
 import {DownloadTestsOptions} from "./utils";
 
 // WARNING! Don't move or rename this file !!!

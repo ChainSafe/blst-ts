@@ -3,7 +3,7 @@ import fs from "fs";
 import {resolve} from "path";
 import {PromiseWithChild, execSync} from "child_process";
 import {testCases} from "./testCases";
-import {exec} from "../../utils";
+import {exec} from "./exec";
 
 /**
  * Fuzz testing framework

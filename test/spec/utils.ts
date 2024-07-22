@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import stream from "node:stream";
 import type {ReadableStream} from "node:stream/web";
-import tar from "tar";
+import * as tar from "tar";
 import jsYaml from "js-yaml";
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");

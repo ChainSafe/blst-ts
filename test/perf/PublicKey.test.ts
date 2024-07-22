@@ -1,30 +1,29 @@
 import {itBench} from "@dapplion/benchmark";
-import * as blst from "../../lib";
+import * as blst from "../../index.js";
 import {arrayOfIndexes, getTestSet, getSerializedTestSet} from "../utils";
 
-const napiTestKey = getTestSet(0).publicKey;
+const napiTestKey = getTestSet(0).pk;
 
 describe("PublicKey", () => {
   itBench("PublicKey serialization", () => {
-    napiTestKey.serialize();
+    napiTestKey.toBytes();
   });
 
   itBench({
     id: "PublicKey deserialize",
-    beforeEach: () => napiTestKey.serialize(),
+    beforeEach: () => napiTestKey.toBytes(),
     fn: (serialized) => {
-      blst.PublicKey.deserialize(serialized, blst.CoordType.jacobian);
+      blst.PublicKey.fromBytes(serialized, false);
     },
   });
 
   for (const count of [1, 100, 10_000]) {
     itBench({
       id: `PublicKey deserialize and validate - ${count} keys`,
-      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).publicKey),
+      beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getSerializedTestSet(i % 256).pk),
       fn: (publicKeys) => {
         for (const publicKey of publicKeys) {
-          const key = blst.PublicKey.deserialize(publicKey, blst.CoordType.affine);
-          key.keyValidate();
+          blst.PublicKey.fromBytes(publicKey, true);
         }
       },
     });

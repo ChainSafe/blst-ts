@@ -1,4 +1,4 @@
-import {verify, SecretKey, PublicKey, Signature} from "../../lib";
+import {verify, SecretKey, PublicKey, Signature} from "../../index.js";
 
 export interface FuzzTestCase {
   name: string;
@@ -12,46 +12,35 @@ export const testCases: FuzzTestCase[] = [
     target: (data: Buffer) => {
       return SecretKey.fromKeygen(data);
     },
-    expectedErrors: ["ikm must be greater than or equal to 32 bytes"],
+    expectedErrors: ["Invalid encoding"],
   },
   {
     name: "SecretKey.deserialize",
     target: (data: Buffer) => {
-      return SecretKey.deserialize(data);
+      return SecretKey.fromBytes(data);
     },
-    expectedErrors: ["BLST_ERROR: skBytes must be 32 bytes long"],
+    expectedErrors: ["Invalid encoding"],
   },
   {
     name: "secretKey.sign",
     target: (data: Buffer) => {
-      return SecretKey.fromKeygen(Buffer.alloc(32), "*").sign(data);
+      return SecretKey.fromKeygen(Buffer.alloc(32), Buffer.from("*")).sign(data);
     },
     expectedErrors: [],
   },
   {
     name: "PublicKey.deserialize",
     target: (data: Buffer) => {
-      return PublicKey.deserialize(data);
+      return PublicKey.fromBytes(data);
     },
-    expectedErrors: [
-      "BLST_ERROR::BLST_PK_IS_INFINITY",
-      "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
-      "BLST_ERROR::BLST_POINT_NOT_ON_CURVE",
-      "BLST_ERROR::BLST_BAD_ENCODING",
-      "BLST_ERROR: pkBytes must be 48 or 96 bytes long",
-    ],
+    expectedErrors: ["Invalid encoding", "Point not on curve", "Point not in group", "Public key is infinity"],
   },
   {
     name: "Signature.deserialize",
     target: (data: Buffer) => {
-      return Signature.deserialize(data);
+      return Signature.fromBytes(data);
     },
-    expectedErrors: [
-      "BLST_ERROR::BLST_POINT_NOT_IN_GROUP",
-      "BLST_ERROR::BLST_POINT_NOT_ON_CURVE",
-      "BLST_ERROR::BLST_BAD_ENCODING",
-      "BLST_ERROR: sigBytes must be 96 or 192 bytes long",
-    ],
+    expectedErrors: ["Invalid encoding", "Point not on curve", "Point not in group"],
   },
   {
     name: "verify",
