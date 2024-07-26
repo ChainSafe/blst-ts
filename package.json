@@ -1,6 +1,6 @@
 {
   "name": "@chainsafe/blst",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
   "scripts": {
     "artifacts": "napi artifacts",
@@ -47,7 +47,9 @@
     "triples": {
       "additional": [
         "aarch64-apple-darwin",
-        "aarch64-unknown-linux-gnu"
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl",
+        "x86_64-unknown-linux-musl"
       ]
     }
   },

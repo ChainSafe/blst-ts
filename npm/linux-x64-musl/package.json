@@ -1,15 +1,15 @@
 {
-  "name": "@chainsafe/blst-linux-arm64-gnu",
+  "name": "@chainsafe/blst-linux-x64-musl",
   "version": "2.0.2",
   "os": [
     "linux"
   ],
   "cpu": [
-    "arm64"
+    "x64"
   ],
-  "main": "blst.linux-arm64-gnu.node",
+  "main": "blst.linux-x64-musl.node",
   "files": [
-    "blst.linux-arm64-gnu.node"
+    "blst.linux-x64-musl.node"
   ],
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
   "keywords": [
@@ -29,6 +29,6 @@
     "url": "https://github.com/ChainSafe/blst-ts"
   },
   "libc": [
-    "glibc"
+    "musl"
   ]
 }
