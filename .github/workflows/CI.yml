@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 22.4.x
+          node-version: '22.4.x'
           cache: yarn
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -97,7 +97,7 @@ jobs:
         uses: actions/setup-node@v4
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: 22.4.x
+          node-version: '22.4.x'
           cache: yarn
           architecture: x86
       - name: Build in docker
@@ -119,7 +119,7 @@ jobs:
           if-no-files-found: error
 
   test-macOS-windows-binding:
-    name: Test bindings on ${{ matrix.settings.target }} - node@${{ matrix.node }}
+    name: Test - ${{ matrix.settings.target }} - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -132,7 +132,7 @@ jobs:
             target: x86_64-pc-windows-msvc
         node:
           - '18'
-          - '20'
+          - '22.4.x'
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -153,10 +153,14 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: yarn test
+        run: yarn test:unit
+      - name: Download spec tests
+        run: yarn download-spec-tests
+      - name: Spec tests
+        run: yarn test:spec
 
   test-linux-x64-gnu-binding:
-    name: Test bindings on Linux-x64-gnu - node@${{ matrix.node }}
+    name: Test - Linux-x64-gnu - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -164,7 +168,7 @@ jobs:
       matrix:
         node:
           - '18'
-          - '20'
+          - '22.4.x'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -183,11 +187,21 @@ jobs:
       - name: List packages
         run: ls -R .
         shell: bash
+      - name: Lint project
+        run: yarn lint
+      - name: Run napi version
+        run: yarn run version
+      - name: Ensure there are no unstaged changes
+        run: git diff --exit-code
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-slim yarn test
+        run: yarn test:unit
+      - name: Download spec tests
+        run: yarn download-spec-tests
+      - name: Spec tests
+        run: yarn test:spec
 
   test-linux-x64-musl-binding:
-    name: Test bindings on x86_64-unknown-linux-musl - node@${{ matrix.node }}
+    name: Test - x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -195,7 +209,7 @@ jobs:
       matrix:
         node:
           - '18'
-          - '20'
+          - '22.4.x'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -217,10 +231,19 @@ jobs:
         run: ls -R .
         shell: bash
       - name: Test bindings
-        run: docker run --rm -v $(pwd):/build -w /build node:${{ matrix.node }}-alpine yarn test
+        uses: addnab/docker-run-action@v3
+        with:
+          image: node:${{ matrix.node }}-alpine
+          options: '--platform linux/amd64 -v ${{ github.workspace }}:/build -w /build'
+          run: |
+            set -e
+            yarn test:unit
+            yarn download-spec-tests
+            yarn test:spec
+            ls -la
 
   test-linux-aarch64-gnu-binding:
-    name: Test bindings on aarch64-unknown-linux-gnu - node@${{ matrix.node }}
+    name: Test - aarch64-unknown-linux-gnu - node@${{ matrix.node }}
     needs:
       - build
     strategy:
@@ -228,7 +251,7 @@ jobs:
       matrix:
         node:
           - '18'
-          - '20'
+          - '22.4.x'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -257,11 +280,13 @@ jobs:
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e
-            yarn test
+            yarn test:unit
+            yarn download-spec-tests
+            yarn test:spec
             ls -la
 
   test-linux-aarch64-musl-binding:
-    name: Test bindings on aarch64-unknown-linux-musl - node@${{ matrix.node }}
+    name: Test - aarch64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
       - build
     runs-on: ubuntu-latest
@@ -288,11 +313,14 @@ jobs:
       - name: Setup and run tests
         uses: addnab/docker-run-action@v3
         with:
-          image: node:lts-alpine
+          image: node:${{ matrix.node }}-alpine
           options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
           run: |
             set -e
-            yarn test
+            yarn test:unit
+            yarn download-spec-tests
+            yarn test:spec
+            ls -la
 
   publish:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
