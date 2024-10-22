@@ -2,7 +2,7 @@ name: CI
 env:
   DEBUG: napi:*
   APP_NAME: blst
-  MACOSX_DEPLOYMENT_TARGET: '10.13'
+  MACOSX_DEPLOYMENT_TARGET: "10.13"
 permissions:
   contents: write
   id-token: write
@@ -55,13 +55,11 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - name: Setup node
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: '22.4.x'
+          node-version: "22.4.x"
           cache: yarn
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -97,7 +95,7 @@ jobs:
         uses: actions/setup-node@v4
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: '22.4.x'
+          node-version: "22.4.x"
           cache: yarn
           architecture: x86
       - name: Build in docker
@@ -105,7 +103,7 @@ jobs:
         if: ${{ matrix.settings.docker }}
         with:
           image: ${{ matrix.settings.docker }}
-          options: '--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build'
+          options: "--user 0:0 -v ${{ github.workspace }}/.cargo-cache/git/db:/usr/local/cargo/git/db -v ${{ github.workspace }}/.cargo/registry/cache:/usr/local/cargo/registry/cache -v ${{ github.workspace }}/.cargo/registry/index:/usr/local/cargo/registry/index -v ${{ github.workspace }}:/build -w /build"
           run: ${{ matrix.settings.build }}
       - name: Build
         run: ${{ matrix.settings.build }}
@@ -131,8 +129,8 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
         node:
-          - '18'
-          - '22.4.x'
+          - "18"
+          - "22.4.x"
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -167,8 +165,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '18'
-          - '22.4.x'
+          - "18"
+          - "22.4.x"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -208,7 +206,7 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '18'
+          - "18"
           - 22.4
     runs-on: ubuntu-latest
     steps:
@@ -234,7 +232,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: node:${{ matrix.node }}-alpine
-          options: '--platform linux/amd64 -v ${{ github.workspace }}:/build -w /build'
+          options: "--platform linux/amd64 -v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
             yarn test:unit
@@ -250,7 +248,7 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '18'
+          - "18"
           - 22.4
     runs-on: ubuntu-latest
     steps:
@@ -277,7 +275,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: node:${{ matrix.node }}-slim
-          options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
+          options: "--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
             yarn test:unit
@@ -293,7 +291,7 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - '18'
+          - "18"
           - 22.4
     runs-on: ubuntu-latest
     steps:
@@ -320,7 +318,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: node:${{ matrix.node }}-alpine
-          options: '--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build'
+          options: "--platform linux/arm64 -v ${{ github.workspace }}:/build -w /build"
           run: |
             set -e
             yarn test:unit
@@ -343,7 +341,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '22.4.x'
+          node-version: "22.4.x"
           cache: yarn
       - name: Create tag
         id: tag
