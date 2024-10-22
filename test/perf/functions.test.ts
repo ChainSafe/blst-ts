@@ -26,7 +26,7 @@ describe("functions", () => {
     }
   });
   describe("aggregateWithRandomness", () => {
-    for (const count of [1, 16, 128, 256, 512, 1024]) {
+    for (const count of [1, 8, 64, 512, 2048, 16_000]) {
       itBench({
         id: `aggregateWithRandomness - ${count} sets`,
         before: () => {
@@ -75,18 +75,36 @@ describe("functions", () => {
     }
   });
   describe("verifyMultipleAggregateSignatures", () => {
-    for (const count of [1, 8, 32, 128, 256]) {
+    for (const count of [1, 8, 64, 512, 2048, 16_000]) {
       itBench({
         id: `verifyMultipleAggregateSignatures - ${count} sets`,
-        beforeEach: () => arrayOfIndexes(0, count - 1).map((i) => getTestSet(i)),
+        beforeEach: () =>
+          arrayOfIndexes(0, count - 1).map((i) => {
+            const set = getTestSet(i);
+            return {
+              msg: set.msg,
+              pk: set.pk,
+              sig: set.sig.toBytes(),
+            };
+          }),
         fn: (sets) => {
-          blst.verifyMultipleAggregateSignatures(sets);
+          blst.verifyMultipleAggregateSignatures(
+            sets.map((set) => {
+              const sig = blst.Signature.fromBytes(set.sig);
+              sig.sigValidate();
+              return {
+                msg: set.msg,
+                pk: set.pk,
+                sig,
+              };
+            })
+          );
         },
       });
     }
   });
   describe("verifyMultipleAggregateSignatures same message", () => {
-    for (const count of [1, 8, 32, 128, 256]) {
+    for (const count of [1, 8, 64, 512, 2048, 16_000]) {
       itBench({
         id: `Same message - ${count} sets`,
         beforeEach: () =>
@@ -94,21 +112,15 @@ describe("functions", () => {
             .map((i) => getTestSetSameMessage(i))
             .map((set) => {
               return {
-                message: set.msg,
-                secretKey: set.sk,
-                publicKey: set.pk,
-                signature: set.sig.toBytes(),
+                msg: set.msg,
+                sk: set.sk,
+                pk: set.pk,
+                sig: set.sig.toBytes(),
               };
             }),
         fn: (sets) => {
-          const aggregatedPubkey = blst.aggregatePublicKeys(sets.map((set) => set.publicKey));
-          const aggregatedSignature = blst.aggregateSignatures(
-            sets.map((set) => {
-              const sig = blst.Signature.fromBytes(set.signature, true, true);
-              return sig;
-            })
-          );
-          const isValid = blst.verify(sets[0].message, aggregatedPubkey, aggregatedSignature);
+          const {pk, sig} = blst.aggregateWithRandomness(sets);
+          const isValid = blst.verify(sets[0].msg, pk, sig);
           if (!isValid) throw Error("Invalid");
         },
       });
