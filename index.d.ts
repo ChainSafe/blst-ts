@@ -55,6 +55,12 @@ export declare function aggregateSerializedSignatures(sigs: Array<Uint8Array>, s
  */
 export declare function aggregateWithRandomness(sets: Array<PkAndSerializedSig>): PkAndSig
 /**
+ * Aggregate multiple public keys and multiple serialized signatures into a single blinded public key and blinded signature.
+ *
+ * Signatures are deserialized and validated with infinity and group checks before aggregation.
+ */
+export declare function asyncAggregateWithRandomness(sets: Array<PkAndSerializedSig>): Promise<PkAndSig>
+/**
  * Verify a signature against a message and public key.
  *
  * If `pk_validate` is `true`, the public key will be infinity and group checked.

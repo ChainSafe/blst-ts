@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { SECRET_KEY_LENGTH, PUBLIC_KEY_LENGTH_COMPRESSED, PUBLIC_KEY_LENGTH_UNCOMPRESSED, SIGNATURE_LENGTH_COMPRESSED, SIGNATURE_LENGTH_UNCOMPRESSED, SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, verifyMultipleAggregateSignatures } = nativeBinding
+const { SECRET_KEY_LENGTH, PUBLIC_KEY_LENGTH_COMPRESSED, PUBLIC_KEY_LENGTH_UNCOMPRESSED, SIGNATURE_LENGTH_COMPRESSED, SIGNATURE_LENGTH_UNCOMPRESSED, SecretKey, PublicKey, Signature, aggregatePublicKeys, aggregateSignatures, aggregateSerializedPublicKeys, aggregateSerializedSignatures, aggregateWithRandomness, asyncAggregateWithRandomness, verify, aggregateVerify, fastAggregateVerify, verifyMultipleAggregateSignatures } = nativeBinding
 
 module.exports.SECRET_KEY_LENGTH = SECRET_KEY_LENGTH
 module.exports.PUBLIC_KEY_LENGTH_COMPRESSED = PUBLIC_KEY_LENGTH_COMPRESSED
@@ -325,6 +325,7 @@ module.exports.aggregateSignatures = aggregateSignatures
 module.exports.aggregateSerializedPublicKeys = aggregateSerializedPublicKeys
 module.exports.aggregateSerializedSignatures = aggregateSerializedSignatures
 module.exports.aggregateWithRandomness = aggregateWithRandomness
+module.exports.asyncAggregateWithRandomness = asyncAggregateWithRandomness
 module.exports.verify = verify
 module.exports.aggregateVerify = aggregateVerify
 module.exports.fastAggregateVerify = fastAggregateVerify
