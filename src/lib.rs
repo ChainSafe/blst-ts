@@ -29,8 +29,6 @@ pub const SIGNATURE_LENGTH_UNCOMPRESSED: u32 = 192;
 pub enum ErrorStatus {
   Blst(BLST_ERROR),
   InvalidHex,
-  PublicKeyField,
-  SignatureField,
   Other(String),
 }
 
@@ -39,8 +37,6 @@ impl AsRef<str> for ErrorStatus {
     match self {
       ErrorStatus::Blst(err) => blst_error_to_str(*err),
       ErrorStatus::InvalidHex => "INVALID_HEX",
-      ErrorStatus::PublicKeyField => "INVALID_PUBLIC_KEY_FIELD",
-      ErrorStatus::SignatureField => "INVALID_SIGNATURE_FIELD",
       ErrorStatus::Other(err) => err.as_str(),
     }
   }
