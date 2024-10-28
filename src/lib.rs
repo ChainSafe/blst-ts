@@ -426,7 +426,6 @@ impl Task for AsyncAggregateWithRandomness {
     for sig in &self.sigs {
       let result = sig.validate(true);
       if let Err(blst_error) = result {
-        println!(">>>\n>>>\n>>>found and error yo!!!\n>>>\n>>>\n>>>");
         return Err(blst_to_napi_err(blst_error));
       }
     }
@@ -440,10 +439,6 @@ impl Task for AsyncAggregateWithRandomness {
       pk: PublicKey::into_reference(PublicKey(output.0), env)?,
       sig: Signature::into_reference(Signature(output.1), env)?,
     })
-  }
-
-  fn reject(&mut self, _env: Env, err: Error) -> napi::Result<Self::JsValue> {
-    Err(err)
   }
 }
 

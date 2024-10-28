@@ -132,15 +132,18 @@ describe("Aggregate With Randomness", () => {
         expect(() => asyncAggregateWithRandomness([{pk: sets[0].pk, sig: "bar" as any}])).to.throw();
       });
     });
-    it("should throw for invalid serialized", () => {
-      expect(() =>
-        asyncAggregateWithRandomness(
+    it("should throw for invalid serialized", async () => {
+      try {
+        await asyncAggregateWithRandomness(
           sets.concat({
             pk: sets[0].pk,
             sig: G2_POINT_AT_INFINITY, //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature
           } as any)
-        )
-      ).to.throw();
+        );
+        expect.fail("should not get here");
+      } catch (err) {
+        expect((err as Error).message).to.contain("Public key is infinity");
+      }
     });
     it("should return a {pk: PublicKey, sig: Signature} object", async () => {
       const aggPromise = asyncAggregateWithRandomness(sets);
