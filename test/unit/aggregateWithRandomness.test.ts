@@ -62,7 +62,8 @@ describe("Aggregate With Randomness", () => {
         aggregateWithRandomness(
           sets.concat({
             pk: sets[0].pk,
-            sig: G2_POINT_AT_INFINITY, //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature
+            //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature because there is only one blst error
+            sig: G2_POINT_AT_INFINITY,
           } as any)
         )
       ).to.throw();
@@ -137,7 +138,8 @@ describe("Aggregate With Randomness", () => {
         await asyncAggregateWithRandomness(
           sets.concat({
             pk: sets[0].pk,
-            sig: G2_POINT_AT_INFINITY, //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature
+            //TODO: (@matthewkeil) this throws error "Public key is infinity" not signature because there is only one blst error
+            sig: G2_POINT_AT_INFINITY,
           } as any)
         );
         expect.fail("should not get here");
