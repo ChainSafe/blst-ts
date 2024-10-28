@@ -400,7 +400,7 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
     return Err(from_blst_err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH));
   }
 
-  let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets, true)?;
+  let (pks, sigs) = unzip_aggregation_sets(&sets, true)?;
   let rands = create_rand_slice(pks.len());
   let (pk, sig) = aggregate_with(pks.as_slice(), sigs.as_slice(), rands.as_slice());
 
@@ -424,8 +424,7 @@ impl Task for AsyncAggregateWithRandomness {
     let scalars = create_rand_slice(self.pks.len());
     let pk = self.pks.as_slice().mult(&scalars, 64).to_public_key();
     for sig in &self.sigs {
-      let result = sig.validate(true);
-      if let Err(blst_error) = result {
+      if let Err(blst_error) = sig.validate(true) {
         return Err(blst_to_napi_err(blst_error));
       }
     }
@@ -453,7 +452,7 @@ pub fn async_aggregate_with_randomness(
     return Err(from_blst_err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH));
   }
 
-  let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets, false)?;
+  let (pks, sigs) = unzip_aggregation_sets(&sets, false)?;
   Ok(AsyncTask::new(AsyncAggregateWithRandomness { pks, sigs }))
 }
 
@@ -579,7 +578,7 @@ fn unzip_signature_sets<'a>(
 }
 
 /// Convert a list of tuples into a tuple of lists (deserializing and validating signatures along the way)
-fn unzip_and_validate_aggregation_sets(
+fn unzip_aggregation_sets(
   sets: &[PkAndSerializedSig],
   sig_validate: bool,
 ) -> Result<(Vec<min_pk::PublicKey>, Vec<min_pk::Signature>)> {
@@ -587,14 +586,16 @@ fn unzip_and_validate_aggregation_sets(
   let mut pks = Vec::with_capacity(len);
   let mut sigs = Vec::with_capacity(len);
 
-  for set in sets {
-    pks.push(set.pk.0);
-    let sig = if sig_validate {
-      min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(from_blst_err)?
-    } else {
-      min_pk::Signature::from_bytes(set.sig.as_ref()).map_err(from_blst_err)?
-    };
-    sigs.push(sig);
+  if sig_validate {
+    for set in sets {
+      pks.push(set.pk.0);
+      sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(from_blst_err)?);
+    }
+  } else {
+    for set in sets {
+      pks.push(set.pk.0);
+      sigs.push(min_pk::Signature::from_bytes(set.sig.as_ref()).map_err(from_blst_err)?);
+    }
   }
 
   Ok((pks, sigs))
