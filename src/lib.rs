@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use blst::{blst_scalar, blst_scalar_from_uint64, min_pk, MultiPoint, BLST_ERROR};
-use napi::bindgen_prelude::*;
+use napi::{bindgen_prelude::*, Task};
 use napi_derive::napi;
 use rand::{rngs::ThreadRng, Rng};
 
@@ -81,6 +81,13 @@ fn from_napi_err(napi_err: Error) -> Error<ErrorStatus> {
   Error::new(
     ErrorStatus::Other(napi_err.status.to_string()),
     napi_err.reason.to_string(),
+  )
+}
+
+fn blst_to_napi_err(blst_error: BLST_ERROR) -> napi::Error<napi::Status> {
+  napi::Error::new(
+    napi::Status::GenericFailure,
+    blst_error_to_reason(blst_error),
   )
 }
 
@@ -393,7 +400,7 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
     return Err(from_blst_err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH));
   }
 
-  let (pks, sigs) = unzip_and_validate_aggregation_sets(&sets)?;
+  let (pks, sigs) = unzip_aggregation_sets(&sets, true)?;
   let rands = create_rand_slice(pks.len());
   let (pk, sig) = aggregate_with(pks.as_slice(), sigs.as_slice(), rands.as_slice());
 
@@ -401,6 +408,52 @@ pub fn aggregate_with_randomness(env: Env, sets: Vec<PkAndSerializedSig>) -> Res
     pk: PublicKey::into_reference(PublicKey(pk), env).map_err(from_napi_err)?,
     sig: Signature::into_reference(Signature(sig), env).map_err(from_napi_err)?,
   })
+}
+
+pub struct AsyncAggregateWithRandomness {
+  pks: Vec<min_pk::PublicKey>,
+  sigs: Vec<min_pk::Signature>,
+}
+
+#[napi]
+impl Task for AsyncAggregateWithRandomness {
+  type Output = (min_pk::PublicKey, min_pk::Signature);
+  type JsValue = PkAndSig;
+
+  fn compute(&mut self) -> napi::Result<Self::Output> {
+    let scalars = create_rand_slice(self.pks.len());
+    let pk = self.pks.as_slice().mult(&scalars, 64).to_public_key();
+    for sig in &self.sigs {
+      if let Err(blst_error) = sig.validate(true) {
+        return Err(blst_to_napi_err(blst_error));
+      }
+    }
+    let sig = self.sigs.as_slice().mult(&scalars, 64).to_signature();
+
+    Ok((pk, sig))
+  }
+
+  fn resolve(&mut self, env: Env, output: Self::Output) -> napi::Result<Self::JsValue> {
+    Ok(PkAndSig {
+      pk: PublicKey::into_reference(PublicKey(output.0), env)?,
+      sig: Signature::into_reference(Signature(output.1), env)?,
+    })
+  }
+}
+
+#[napi]
+/// Aggregate multiple public keys and multiple serialized signatures into a single blinded public key and blinded signature.
+///
+/// Signatures are deserialized and validated with infinity and group checks before aggregation.
+pub fn async_aggregate_with_randomness(
+  sets: Vec<PkAndSerializedSig>,
+) -> Result<AsyncTask<AsyncAggregateWithRandomness>> {
+  if sets.is_empty() {
+    return Err(from_blst_err(BLST_ERROR::BLST_AGGR_TYPE_MISMATCH));
+  }
+
+  let (pks, sigs) = unzip_aggregation_sets(&sets, false)?;
+  Ok(AsyncTask::new(AsyncAggregateWithRandomness { pks, sigs }))
 }
 
 #[napi]
@@ -525,16 +578,24 @@ fn unzip_signature_sets<'a>(
 }
 
 /// Convert a list of tuples into a tuple of lists (deserializing and validating signatures along the way)
-fn unzip_and_validate_aggregation_sets(
+fn unzip_aggregation_sets(
   sets: &[PkAndSerializedSig],
+  sig_validate: bool,
 ) -> Result<(Vec<min_pk::PublicKey>, Vec<min_pk::Signature>)> {
   let len = sets.len();
   let mut pks = Vec::with_capacity(len);
   let mut sigs = Vec::with_capacity(len);
 
-  for set in sets {
-    pks.push(set.pk.0);
-    sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(from_blst_err)?);
+  if sig_validate {
+    for set in sets {
+      pks.push(set.pk.0);
+      sigs.push(min_pk::Signature::sig_validate(set.sig.as_ref(), true).map_err(from_blst_err)?);
+    }
+  } else {
+    for set in sets {
+      pks.push(set.pk.0);
+      sigs.push(min_pk::Signature::from_bytes(set.sig.as_ref()).map_err(from_blst_err)?);
+    }
   }
 
   Ok((pks, sigs))
