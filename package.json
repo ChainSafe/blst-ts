@@ -1,6 +1,6 @@
 {
   "name": "@chainsafe/blst",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Typescript wrapper for supranational/blst native bindings, a highly performant BLS12-381 signature library",
   "scripts": {
     "artifacts": "napi artifacts",
