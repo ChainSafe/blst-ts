@@ -549,7 +549,7 @@ pub fn verify_multiple_aggregate_signatures(
     &sigs,
     sigs_groupcheck.unwrap_or(false),
     &rands,
-    64,
+    128,
   ) == BLST_ERROR::BLST_SUCCESS
 }
 
@@ -613,8 +613,8 @@ fn rand_non_zero(rng: &mut ThreadRng) -> u64 {
 
 /// copied from lighthouse:
 /// https://github.com/sigp/lighthouse/blob/9e12c21f268c80a3f002ae0ca27477f9f512eb6f/crypto/bls/src/impls/blst.rs#L52
-fn create_scalar(i: u64) -> blst_scalar {
-  let vals = [i, 0, 0, 0];
+fn create_scalar(i1: u64, i2: u64) -> blst_scalar {
+  let vals = [i1, i2, 0, 0];
   let mut scalar = std::mem::MaybeUninit::<blst_scalar>::uninit();
   unsafe {
     blst_scalar_from_uint64(scalar.as_mut_ptr(), vals.as_ptr());
@@ -626,14 +626,14 @@ fn create_scalar(i: u64) -> blst_scalar {
 fn create_rand_scalars(len: usize) -> Vec<blst_scalar> {
   let mut rng = rand::thread_rng();
   (0..len)
-    .map(|_| create_scalar(rand_non_zero(&mut rng)))
+    .map(|_| create_scalar(rand_non_zero(&mut rng), rand_non_zero(&mut rng)))
     .collect()
 }
 
 /// Creates a vector of random bytes, length len * 8
 fn create_rand_slice(len: usize) -> Vec<u8> {
   let mut rng = rand::thread_rng();
-  (0..len)
+  (0..(2 * len))
     .map(|_| rand_non_zero(&mut rng).to_ne_bytes())
     .flatten()
     .collect()
@@ -645,8 +645,8 @@ fn aggregate_with(
   sigs: &[min_pk::Signature],
   scalars: &[u8],
 ) -> (min_pk::PublicKey, min_pk::Signature) {
-  let pk = pks.mult(scalars, 64).to_public_key();
-  let sig = sigs.mult(scalars, 64).to_signature();
+  let pk = pks.mult(scalars, 128).to_public_key();
+  let sig = sigs.mult(scalars, 128).to_signature();
 
   (pk, sig)
 }
