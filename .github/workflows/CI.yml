@@ -198,6 +198,51 @@ jobs:
       - name: Spec tests
         run: yarn test:spec
 
+  test-linux-x64-gnu-binding-bun:
+    name: Test - Linux-x64-gnu - bun@${{ matrix.bun }}
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        bun:
+          - "latest"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # - name: Setup node
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ matrix.node }}
+      #     cache: yarn
+      # - name: Install dependencies
+      #   run: yarn install
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun }}
+      - name: Install deps 
+        run: bun install --frozen-lockfile
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-x86_64-unknown-linux-gnu
+          path: .
+      - name: List packages
+        run: ls -R .
+        shell: bash
+      - name: Lint project
+        run: bun run --bun lint
+      - name: Run napi version
+        run: bun run --bun version
+      - name: Ensure there are no unstaged changes
+        run: git diff --exit-code
+      - name: Test bindings
+        run: bun run --bun test:unit
+      - name: Download spec tests
+        run: bun run --bun download-spec-tests
+      - name: Spec tests
+        run: bun run --bun test:spec
+
   test-linux-x64-musl-binding:
     name: Test - x86_64-unknown-linux-musl - node@${{ matrix.node }}
     needs:
@@ -333,6 +378,7 @@ jobs:
     needs:
       - test-macOS-windows-binding
       - test-linux-x64-gnu-binding
+      - test-linux-x64-gnu-binding-bun
       - test-linux-x64-musl-binding
       - test-linux-aarch64-gnu-binding
       - test-linux-aarch64-musl-binding
