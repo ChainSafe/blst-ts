@@ -389,6 +389,9 @@ jobs:
         with:
           node-version: "24.x"
           cache: yarn
+      - name: Upgrade npm for OIDC
+        if: ${{ steps.release.outputs.releases_created }}
+        run: npm i -g npm@^11.5.1
       - name: Create tag
         id: tag
         uses: butlerlogic/action-autotag@1.1.2
