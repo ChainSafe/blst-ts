@@ -51,7 +51,7 @@ jobs:
           # - host: windows-latest
           #   target: aarch64-pc-windows-msvc
           #   build: yarn build --target aarch64-pc-windows-msvc
-    name: Build - ${{ matrix.settings.target }} - node@22
+    name: Build - ${{ matrix.settings.target }} - node@24
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: "22.4.x"
+          node-version: "24.x"
           cache: yarn
       - name: Install
         uses: dtolnay/rust-toolchain@stable
@@ -95,7 +95,7 @@ jobs:
         uses: actions/setup-node@v4
         if: matrix.settings.target == 'i686-pc-windows-msvc'
         with:
-          node-version: "22.4.x"
+          node-version: "24.x"
           cache: yarn
           architecture: x86
       - name: Build in docker
@@ -129,8 +129,8 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
         node:
-          - "18"
-          - "22.4.x"
+          - "22.x"
+          - "24.x"
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
@@ -165,8 +165,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - "18"
-          - "22.4.x"
+          - "22.x"
+          - "24.x"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -251,8 +251,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - "18"
-          - 22.4
+          - "22.x"
+          - "24.x"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -293,8 +293,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - "18"
-          - 22.4
+          - "22.x"
+          - "24.x"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -336,8 +336,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - "18"
-          - 22.4
+          - "22.x"
+          - "24.x"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -387,7 +387,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: "22.4.x"
+          node-version: "24.x"
           cache: yarn
       - name: Create tag
         id: tag
@@ -418,15 +418,13 @@ jobs:
           npm config set provenance true
           if node -e "console.log(require('./package.json').version)" | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+$";
           then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --access public
           elif node -e "console.log(require('./package.json').version)" | grep "^[0-9]\+\.[0-9]\+\.[0-9]\+";
           then
-            echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
             npm publish --tag next --access public
           else
             echo "Not a release, skipping publish"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
