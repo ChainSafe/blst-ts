@@ -4,8 +4,9 @@ env:
   APP_NAME: blst
   MACOSX_DEPLOYMENT_TARGET: "10.13"
 permissions:
-  contents: write
-  id-token: write
+  contents: write # Required for OIDC
+  id-token: write # Required to create a Github release
+  pull-requests: write # Required to add tags to pull requests
 
 on:
   pull_request:
