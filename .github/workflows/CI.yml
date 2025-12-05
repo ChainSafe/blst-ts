@@ -114,7 +114,7 @@ jobs:
             architecture: x64
         node:
           - "18"
-          - "22.4.x" 
+          - "22" 
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v6
@@ -151,7 +151,7 @@ jobs:
           - aarch64-unknown-linux-musl
         node:
           - "18"
-          - 22.4
+          - "22"
     runs-on: ${{ contains(matrix.target, 'aarch64') && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v6
