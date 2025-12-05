@@ -20,7 +20,7 @@
     "test:perf": "node -r ts-node/register node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
     "test:spec": "mocha test/spec/**/*.test.ts",
     "test:unit": "mocha test/unit/**/*.test.ts",
-    "universal": "napi universal",
+    "universal": "napi universalize",
     "version": "napi version"
   },
   "main": "index.js",
@@ -43,20 +43,21 @@
     "url": "https://github.com/ChainSafe/blst-ts"
   },
   "napi": {
-    "name": "blst",
-    "triples": {
-      "additional": [
-        "aarch64-apple-darwin",
-        "aarch64-unknown-linux-gnu",
-        "aarch64-unknown-linux-musl",
-        "x86_64-unknown-linux-musl"
-      ]
-    }
+    "binaryName": "blst",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "x86_64-unknown-linux-musl"
+    ]
   },
   "license": "Apache-2.0",
   "devDependencies": {
     "@dapplion/benchmark": "^0.2.4",
-    "@napi-rs/cli": "^2.18.3",
+    "@napi-rs/cli": "^3.5.0",
     "@types/chai": "^4.3.16",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.7",
