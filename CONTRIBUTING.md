@@ -6,7 +6,7 @@ Thank you for your interest in contribution to the `blst-ts` project.  This file
 
 ```sh
 git submodule update --init --recursive
-yarn
+pnpm install
 ```
 
 ### Scripts

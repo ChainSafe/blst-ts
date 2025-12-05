@@ -19,7 +19,7 @@ Typescript wrapper for [supranational/blst](https://github.com/supranational/bls
 ## Usage
 
 ```bash
-yarn add @chainsafe/blst
+pnpm add @chainsafe/blst
 ```
 
 This library comes with pre-compiled bindings for most platforms. You can check current support in [releases](https://github.com/ChainSafe/blst-ts/releases). If your platform is not supported, bindings will be compiled from source as a best effort with node-gyp.
@@ -69,7 +69,7 @@ To create a new release:
 
 1. Increment the project version in [package.json](package.json#3)
     - A pre-release can be published by ensuring that the project version is appended with non-numeric characters, eg: `-beta`
-2. run `yarn run version`
+2. run `pnpm run version`
 3. merge a commit with these changes
 4. CI will run and result in a new release being published
 
