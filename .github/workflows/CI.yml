@@ -253,7 +253,7 @@ jobs:
       matrix:
         node:
           - "18"
-          - "22.4"
+          - 22.4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -294,8 +294,8 @@ jobs:
       fail-fast: false
       matrix:
         node:
-          - "22"
-          - "24"
+          - "18"
+          - 22.4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -338,7 +338,7 @@ jobs:
       matrix:
         node:
           - "18"
-          - "22.4"
+          - 22.4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
