@@ -24,7 +24,7 @@ const ROOT_DIR = resolve(__dirname, "..", "..");
 const TEST_TIMEOUT_IN_MINUTES = 20;
 
 if (!fs.existsSync(resolve(ROOT_DIR, "fuzz-tests", "test", "fuzz", "fuzzTarget.js"))) {
-  throw new Error("fuzzTarget.js not found.  Run `yarn build:fuzz` to generate the fuzzing framework files");
+  throw new Error("fuzzTarget.js not found.  Run `pnpm build:fuzz` to generate the fuzzing framework files");
 }
 
 if (!fs.existsSync(resolve(ROOT_DIR, "node_modules", ".bin", "jazzer"))) {

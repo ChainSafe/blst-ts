@@ -34,10 +34,10 @@ There are a number of scripts to help while working in this repo.  The first two
 
 ## Dependencies
 
-There are a few dependencies, however, most will be installed by `yarn`
+There are a few dependencies, however, most will be installed by `pnpm`
 
 ```sh
-yarn install
+pnpm install
 ```
 
 The only one that needs to be explicitly handled is `blst` which is installed as a submodule

@@ -14,7 +14,7 @@
     "lint:rs": "cargo fmt --check",
     "lint:ts": "eslint --color --ext .js,.mjs,.cjs,.ts test/",
     "prepublishOnly": "napi prepublish -t npm",
-    "test": "yarn test:unit && yarn test:spec",
+    "test": "pnpm test:unit && pnpm test:spec",
     "test:fuzz": "ts-node test/fuzz/fuzz.test.ts",
     "test:memory": "node -r ts-node/register --expose-gc test/memory/memory.test.ts",
     "test:perf": "node -r ts-node/register node_modules/.bin/benchmark --config .benchrc.yaml test/perf/*.test.ts",
